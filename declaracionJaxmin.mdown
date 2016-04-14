@@ -1,0 +1,98 @@
+Definicion de Jaxmin
+
+Manejo de Memoria
+born
+puff 
+
+las funciones solo usan parametros por valor
+func foo(ref int i, ref int j) -> int {
+	
+}
+
+los procedimientos reciben parametros de los dos tipos
+proc
+
+
+condicional
+if True {
+	
+}
+
+if True {
+	
+} elif False {
+	
+} else {
+	
+}
+
+instruccion if exp
+
+Secuenciacion
+.
+
+Iteracion
+while True {
+	
+}
+nos gustaria implementer el break y continue
+
+for i to 5 {
+	
+} 
+
+for i to 0 step -1 {
+	
+}
+
+for i in [1..5] {
+	
+}
+
+Asignacion 
+=
+
+Literales
+
+null
+True
+False
+\n
+\t  
+
+Tipos
+hollow
+int
+char
+float
+
+Variables 
+pueden llevar por nombre cualquier cadena que comience con caracter alfabetico y el resto caracteres alfanumericos o el caracter piso
+
+
+Operadores aritmeticos
++ -
+* / %
+- unario
+
+
+Operadores Booleanos
+/\ 
+\/
+~
+
+
+Comentarios 
+#   
+#> 
+
+<#
+
+
+
+
+
+
+
+
+
