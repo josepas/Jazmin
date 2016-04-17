@@ -40,6 +40,8 @@ proc bar(ref: int i, ref: int j) -> void {
 
 
 condicional
+Aqui falta decidir si siempre tendremos un else cuando hay elseif
+
 if True {
 	
 }
@@ -55,7 +57,7 @@ if True {
 instruccion if exp
 
 Secuenciacion
-
+se toma el salto de linea como separador de instrucciones
 
 Iteracion
 while True {
