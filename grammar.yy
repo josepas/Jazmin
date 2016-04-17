@@ -23,7 +23,7 @@ statement
 	: selection
 	| iteration
 	| jump
-	| otras xD
+	| otras xD 
 	| sequence
 	;
 
@@ -62,9 +62,25 @@ elif_stm
 	| elif_stm ELIF expr statement
 	;
 
-
-
-
+expression
+    : literal
+    | expression '+' expression          
+    | expression '-' expression         
+    | expression '*' expression          
+    | expression '/' expression           
+    | expression '%' expression           
+    | '-' expression %prec      
+    | '(' expression ')'        
+    | '~'' expression                 
+    | expression '/\' expression  creo que debo escapar algo alli    
+    | expression '\/' expression    
+    | expression '<=' expression    
+    | expression '>=' expression    
+    | expression '==' expression         
+    | expression '!=' expression       
+    | expression '<' expression         
+    | expression '>' expression         
+    ;
 
 type 
 	: HOLLOW
@@ -74,5 +90,11 @@ type
 	| BOOL
 	;
 
-
-	
+literal
+	: NUMBER
+	| CHARACTER
+	| STRING     /*ESTO NO SE SI VA AQUI*/
+	| TRUE
+	| FALSE
+	| NULL 
+	;
