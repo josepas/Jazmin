@@ -1,5 +1,9 @@
 %{
+extern "C" int yylex();
+extern "C" int yyparse();
+extern "C" FILE *yyin;
 
+void yyerror(const char *s);
 %}
 
 
@@ -74,7 +78,7 @@ expression
     | expression '*' expression          
     | expression '/' expression           
     | expression '%' expression           
-    | '-' expression %prec      
+    | '-' expression %prec      esto lleva otras cosas
     | '(' expression ')'        
     | '~'' expression                 
     | expression '/\' expression  creo que debo escapar algo alli    

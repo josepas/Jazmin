@@ -1,24 +1,120 @@
-# Definicion de Jaxmin
+# Jaxmin
+
+Jaxmin es un lenguaje de programación inspirado en C. 
 
 
-Lista de tokens
+## Palabras reservadas
 
 born puff 
 func return proc 
 if elif else 
 for to step while 
-int char bool float
-struct
+int char bool float hollow
+struct confederation
+True False Null
+next break 
+read write
+
+## Identificadores
+Los identificadores son una cadena de caracteres de cualquier longitud. El primero es una letra en mayúscula o minúscula y el resto pueden ser letras (mayúsculas o minúsculas), dígitos o "_". sirven para dar nombre a variables, subrutinas y estructuras
+
+
 [ ]
 { }
 ( )
+.
 =
 + -
 * / %
 -
 < <= >= > == !=
++= *= /= -=
 /\ \/ ~
-# #> <#
+-> 
+# 
+#> <#
+
+## Tipos de datos
+
+Existen 6 tipos de datos primitivos en el lenguaje:
+
+### hollow
+Es el tipo de dato que representa vacio o falta de dato y se usa al declarar valores de retorno de funciones.
+
+### bool
+Representa valores booleanos (True o False).
+
+### int
+Representa números enteros con signo, utilizando 32 bits.
+
+### float
+Representa numeros reales utilizacon punto flotante de 32 bits. El separador entre la parte entera y la parte decimal es el "."
+
+### char
+Representa un caracter.
+
+### string
+Representa una cadena de caracteres. 
+
+### Estructuras anidadas
+
+#### struct 
+Estructura definida por el usuario que contiene una cantidad arbitraria de datos heterogéneos. El nombre de la estructura debe ser un identificador con la primera letra en mayúscula.
+
+La comparacion entre estas estructuras es superficial (por nombre), así como la copia.
+
+        struct Foo {
+			int i 
+			char k        	
+			...
+        }
+
+para acceder a los campos de la estructura se usa el caracter "." luego de alguna estructura válida.
+
+bar.campo
+
+#### confederation
+Estructura definida por el usuario que contiene una cantidad arbitraria de datos heterogéneos que comparten el mismo espacio de memoria (el del tipo mas grade). El nombre de la estructura debe ser un identificador con la primera letra en mayúscula.
+
+El uso de esta estructura queda por definirse
+
+#### arreglos
+Son unidimensionales con indices numéricos comenzando en 0. para acceder al elemento i de un arreglo se usa:
+
+		foo[i]
+
+## Expresiones 
+
+Las expresiones pueden ser 
+
+* Literales como los valores True, False y Null
+
+* Variables
+
+* Expresiones aritméticas
+
+* Expresiones booleanas
+
+* Expresiones relacionales
+
+### Expresiones aritméticas
+Estan formadas por valores numéricos (int y float) y operadores convencionales de aritmética. La tabla de precedencia es también la convencional:
+
+		+, - binario
+		*, /, % 
+		- unario
+
+### Expresiones booleanas
+Estan formadas por valores booleanos y operadores lógicos. La tabla de precedencia es la convencional:
+
+		\/
+		/\
+		~
+En ambas expresiones se pueden usar parentesis para modificar la precedencia
+
+### Expresiones relacionales
+Comparan valores de tipo numérico o booleano.
+
 
 
 # Manejo de Memoria
