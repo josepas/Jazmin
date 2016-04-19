@@ -1,3 +1,7 @@
+%{
+
+%}
+
 
 
 born puff 
@@ -17,8 +21,6 @@ struct
 /\ \/ ~
 # #> <#
 
-
-
 statement
 	: selection
 	| iteration
@@ -35,7 +37,13 @@ jump
 sequence 
 	: '{' '}' 
 	| '{' statement_list '}'
+	| declaration
 	; 
+
+assignment_operator
+	: 
+
+
 
 statement_list
 	: statement
@@ -45,9 +53,6 @@ statement_list
 iteration
 	: while expr statement 
 	;
-
-
-
 
 
 selection
