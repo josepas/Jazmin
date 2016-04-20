@@ -159,7 +159,7 @@ Estos no retornan valor alguno.
 ####Funciones
 Las funciones solo pueden recibir argumentos por valor. Estas deberan
 retornar un valor acorde a su tipo excepto si es hollow, en dicho caso no
-retornara valor alguno. Toda función debe tener un return.
+retornara valor alguno. Toda función debe tener un return.I>>
 
 		func foo(int i, char c) -> int {
 			...
@@ -331,3 +331,20 @@ Comentarios
 
 <#
 
+
+    fib (int n) -> int {
+        if n < 0 {
+            write "lástima"
+        } elif (n == 0) \/ ( n == 1) {
+             return 1
+        }
+        return fib(n-1) + fib(n-2)
+    }
+
+    program {
+    	write "Dame un número: "
+    	int i
+    	read i
+    	write "Toma su fibonacci: ", fib(i)
+
+    }
