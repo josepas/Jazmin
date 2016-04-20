@@ -1,0 +1,38 @@
+program {
+    write "Hello World\n"
+}
+
+---
+
+program {
+	int c, n, fact = 1
+
+	wirte "Dame un numero\n"
+	read n
+
+	for c to n {
+		fact = fact * c
+	} 
+	write "Factorial de ", n , " es:", fact
+}
+
+---
+ 
+fib (int n) -> int {
+    if n < 0 {
+        write "lástima"
+    } elif (n == 0) \/ ( n == 1) {
+         return 1
+    }
+    return fib(n-1) + fib(n-2)
+}
+
+program {
+	write "Dame un número: "
+	int i
+	read i
+	write "Toma su fibonacci: ", fib(i)
+}
+
+
+
