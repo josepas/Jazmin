@@ -59,7 +59,7 @@ La comparacion entre estas estructuras es superficial (por nombre), así como la
 
 para acceder a los campos de la estructura se usa el caracter "." luego de alguna estructura válida.
 
-bar.campo
+		bar.campo
 
 ### confederation
 Estructura definida por el usuario que contiene una cantidad arbitraria de datos heterogéneos que comparten el mismo espacio de memoria (el del tipo mas grade). El nombre de la estructura debe ser un identificador con la primera letra en mayúscula.
@@ -90,15 +90,15 @@ Estan formadas por valores numéricos (int y float) y operadores convencionales 
 
 *    **+**  Operador para la suma
 *    **-**  Operador para la resta
-*    *****  Operador para la multiplicacion
+*    **\***  Operador para la multiplicacion
 *    **/**  Operador para la división
 *    **-** Negativo
 
 ### Expresiones booleanas
 Estan formadas por valores booleanos y operadores lógicos. La tabla de precedencia es la convencional:
 
-*    **\/**  Disyunción lógica
-*    **/\** Conjunción lógica
+*    **\\/**  Disyunción lógica
+*    **/\\** Conjunción lógica
 *    **~** Negación lógica
 
 En ambas expresiones se pueden usar parentesis para modificar la precedencia
@@ -108,18 +108,21 @@ Estas expresiones comparan otras expresiones para devolver un valor booleano. Es
 expresiones pueden ser de dos formas: aritmética con aritmética o booleana con booleana.
 
 Booleana con booleana tiene los siguientes operadores:
+
 *    **==** Igualdad
 *    **!=** Desigualdad
 
 Aritmética con aritmética tiene los siguientes operadores:
+
 *    **>**  Mayor que
-*    **>=** Mayor igual
-*    **<**  Menor
-*    **<=** Menor igual
+*    **>=** Mayor o igual que
+*    **<**  Menor que
+*    **<=** Menor o igual que
 
 
 ##Entrada y salida
-Para la entrada y salida se tienen las instrucciones read y write.
+Para la entrada y salida se tienen las instrucciones **read** y **write**.
+
 		read variable
 		write expresión
 
@@ -131,23 +134,26 @@ Las variables pueden declararse de cualquier tipo primitivo excepto hollow y str
 Una declaración puede ocurrir en cualquier parte del codigo. El alcance de la variable sera desde su declaración hasta el fin del bloque donde ocurre.
 
 El formato para la declaración de variables es el siguiente:
-tipo variable
-tipo variable = expresion
+
+		tipo variable
+		tipo variable = expresion
 
 Para variables de tipo arreglo se usa el siguiente formato:
-tipo variable[tamaño]
 
-Las variables de tipo primitivo tendran valores por defecto si no son inicializadas.
+		tipo variable[tamaño]
+
+Las variables de tipo primitivo tendran valores por defecto si no son inicializadas:
+
 *		int = 0
-*		bool = False
-*		char = ''
 *		float = 0.0
+*		bool = False
+*		char = '\\0'
 
 
 ###Declaración de subrutinas
 Jaxmin diferencia entre procedimientos y funciones.
 
-####Procedimientos
+###Procedimientos
 Los procedimientos pueden recibir argumentos por valor o por referencia.
 Para diferenciarlos se usa la palabra reservada **ref** seguida de ":".
 Estos no retornan valor alguno.
@@ -156,10 +162,10 @@ Estos no retornan valor alguno.
 			...
 		}
 
-####Funciones
+###Funciones
 Las funciones solo pueden recibir argumentos por valor. Estas deberan
 retornar un valor acorde a su tipo excepto si es hollow, en dicho caso no
-retornara valor alguno. Toda función debe tener un return.I>>
+retornara valor alguno. Toda función debe tener un return.
 
 		func foo(int i, char c) -> int {
 			...
@@ -178,43 +184,52 @@ de retorno es hollow.
 
 ###Asignación
 Las asignaciones tienen el siguiente formato:
-tipo variable = expresión
-variable = expresión
+
+		tipo variable = expresión
+		variable = expresión
 
 Ejecutar una asignación tiene el efecto de evaluar la expresión de la derecha y guardar el resultado en la variable de la izquierda. La variable tiene que estar declarada previamente o la asignación ser parte de la declaración.
 
 
 ###Selección
 Esta instrucción utilizara la palabra reservada **if** y tendra el siguiente formato:
-if condición {
-	instrucción
-	...
-}
+
+		if condición {
+			instrucción
+			...
+		}
 
 En el caso poder evaluar otras condiciones o tener un bloque por defecto se tienen las palabras reservadas **elif** y **else** respectivamente con el siguiente formato:
-if condición {
-	...
-} elif condición {
-	...
-} else
+
+		if condición {
+			...
+		} elif condición {
+			...
+		} else {
+			...
+		}
 
 
 ###Iteración indeterminada
-while condición {
-	...
-}
+
+		while condición {
+			...
+		}
 
 
 ###Iteración determinada
 Para la iteración determinada tenemos dos formas:
-for int i to 5 {
-	...
-}
-for i to -10 step -1 {
-	...
-}
+
+		for int i to 5 {
+			...
+		}
+
+		for i to -10 step -1 {
+			...
+		}
 
 Observaciones:
+
 *		step solo podra ser un número entero.
 *		step sumara el número que reciba a la variable de iteración.
 *		Si no se recibe step se tomara por defecto el valor 1.
@@ -222,129 +237,55 @@ Observaciones:
 
 ###Invocación de subrutinas
 Para procedimientos y funciones de tipo hollow:
-nombre(parametro,...)
+
+		nombre(parametro,...)
 
 Para funciones:
-var = nombre(parametro,...)
+
+		var = nombre(parametro,...)
 
 
+###Manejo de Memoria
+Para el manejo de memoria se tienen las palabras reservadas **born**, solicita memoria, y **puff**, libera memoria.
 
-# Manejo de Memoria
-born
-puff
+##Estructura de un programa
+La estructura de un programa es de la siguiente forma:
 
-# Definición de Subrutinas
-El lenguaje diferencia entre funciones y procedimientos. Las funciones solo reciben parametros por valor y devuelven un "objeto" mientras que los procedimientos pueden no devolver nada y reciben parametros por valor y por referencia
+		<Declaración de función>
+		<Declaración de procedimiento>
+		<Declaración de función>
+		...
 
-las funciones solo usan parametros por valor con return obligatorio
-func foo(int i, int j) -> int {
-	return i
-}
+		program {
+			...
+		}
 
-los procedimientos reciben parametros de los dos tipos
-proc bar(ref: int i, ref: int j) -> void {
+Ejemplo:
 
-}
+		func fib (int n) -> int {
+			if n < 0 {
+				write "lástima"
+			} elif (n == 0) \/ ( n == 1) {
+				return 1
+			}
+			return fib(n-1) + fib(n-2)
+		}
 
-
-condicional
-Aqui falta decidir si siempre tendremos un else cuando hay elseif
-
-if True {
-
-}
-
-if True {
-
-} elif False {
-
-} else {
-
-}
-
-instruccion if exp
-
-Secuenciacion
-se toma el salto de linea como separador de instrucciones
-
-Iteracion
-while True {
-
-}
-nos gustaria implementer el break y continue
-
-for i to 5 {
-
-}
-
-for i to 0 step -1 {
-
-}
-
-for i in [1..5] {
-
-}
-
-Asignacion
-=
-
-Literales
-
-null
-True
-False
-
-Tipos
-hollow
-int
-char
-float
-
-Variables
-pueden llevar por nombre cualquier cadena que comience con caracter alfabetico y el resto caracteres alfanumericos o el caracter piso
-
-Estructuras
-con la palabra reservada struct
-struct Libro {
-
-}
+		program {
+			int f
+			f = fib(10)
+		}
 
 
-Operadores aritmeticos tienen mas precedencia que los que los relacionales
-+ -
-* / %
-- unario
+##Comentarios
+En Jaxmin los comentarios tienen dos formas:
 
-Operadores relacionales tienen mas precedencia que los operadores logicos
-< <= >= > == !=
+En línea:
 
+		# Esto es un comentario
 
-Operadores Lógicos
-/\
-\/
-~
+En bloque:
 
-
-Comentarios
-#
-#>
-
-<#
-
-
-    fib (int n) -> int {
-        if n < 0 {
-            write "lástima"
-        } elif (n == 0) \/ ( n == 1) {
-             return 1
-        }
-        return fib(n-1) + fib(n-2)
-    }
-
-    program {
-    	write "Dame un número: "
-    	int i
-    	read i
-    	write "Toma su fibonacci: ", fib(i)
-
-    }
+	#>
+		Esto sigue siendo un comentario
+	<#
