@@ -1,13 +1,21 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h> 
-#d
+
 %}
+
+%option yylineno
+%option noyywrap
+
+
+ID			[:alpha:][[:alnum:]_]*
+NUMBER 		[+\-][:digit:]+
+FLOAT  		[+\-][:digit:]+\.[:digit:]+
 
 
 %%
 
+
+[ \t]+   			/* Nada */
+\n 					return NL;
 bool				return BOOL;
 born				return BORN;
 break				return BREAK;
@@ -37,13 +45,38 @@ while				return WHILE;
 write				return WRITE;
 
 
+<=		return
+>=		return
+==		return
+!=		return
++=		return
+*=		return
+/=		return
+-=		return
+/\		return
+\/		return
+~		return
+->		return
+#.*\n   /* Nada */
+#>		return
+<#		return
+>		return
+[		return
+]		return
+{		return
+}		return
+(		return
+)		return
+\.		return
+=		return
++		return
+-		return
+*		return
+/		return
+%		return
+-		return
+<		return
 
-
-
-[ \t\n]         ;
-[0-9]+\.[0-9]+  { cout << "Found a floating-point number:" << yytext << endl; }
-[0-9]+          { cout << "Found an integer:" << yytext << endl; }
-[a-zA-Z0-9]+    { cout << "Found a string: " << yytext << endl; }
-
+.     	return
 
 %%
