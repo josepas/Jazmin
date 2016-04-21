@@ -1,5 +1,7 @@
 %{
-
+#include <stdio.h>
+#include <limits.h>
+#include <bsd/stdlib.h>
 %}
 
 %option yylineno
@@ -7,8 +9,8 @@
 
 
 ID			[:alpha:][[:alnum:]_]*
-NUMBER 		[+\-][:digit:]+
-FLOAT  		[+\-][:digit:]+\.[:digit:]+
+NUMBER 		[+\-]?[:digit:]+
+FLOAT  		[+\-]?[:digit:]+\.[:digit:]+
 
 
 %%
@@ -80,3 +82,8 @@ write				return WRITE;
 .     	return
 
 %%
+
+
+%{
+
+%}
