@@ -8,13 +8,13 @@ Jaxmin es un lenguaje de programación inspirado en C.
 Conjunto de palabras reservadas:
 
 		bool born break char confederation elif else False float for func
-		hollow if int next Null proc puff read ref return step struct to
-		True while write
+		hollow if int next Null proc program puff read ref return step
+		struct to True while write
 
 Conjunto de símbolos usados por Jaxmin:
 
 		[ ] { } ( ) . = + - * / % - < <= >= >
-		== != += *= /= -= /\ \/ ~ -> # #> <#
+		== != += *= /= -= %= /\ \/ ~ -> # #> <#
 
 
 ## Identificadores
@@ -42,7 +42,10 @@ Representa numeros reales utilizacon punto flotante de 32 bits. El separador ent
 Representa un caracter.
 
 ### string
-Representa una cadena de caracteres.
+Representa una cadena de caracteres que tendra como ultimo caracter '\\0'.
+
+### pointer
+Representa la dirección de memoria donde se encuantran guardadas constantes o variables.
 
 ### Estructuras anidadas
 
@@ -67,7 +70,7 @@ Estructura definida por el usuario que contiene una cantidad arbitraria de datos
 El uso de esta estructura queda por definirse
 
 ### arreglos
-Son unidimensionales con indices numéricos comenzando en 0. para acceder al elemento i de un arreglo se usa:
+Pueden ser multidimensionales con indices numéricos comenzando en 0. para acceder al elemento i de un arreglo se usa:
 
 		foo[i]
 
@@ -86,16 +89,17 @@ Las expresiones pueden ser
 * Expresiones relacionales
 
 ### Expresiones aritméticas
-Estan formadas por valores numéricos (int y float) y operadores convencionales de aritmética. La tabla de precedencia es también la convencional:
+Estan formadas por valores numéricos (int y float) y operadores convencionales de aritmética.
 
-*    **+**  Operador para la suma
-*    **-**  Operador para la resta
-*    **\***  Operador para la multiplicacion
-*    **/**  Operador para la división
-*    **-** Negativo
+*    **+**  Operador para la suma.
+*    **-**  Operador para la resta.
+*    **\***  Operador para la multiplicacion.
+*    **/**  Operador para la división.
+*	  **//** Operador para la división entera.
+*    **-** Negativo.
 
 ### Expresiones booleanas
-Estan formadas por valores booleanos y operadores lógicos. La tabla de precedencia es la convencional:
+Estan formadas por valores booleanos y operadores lógicos.
 
 *    **\\/**  Disyunción lógica
 *    **/\\** Conjunción lógica
@@ -114,10 +118,30 @@ Booleana con booleana tiene los siguientes operadores:
 
 Aritmética con aritmética tiene los siguientes operadores:
 
+*    **==** Igualdad
+*    **!=** Desigualdad
 *    **>**  Mayor que
 *    **>=** Mayor o igual que
 *    **<**  Menor que
 *    **<=** Menor o igual que
+
+
+### Precedencia
+Los operadores presentan la siguiente precedencia, de mayor a menor:
+
+*		**- (negativo), ~**
+*		**\*, /, //, %**
+*		**+, -**
+*		**>, >=. <, <=**
+*		**==, !=**
+*		**/\\**
+*		**\\/**
+
+
+###Asociatividad
+Todos los operadores aritméticos y los operadores booleanos (**/\\, \\/, ~, ==, != **)
+son asociativos a la izquierda. Los otros operadores booleanos (**>, >=, <, <=**)
+no poseen asociatividad.
 
 
 ##Entrada y salida
@@ -138,9 +162,14 @@ El formato para la declaración de variables es el siguiente:
 		tipo variable
 		tipo variable = expresion
 
+Declarar apuntadores es de la siguiente manera:
+
+		tipo * variable
+
 Para variables de tipo arreglo se usa el siguiente formato:
 
 		tipo variable[tamaño]
+		tipo variable[dimension1][dimension2]
 
 Las variables de tipo primitivo tendran valores por defecto si no son inicializadas:
 
@@ -164,21 +193,12 @@ Estos no retornan valor alguno.
 
 ###Funciones
 Las funciones solo pueden recibir argumentos por valor. Estas deberan
-retornar un valor acorde a su tipo excepto si es hollow, en dicho caso no
-retornara valor alguno. Toda función debe tener un return.
+retornar un valor acorde a su tipo. Toda función debe tener un return.
 
 		func foo(int i, char c) -> int {
 			...
 			return i
 		}
-
-		func bar(float b) {
-			...
-			return
-		}
-
-Si no se tiene tipo de retorno especificado se sobreentiende que el tipo
-de retorno es hollow.
 
 
 
@@ -190,9 +210,25 @@ Las asignaciones tienen el siguiente formato:
 
 Ejecutar una asignación tiene el efecto de evaluar la expresión de la derecha y guardar el resultado en la variable de la izquierda. La variable tiene que estar declarada previamente o la asignación ser parte de la declaración.
 
+Adicionalmente tenemos los operadores de asignación:
+
+*		**+=**
+*		**-=**
+*		**\*=**
+*		**/=**
+*		**%=**
+
+Ejemplo:
+
+		var += cosa
+
+Es equivalente a
+
+		var = var + cosa
+
 
 ###Selección
-Esta instrucción utilizara la palabra reservada **if** y tendra el siguiente formato:
+Esta instrucción al momento de evaluar la condición tendra cortocircuito. Para ella se utilizara la palabra reservada **if** y tendra el siguiente formato:
 
 		if condición {
 			instrucción
@@ -228,6 +264,10 @@ Para la iteración determinada tenemos dos formas:
 			...
 		}
 
+Se iterara desde el valor del limite inferior hasta (inclusive) el limite superior.
+Los parametros del limite de la iteración podran ser variables, pero estas no
+podran ser modificadas dentro de ella.
+
 Observaciones:
 
 *		step solo podra ser un número entero.
@@ -247,6 +287,10 @@ Para funciones:
 
 ###Manejo de Memoria
 Para el manejo de memoria se tienen las palabras reservadas **born**, solicita memoria, y **puff**, libera memoria.
+
+		nuevo = born int
+		puff nuevo
+
 
 ##Estructura de un programa
 La estructura de un programa es de la siguiente forma:
@@ -277,6 +321,14 @@ Ejemplo:
 		}
 
 
+##Funciones predefinidas
+Para esta versión de Jaxmin se cuentan con las siguientes funciones predefinidas
+en alcance global:
+
+		func itof(int i) -> float 		# Convierte un int en float
+		func ftoi(float f) -> int 		# Convierte un float en int
+
+
 ##Comentarios
 En Jaxmin los comentarios tienen dos formas:
 
@@ -286,6 +338,6 @@ En línea:
 
 En bloque:
 
-	#>
-		Esto sigue siendo un comentario
-	<#
+		#>
+			Esto sigue siendo un comentario
+		<#
