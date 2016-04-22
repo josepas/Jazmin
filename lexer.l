@@ -8,9 +8,9 @@
 %option noyywrap
 
 
-ID			[:alpha:][[:alnum:]_]*
-NUMBER 		[+\-]?[:digit:]+
-FLOAT  		[+\-]?[:digit:]+\.[:digit:]+
+ID			[[:alpha:]][[:alnum:]_]*
+NUMBER 		[+\-]?[[:digit:]]+
+FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 
 
 %%
@@ -47,43 +47,53 @@ while				return WHILE;
 write				return WRITE;
 
 
-<=		return
->=		return
-==		return
-!=		return
-+=		return
-*=		return
-/=		return
--=		return
-/\		return
-\/		return
-~		return
-->		return
+<=		return LTOE;
+>=		return GTOE;
+==		return EQUAL;
+!=		return UNEQUAL;
++=		return PLUS_ASSIGN;
+-=		return MINUS_ASSIGN;
+*=    return MULT_ASSIGN;
+/=    return DIV_ASSIGN;
+/\		return AND;
+\/		return OR;
+->    return ARROW;
 #.*\n   /* Nada */
-#>		return
-<#		return
->		return
-[		return
-]		return
-{		return
-}		return
-(		return
-)		return
-\.		return
-=		return
-+		return
--		return
-*		return
-/		return
-%		return
--		return
-<		return
+/*#>    return */
+/*<#    return*/
+~		return '~';
+>		return '>';
+[     return '[';
+]		return ']';
+{		return '{';
+}		return '}';
+(		return '(';
+)		return ')';
+\.		return '.';
+=		return '=';
++		return '+';
+-		return '-';
+*		return '*';
+/		return '/';
+%		return '%';
+-		return '-';
+<		return '<';
 
-.     	return
+.     printf("Eres estupido??");
 
 %%
 
+int main(int argc, char const *argv[])
+{
+   ++argv, --argc;  /* skip over program name */
+   if ( argc > 0 )
+     yyin = fopen( argv[0], "r" );
+   else
+     yyin = stdin;
 
-%{
+  while(token = yylex()) {
+      printf("%d\n", token);
+  }
 
-%}
+   return 0;
+}
