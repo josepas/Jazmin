@@ -1,29 +1,3 @@
-%{
-extern "C" int yylex();
-extern "C" int yyparse();
-extern "C" FILE *yyin;
-
-void yyerror(const char *s);
-%}
-
-
-
-born puff 
-func return proc 
-if elif else 
-for to step while 
-int char bool float
-struct
-[ ]
-{ }
-( )
-=
-+ -
-* / %
--
-< <= >= > == !=
-/\ \/ ~
-# #> <#
 
 statement
 	: selection
@@ -55,7 +29,7 @@ statement_list
 	;
 
 iteration
-	: while expr statement 
+	: WHILE expr statement 
 	;
 
 
