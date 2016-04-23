@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <bsd/stdlib.h>
+#include "grammar.tab.h"
 %}
 
 %option yylineno
@@ -25,27 +26,28 @@ FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 "confederation"		return CONFEDERATION;
 "elif"				return ELIF;
 "else"				return ELSE;
-"False"				return FALSE;
+"False"				return JFALSE;
 "float"				return FLOAT;
-"for"					return FOR;
+"for"				return FOR;		
 "func"				return FUNC;
-"hollow"				return HOLLOW;
-"if"					return IF;
-"int"					return INT;
+"hollow"			return HOLLOW;
+"if"				return IF;
+"int"				return INT;
 "next"				return NEXT;
-"Null"				return NULL;
+"null"				return JNULL;
 "proc"				return PROC;
 "puff"				return PUFF;
 "read"				return READ;
-"ref"					return REF;
-"return"				return RETURN;
+"ref"				return REF;
+"return"			return RETURN;
 "step"				return STEP;
-"struct"				return STRUCT;
-"to"					return TO;
-"True"				return TRUE;
+"struct"			return STRUCT;
+"to"				return TO;
+"True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
- 
+{ID}				printf("ulaa\n");
+
 "<="		return LTOE;
 ">="		return GTOE;
 "=="		return EQUAL;
@@ -60,7 +62,7 @@ FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 
 "~"		return '~';
 ">"		return '>';
-"["     	return '[';
+"["     return '[';
 "]"		return ']';
 "{"		return '{';
 "}"		return '}';
@@ -75,7 +77,7 @@ FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 "%"		return '%';
 "<"		return '<';
 
-.     printf("Eres estupido??");
+.    	printf("Eres estupido??");
 
 %%
 
@@ -87,6 +89,7 @@ int main(int argc, char const *argv[])
    else
      yyin = stdin;
 
+ int token;
   while(token = yylex()) {
       printf("%d\n", token);
   }
