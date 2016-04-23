@@ -5,6 +5,16 @@
  }
 %}
 
+%union {
+	int ival;
+	float fval;
+	char *idval;
+}
+
+
+%token 	<ival> 	NUMBER
+%token 	<fval> 	REAL
+%token 	<idval> ID
 %token NL  BOOL  BORN  BREAK  CHAR  CONFEDERATION  ELIF  ELSE
 %token JFALSE  FLOAT  FOR FUNC  HOLLOW  IF  INT  NEXT  JNULL  PROC  
 %token PUFF  READ  REF  RETURN  STEP  STRUCT TO  JTRUE  WHILE  WRITE  

@@ -45,51 +45,64 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    NL = 258,
-    BOOL = 259,
-    BORN = 260,
-    BREAK = 261,
-    CHAR = 262,
-    CONFEDERATION = 263,
-    ELIF = 264,
-    ELSE = 265,
-    JFALSE = 266,
-    FLOAT = 267,
-    FOR = 268,
-    FUNC = 269,
-    HOLLOW = 270,
-    IF = 271,
-    INT = 272,
-    NEXT = 273,
-    JNULL = 274,
-    PROC = 275,
-    PUFF = 276,
-    READ = 277,
-    REF = 278,
-    RETURN = 279,
-    STEP = 280,
-    STRUCT = 281,
-    TO = 282,
-    JTRUE = 283,
-    WHILE = 284,
-    WRITE = 285,
-    LTOE = 286,
-    GTOE = 287,
-    EQUAL = 288,
-    UNEQUAL = 289,
-    PLUS_ASSIGN = 290,
-    MINUS_ASSIGN = 291,
-    MULT_ASSIGN = 292,
-    DIV_ASSIGN = 293,
-    AND = 294,
-    OR = 295,
-    ARROW = 296
+    NUMBER = 258,
+    REAL = 259,
+    ID = 260,
+    NL = 261,
+    BOOL = 262,
+    BORN = 263,
+    BREAK = 264,
+    CHAR = 265,
+    CONFEDERATION = 266,
+    ELIF = 267,
+    ELSE = 268,
+    JFALSE = 269,
+    FLOAT = 270,
+    FOR = 271,
+    FUNC = 272,
+    HOLLOW = 273,
+    IF = 274,
+    INT = 275,
+    NEXT = 276,
+    JNULL = 277,
+    PROC = 278,
+    PUFF = 279,
+    READ = 280,
+    REF = 281,
+    RETURN = 282,
+    STEP = 283,
+    STRUCT = 284,
+    TO = 285,
+    JTRUE = 286,
+    WHILE = 287,
+    WRITE = 288,
+    LTOE = 289,
+    GTOE = 290,
+    EQUAL = 291,
+    UNEQUAL = 292,
+    PLUS_ASSIGN = 293,
+    MINUS_ASSIGN = 294,
+    MULT_ASSIGN = 295,
+    DIV_ASSIGN = 296,
+    AND = 297,
+    OR = 298,
+    ARROW = 299
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+typedef union YYSTYPE YYSTYPE;
+union YYSTYPE
+{
+#line 8 "grammar.y" /* yacc.c:1909  */
+
+	int ival;
+	float fval;
+	char *idval;
+
+#line 105 "grammar.tab.h" /* yacc.c:1909  */
+};
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

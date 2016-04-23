@@ -3,6 +3,9 @@
 #include <limits.h>
 #include <bsd/stdlib.h>
 #include "grammar.tab.h"
+
+int yycolumn = 1;
+int comment_level = 0;
 %}
 
 %option yylineno
@@ -10,15 +13,16 @@
 
 
 ID			[[:alpha:]][[:alnum:]_]*
-NUMBER 		[+\-]?[[:digit:]]+
-FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
+NUMBER 		[+-]?[[:digit:]]+
+FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
+%x COMMENT
 
 %%
 
 
 [ \t]+   			/* Nada */
-\n 					return NL; printf("Linea nuevaaa!\n");
+\n 					yycolumn = 1; return NL;
 "bool"				return BOOL;
 "born"				return BORN;
 "break"				return BREAK;
@@ -46,7 +50,10 @@ FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 "True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
-{ID}				printf("ulaa\n");
+{ID}				printf("Identificador\n"); return ID;
+{NUMBER} 			printf("Numero\n"); return NUMBER;
+{FLOAT}				printf("Flotante\n"); return REAL;
+
 
 "<="		return LTOE;
 ">="		return GTOE;
@@ -77,22 +84,35 @@ FLOAT  		[+\-]?[[:digit:]]+\.[[:digit:]]+
 "%"		return '%';
 "<"		return '<';
 
-.    	printf("Eres estupido??");
+"#>"    comment_level++; BEGIN(COMMENT);
+
+<COMMENT>[^#<\n]*  	/* commented stuff */
+<COMMENT>\n 		yycolumn = 1;
+<COMMENT>#+[^#/>]   /* wild # that dont open comments I dont think this works*/
+<COMMENT>#>			comment_level++;
+<COMMENT><*#		comment_level--; (comment_level - 1 == 0) ? BEGIN(INITIAL) : comment_level--;
+
+#.*\n 	/* one line comment */
+
+.		printf("Caracter Inesperado!\n");
+
 
 %%
 
-int main(int argc, char const *argv[])
-{
-   ++argv, --argc;  /* skip over program name */
-   if ( argc > 0 )
-     yyin = fopen( argv[0], "r" );
-   else
-     yyin = stdin;
+int main(int argc, char const *argv[]) {
+	++argv, --argc;  /* skip over program name */
+	if ( argc > 0 )
+	 	yyin = fopen( argv[0], "r" );
+	else
+		yyin = stdin;
 
- int token;
-  while(token = yylex()) {
-      printf("%d\n", token);
-  }
+	int token;
+	char *error;
+		
+	while(token = yylex()) {
+		printf("%s\n", yytext);
+	}
 
    return 0;
+
 }
