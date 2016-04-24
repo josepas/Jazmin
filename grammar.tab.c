@@ -190,7 +190,11 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
+<<<<<<< HEAD
 #line 194 "grammar.tab.c" /* yacc.c:358  */
+=======
+#line 193 "grammar.tab.c" /* yacc.c:358  */
+>>>>>>> 2f1cd8ad3a84dc9ca14e054fab04f8ef28a4550e
 
 #ifdef short
 # undef short
@@ -1388,7 +1392,11 @@ yyreduce:
   switch (yyn)
     {
       
+<<<<<<< HEAD
 #line 1392 "grammar.tab.c" /* yacc.c:1646  */
+=======
+#line 1391 "grammar.tab.c" /* yacc.c:1646  */
+>>>>>>> 2f1cd8ad3a84dc9ca14e054fab04f8ef28a4550e
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

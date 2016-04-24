@@ -4,7 +4,6 @@
 #include <bsd/stdlib.h>
 #include "grammar.tab.h"
 
-
 int yycolumn = 1;
 #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
     yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng - 1; \
@@ -96,7 +95,6 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 <COMMENT>#+/#>	   /* wild # that dont open comments I dont think this works*/
 <COMMENT>#>			comment_level++;
 <COMMENT><*#		if (!--comment_level) { BEGIN(INITIAL); }
-
 
 .		printf("Caracter Inesperado!\n");
 
