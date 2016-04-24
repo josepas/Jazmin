@@ -4,7 +4,13 @@
 #include <bsd/stdlib.h>
 #include "grammar.tab.h"
 
+
 int yycolumn = 1;
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+    yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng - 1; \
+    yycolumn += yyleng; \
+    yylval.str = strdup(yytext);
+
 int comment_level = 0;
 %}
 
@@ -88,9 +94,9 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
 <COMMENT>[^#<\n]*  	/* commented stuff */
 <COMMENT>\n 		yycolumn = 1;
-<COMMENT>#+[^#/>]   /* wild # that dont open comments I dont think this works*/
+<COMMENT>#+[^#>]   /* wild # that dont open comments I dont think this works*/
 <COMMENT>#>			comment_level++;
-<COMMENT><*#		comment_level--; (comment_level - 1 == 0) ? BEGIN(INITIAL) : comment_level--;
+<COMMENT><*#		if (--comment_level == 0) { BEGIN(INITIAL); }
 
 #.*\n 	/* one line comment */
 
@@ -110,7 +116,7 @@ int main(int argc, char const *argv[]) {
 	char *error;
 		
 	while(token = yylex()) {
-		printf("%s\n", yytext);
+		printf("%s %d %d\n", yytext, yyleng, yylineno);
 	}
 
    return 0;
