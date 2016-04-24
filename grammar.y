@@ -4,7 +4,7 @@
    fprintf (stderr, "%s\n", s);
  }
 %}
-
+%locations
 %union {
 	int ival;
 	float fval;
