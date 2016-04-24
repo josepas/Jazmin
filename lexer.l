@@ -56,10 +56,9 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 "True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
-{ID}				printf("Identificador\n"); return ID;
-{NUMBER} 			printf("Numero\n"); return NUMBER;
-{FLOAT}				printf("Flotante\n"); return REAL;
-
+{ID}				return ID;
+{NUMBER} 			return NUMBER;
+{FLOAT}				return REAL;
 
 "<="		return LTOE;
 ">="		return GTOE;
@@ -90,15 +89,14 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 "%"		return '%';
 "<"		return '<';
 
-"#>"    comment_level++; BEGIN(COMMENT);
+"#>"    {comment_level++; printf("%d----", comment_level); BEGIN(COMMENT); }
 
 <COMMENT>[^#<\n]*  	/* commented stuff */
-<COMMENT>\n 		yycolumn = 1;
-<COMMENT>#+[^#>]   /* wild # that dont open comments I dont think this works*/
+<COMMENT>\n 		yycolumn = 1; printf("dentro del mundo paralelo %d\n", comment_level);
+<COMMENT>#+/#>	   /* wild # that dont open comments I dont think this works*/
 <COMMENT>#>			comment_level++;
-<COMMENT><*#		if (--comment_level == 0) { BEGIN(INITIAL); }
+<COMMENT><*#		if (!--comment_level) { BEGIN(INITIAL); }
 
-#.*\n 	/* one line comment */
 
 .		printf("Caracter Inesperado!\n");
 
@@ -116,8 +114,12 @@ int main(int argc, char const *argv[]) {
 	char *error;
 		
 	while(token = yylex()) {
-		printf("%s %d %d\n", yytext, yyleng, yylineno);
+		printf("Token: %s\n"
+				"Longitud: %d\n" 
+				"Fila: %d\n"
+				"Columna: %d\n", yytext, yyleng, yylineno, yylloc.first_column);
 	}
+
 
    return 0;
 
