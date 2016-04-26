@@ -21,7 +21,6 @@ ID			[[:alpha:]][[:alnum:]_]*
 NUMBER 		[+-]?[[:digit:]]+
 FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
-
 %x COMMENT
 
 %%
@@ -107,9 +106,9 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 <COMMENT><+#		if (!--comment_level) { BEGIN(INITIAL); }
 
 
-.		printf("Caracter Inesperado!\n");
 
-#.*\n  
+.			printf("Caracter Inesperado\n");
+
 
 
 
@@ -130,27 +129,24 @@ int main(int argc, char const *argv[]) {
 		switch (token) {
 			case (ID) : {
 				printf("Token: ID\n"
-						"Lexema: %s\n" 
-						"Fila: %d\n"
-						"Columna: %d\n", yytext, yylineno, yylloc.first_column);
+						"Lexema: %s\n", yytext);
 				break;
 			} 
 			case (NUMBER) : {
 				printf("Token: NUMBER\n"
-						"Valor: %d\n" 
-						"Fila: %d\n"
-						"Columna: %d\n", yylval.ival, yylineno, yylloc.first_column);
+						"Valor: %d\n", yylval.ival);
 				break;
 			}
 			case (REAL) : {
-				printf("Token: FLOAT\n"
-						"Valor: %f\n" 
-						"Fila: %d\n"
-						"Columna: %d\n", yylval.fval, yylineno, yylloc.first_column);
+				printf("Token: REAL\n"
+						"Valor: %f\n", yylval.fval);	
 				break;
-			}
+			} 
+			default : printf("Token: %s\n", yytext);
 		}
-
+		printf("Fila: %d\n"
+			"Columna: %d\n", yylineno, yylloc.first_column);
+	
 
 	}
    return 0;
