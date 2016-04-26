@@ -160,8 +160,9 @@ union YYSTYPE
 	float fval;
 	char *idval;
 	char *str;
+	char character;
 
-#line 165 "grammar.tab.c" /* yacc.c:355  */
+#line 166 "grammar.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -190,11 +191,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-<<<<<<< HEAD
-#line 194 "grammar.tab.c" /* yacc.c:358  */
-=======
-#line 193 "grammar.tab.c" /* yacc.c:358  */
->>>>>>> 2f1cd8ad3a84dc9ca14e054fab04f8ef28a4550e
+#line 195 "grammar.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -497,10 +494,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    30,    30,    31,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    42,    43,    44,    45,    46,    47,
-      48,    49,    50,    51,    52,    53,    54,    55,    56,    57,
-      58,    59,    60,    61,    62,    63,    64,    65
+       0,    31,    31,    32,    33,    34,    35,    36,    37,    38,
+      39,    40,    41,    42,    43,    44,    45,    46,    47,    48,
+      49,    50,    51,    52,    53,    54,    55,    56,    57,    58,
+      59,    60,    61,    62,    63,    64,    65,    66
 };
 #endif
 
@@ -1392,11 +1389,7 @@ yyreduce:
   switch (yyn)
     {
       
-<<<<<<< HEAD
-#line 1392 "grammar.tab.c" /* yacc.c:1646  */
-=======
-#line 1391 "grammar.tab.c" /* yacc.c:1646  */
->>>>>>> 2f1cd8ad3a84dc9ca14e054fab04f8ef28a4550e
+#line 1393 "grammar.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1631,6 +1624,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 68 "grammar.y" /* yacc.c:1906  */
+#line 69 "grammar.y" /* yacc.c:1906  */
 
 

@@ -10,6 +10,7 @@
 	float fval;
 	char *idval;
 	char *str;
+	char character;
 }
 
 

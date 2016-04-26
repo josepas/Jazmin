@@ -1,7 +1,7 @@
 LEX=flex
 
 scanner: lexer parser
-	gcc lex.yy.c grammar.tab.c -o scanner
+	gcc lex.yy.c grammar.tab.c -lbsd -o scanner
 
 lexer:
 	flex lexer.l

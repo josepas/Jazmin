@@ -21,6 +21,7 @@ ID			[[:alpha:]][[:alnum:]_]*
 NUMBER 		[+-]?[[:digit:]]+
 FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
+
 %x COMMENT
 
 %%
@@ -55,9 +56,19 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 "True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
-{ID}				return ID;
-{NUMBER} 			return NUMBER;
-{FLOAT}				return REAL;
+{ID} 				return ID;
+
+{NUMBER} 			{
+						const char *error;
+						yylval.ival = (int) strtonum(yytext, INT_MIN, INT_MAX, &error);
+						return NUMBER;
+					}
+
+{FLOAT}				{
+						yylval.fval = strtof(yytext, NULL);
+						return REAL;
+					}
+
 
 "<="		return LTOE;
 ">="		return GTOE;
@@ -92,11 +103,14 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
 <COMMENT>[^#<\n]*  	/* commented stuff */
 <COMMENT>\n 		yycolumn = 1; printf("dentro del mundo paralelo %d\n", comment_level);
-<COMMENT>#+/#>	   /* wild # that dont open comments I dont think this works*/
-<COMMENT>#>			comment_level++;
-<COMMENT><*#		if (!--comment_level) { BEGIN(INITIAL); }
+<COMMENT>#+>	   	comment_level++;
+<COMMENT><+#		if (!--comment_level) { BEGIN(INITIAL); }
+
 
 .		printf("Caracter Inesperado!\n");
+
+#.*\n  
+
 
 
 %%
@@ -112,13 +126,33 @@ int main(int argc, char const *argv[]) {
 	char *error;
 		
 	while(token = yylex()) {
-		printf("Token: %s\n"
-				"Longitud: %d\n" 
-				"Fila: %d\n"
-				"Columna: %d\n", yytext, yyleng, yylineno, yylloc.first_column);
+
+		switch (token) {
+			case (ID) : {
+				printf("Token: ID\n"
+						"Lexema: %s\n" 
+						"Fila: %d\n"
+						"Columna: %d\n", yytext, yylineno, yylloc.first_column);
+				break;
+			} 
+			case (NUMBER) : {
+				printf("Token: NUMBER\n"
+						"Valor: %d\n" 
+						"Fila: %d\n"
+						"Columna: %d\n", yylval.ival, yylineno, yylloc.first_column);
+				break;
+			}
+			case (REAL) : {
+				printf("Token: FLOAT\n"
+						"Valor: %f\n" 
+						"Fila: %d\n"
+						"Columna: %d\n", yylval.fval, yylineno, yylloc.first_column);
+				break;
+			}
+		}
+
+
 	}
-
-
    return 0;
 
 }
