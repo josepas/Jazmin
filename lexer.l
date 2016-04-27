@@ -246,7 +246,7 @@ int main(int argc, char const *argv[]) {
         }
 	}
 
-    printf("Se encontraron %d errores.\n", error_num);
+    fprintf(stderr, "Se encontraron %d errores.\n", error_num);
     return 0;
 
 }
