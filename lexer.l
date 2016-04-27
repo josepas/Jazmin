@@ -11,6 +11,9 @@ int yycolumn = 1;
     yylval.str = strdup(yytext);
 
 int comment_level = 0;
+
+const char * tokens[] = {"NUMBER", "REAL", "ID", "CHARACTER", "STRING", "NL", "BOOL", "BORN", "BREAK", "CHAR", "CONFEDERATION", "ELIF", "ELSE", "JFALSE", "FLOAT", "FOR", "FUNC", "HOLLOW", "IF", "INT", "NEXT", "JNULL", "PROC", "PUFF", "READ", "REF", "RETURN", "STEP", "STRUCT", "TO", "JTRUE", "WHILE", "WRITE", "LTOE", "GTOE", "EQUAL", "UNEQUAL", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN", "DIV_ASSIGN", "AND", "OR", "ARROW" };
+
 %}
 
 %option yylineno
@@ -20,12 +23,18 @@ int comment_level = 0;
 ID			[[:alpha:]][[:alnum:]_]*
 NUMBER 		[+-]?[[:digit:]]+
 FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
+STRING      \"([^"\n]|\\\")*\"
+BAD_STRING      \"([^"\n]|\\\")*\n
+CHARACTER        '(\\0|\\a|\\t|\\n|[[:print:]])'
+BAD_CHAR1    '[^'\n]*\n
+BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
+
+
+
 
 %x COMMENT
 
 %%
-
-
 [ \t]+   			/* Nada */
 \n 					yycolumn = 1; return NL;
 "bool"				return BOOL;
@@ -37,7 +46,7 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 "else"				return ELSE;
 "False"				return JFALSE;
 "float"				return FLOAT;
-"for"				return FOR;		
+"for"				return FOR;
 "func"				return FUNC;
 "hollow"			return HOLLOW;
 "if"				return IF;
@@ -68,6 +77,22 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 						return REAL;
 					}
 
+{CHARACTER}         {
+                        if (yyleng == 3) {
+                            yylval.character[0] = '\0';
+                            yylval.character[1] = yytext[1];
+                        }
+                        else if (yyleng == 4) {
+                            yylval.character[0] = '\\';
+                            yylval.character[1] = yytext[2];
+                        }
+                        return CHARACTER;
+                    }
+
+{STRING}            {
+                        // El valor ya esta asignado en el YY_USER_ACTION
+                        return STRING;
+                    }
 
 "<="		return LTOE;
 ">="		return GTOE;
@@ -105,6 +130,7 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 <COMMENT>#+>	   	comment_level++;
 <COMMENT><+#		if (!--comment_level) { BEGIN(INITIAL); }
 
+#([^>\n].*\n|\n)   yycolumn = 1;
 
 
 .			printf("Caracter Inesperado\n");
@@ -114,40 +140,55 @@ FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+
 
 %%
 
-int main(int argc, char const *argv[]) {
-	++argv, --argc;  /* skip over program name */
-	if ( argc > 0 )
-	 	yyin = fopen( argv[0], "r" );
-	else
-		yyin = stdin;
-
-	int token;
-	char *error;
-		
-	while(token = yylex()) {
-
-		switch (token) {
-			case (ID) : {
-				printf("Token: ID\n"
-						"Lexema: %s\n", yytext);
-				break;
-			} 
-			case (NUMBER) : {
-				printf("Token: NUMBER\n"
-						"Valor: %d\n", yylval.ival);
-				break;
-			}
-			case (REAL) : {
-				printf("Token: REAL\n"
-						"Valor: %f\n", yylval.fval);	
-				break;
-			} 
-			default : printf("Token: %s\n", yytext);
+void print_token(int token) {
+	switch (token) {
+		case (ID) : {
+			printf("Token: ID\n"
+					"Lexema: %s\n", yytext);
+			break;
 		}
-		printf("Fila: %d\n"
-			"Columna: %d\n", yylineno, yylloc.first_column);
-	
+		case (NUMBER) : {
+			printf("Token: NUMBER\n"
+					"Valor: %d\n", yylval.ival);
+			break;
+		}
+        case (REAL) : {
+            printf("Token: REAL\n"
+                    "Valor: %f\n", yylval.fval);
+            break;
+        }
+        case (CHARACTER) : {
+            printf("Token: CHARACTER\n"
+                    "Valor: %c%c\n", yylval.character[0],yylval.character[1]);
+            break;
+        }
+        case (STRING) : {
+            printf("Token: STRING\n"
+                    "Valor: %s\n", yylval.str);
+            break;
+        }
+        case (NL) : {
+            printf("Token: NL\n");
+            break;
+        }
+		default : printf("Token: %s\n", tokens[token-258]);
+    }
+	printf("Fila: %d\n"
+		"Columna: %d\n\n", yylineno, yylloc.first_column);
+}
 
+int main(int argc, char const *argv[]) {
+    ++argv, --argc;  /* skip over program name */
+    if ( argc > 0 )
+        yyin = fopen( argv[0], "r" );
+    else
+        yyin = stdin;
+
+    int token;
+    char *error;
+
+    while(token = yylex()) {
+        print_token(token);
 	}
    return 0;
 

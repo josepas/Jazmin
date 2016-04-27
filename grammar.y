@@ -10,25 +10,27 @@
 	float fval;
 	char *idval;
 	char *str;
-	char character;
+	char character[2];
 }
 
 
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
 %token 	<idval> ID
+%token 	<character> CHARACTER
+%token 	<str> STRING
 %token NL  BOOL  BORN  BREAK  CHAR  CONFEDERATION  ELIF  ELSE
-%token JFALSE  FLOAT  FOR FUNC  HOLLOW  IF  INT  NEXT  JNULL  PROC  
-%token PUFF  READ  REF  RETURN  STEP  STRUCT TO  JTRUE  WHILE  WRITE  
-%token LTOE  GTOE  EQUAL  UNEQUAL PLUS_ASSIGN  MINUS_ASSIGN  MULT_ASSIGN  
+%token JFALSE  FLOAT  FOR FUNC  HOLLOW  IF  INT  NEXT  JNULL  PROC
+%token PUFF  READ  REF  RETURN  STEP  STRUCT TO  JTRUE  WHILE  WRITE
+%token LTOE  GTOE  EQUAL  UNEQUAL PLUS_ASSIGN  MINUS_ASSIGN  MULT_ASSIGN
 %token DIV_ASSIGN
-%token AND  OR  
-%token ARROW  
+%token AND  OR
+%token ARROW
 
 %%
 
-jaxmin 
-	: NL                  
+jaxmin
+	: NL
 	| BOOL
 	| BORN
 	| BREAK
@@ -43,7 +45,7 @@ jaxmin
 	| HOLLOW
 	| IF
 	| INT
-	| NEXT 
+	| NEXT
 	| JNULL
 	| PROC PUFF
 	| READ
@@ -63,7 +65,7 @@ jaxmin
 	| DIV_ASSIGN
 	| AND
 	| OR
-	| ARROW  
+	| ARROW
 	;
 
 %%
