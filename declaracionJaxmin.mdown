@@ -20,6 +20,15 @@ Conjunto de símbolos usados por Jaxmin:
 ## Identificadores
 Los identificadores son una cadena de caracteres de cualquier longitud. El primero es una letra en mayúscula o minúscula y el resto pueden ser letras (mayúsculas o minúsculas), dígitos o "_". sirven para dar nombre a variables, subrutinas y estructuras
 
+##Separador de instrucciones
+Para separar las instrucciones se utilizara el *newline* (\\n).
+
+		<instrucción1>
+		<instrucción2>
+		.
+		.
+		.
+
 
 
 ## Tipos de datos
@@ -36,7 +45,11 @@ Representa valores booleanos (True o False).
 Representa números enteros con signo, utilizando 32 bits.
 
 ### float
-Representa numeros reales utilizacon punto flotante de 32 bits. El separador entre la parte entera y la parte decimal es el "."
+Representa numeros reales utilizacon punto flotante de 32 bits. El
+separador entre la parte entera y la parte decimal es el ".". Los flotantes
+podran ser expresados en forma cientifica:
+
+		1.2E-8
 
 ### char
 Representa un caracter.
@@ -60,19 +73,25 @@ La comparacion entre estas estructuras es superficial (por nombre), así como la
 			...
 		}
 
-para acceder a los campos de la estructura se usa el caracter "." luego de alguna estructura válida.
+Para acceder a los campos de la estructura se usa el caracter "." luego de alguna estructura válida.
 
 		bar.campo
 
 ### confederation
 Estructura definida por el usuario que contiene una cantidad arbitraria de datos heterogéneos que comparten el mismo espacio de memoria (el del tipo mas grade). El nombre de la estructura debe ser un identificador con la primera letra en mayúscula.
 
-El uso de esta estructura queda por definirse
+Para acceder a los campos de la estructura se usa el caracter "." luego de alguna estructura válida.
+
+		bar.campo
 
 ### arreglos
 Pueden ser multidimensionales con indices numéricos comenzando en 0. para acceder al elemento i de un arreglo se usa:
 
 		foo[i]
+
+Para los arreglos multidimensionales se accedera de la siguiente manera:
+
+		bar[i][j]
 
 ## Expresiones
 
@@ -177,6 +196,7 @@ Las variables de tipo primitivo tendran valores por defecto si no son inicializa
 *		float = 0.0
 *		bool = False
 *		char = '\\0'
+*		pointer = Null
 
 
 ###Declaración de subrutinas
@@ -187,7 +207,7 @@ Los procedimientos pueden recibir argumentos por valor o por referencia.
 Para diferenciarlos se usa la palabra reservada **ref** seguida de ":".
 Estos no retornan valor alguno.
 
-		proc foo(int i, ref : float j, char c) {
+		proc foo(int i, ref float j, char c) {
 			...
 		}
 
