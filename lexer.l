@@ -23,8 +23,8 @@ const char * tokens[] = {"NUMBER", "REAL", "ID", "CHARACTER", "STRING", "NL", "B
 
 
 ID			[[:alpha:]][[:alnum:]_]*
-NUMBER 		[+-]?[[:digit:]]+
-FLOAT  		[+-]?[[:digit:]]*\.[[:digit:]]+([eE][+-]?[[:digit:]]+)?
+NUMBER 		[[:digit:]]+
+FLOAT  		[[:digit:]]*\.[[:digit:]]+([eE][+-]?[[:digit:]]+)?
 STRING      \"([^"\n]|\\\")*\"
 BAD_STRING      \"([^"\n]|\\\")*\n
 CHARACTER        '(\\0|\\a|\\t|\\n|[[:print:]])'
@@ -38,7 +38,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 %%
 [ \t]+   			/* Nada */
-\n 					yycolumn = 1; return NL;
+\n 					yycolumn = 1; yylloc.first_line--; return NL;
 "bool"				return BOOL;
 "born"				return BORN;
 "break"				return BREAK;
@@ -69,8 +69,9 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 {ID} 				return ID;
 
 {NUMBER} 			{
+                        errno = 0;
 						yylval.ival = (int) strtonum(yytext, INT_MIN, INT_MAX, &error);
-                        if (yylval.ival) {
+                        if (errno == 0) {
     						return NUMBER;
                         }
                         else {
@@ -139,6 +140,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 "("		return '(';
 ")"		return ')';
 "."		return '.';
+","     return ',';
 "="		return '=';
 "+"		return '+';
 "-"		return '-';
@@ -159,10 +161,8 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 .		{
             error = "Caracter inesperado";
-            return -1;
+            return -4;
         }
-
-
 
 
 %%
@@ -224,6 +224,9 @@ void print_error(int errort) {
             fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (overflow)\n\n",
                     yylineno, yylloc.first_column, yytext);
     }
+    else if(errort == -4)
+        fprintf(stderr, "Error:%d:%d:%s (%s)\n\n",
+            yylineno, yylloc.first_column, error, yytext);
 
 }
 
@@ -250,3 +253,4 @@ int main(int argc, char const *argv[]) {
     return 0;
 
 }
+:
