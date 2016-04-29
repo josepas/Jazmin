@@ -38,7 +38,12 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 %%
 [ \t]+   			/* Nada */
-\n+ 					yycolumn = 1; yylloc.first_line--; return NL;
+\n+ 				{
+                        yycolumn = 1;
+                        yylloc.first_line--;
+                        return NL;
+                    }
+
 "bool"				return BOOL;
 "born"				return BORN;
 "break"				return BREAK;
@@ -154,9 +159,13 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 <COMMENT>[^#<\n]*  	/* commented stuff */
 <COMMENT>\n 		yycolumn = 1;
 <COMMENT>#+>	   	comment_level++;
-<COMMENT><+#		if (!--comment_level) { BEGIN(INITIAL); }
+<COMMENT><+#		if (!--comment_level) { BEGIN(INITIAL);}
 
-#([^>\n].*\n|\n)   yycolumn = 1;
+#([^>\n].*\n+|\n+)  {
+                        yycolumn = 1;
+                        yylloc.first_line--;
+                        return NL;
+                    }
 
 
 .		{
@@ -253,4 +262,3 @@ int main(int argc, char const *argv[]) {
     return 0;
 
 }
-:
