@@ -10,13 +10,14 @@
 	float fval;
 	char *idval;
 	char *str;
-	char character;
+	char character[2];
 }
 
 
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
 %token 	<idval> ID
+
 %token NL  
 
 %token BOOL CHAR FLOAT INT HOLLOW
@@ -74,7 +75,6 @@ literal
 	| FALSE
 	| NULL 
 	;
-
-
 %%
+
 
