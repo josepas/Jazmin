@@ -89,12 +89,12 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 {CHARACTER}         {
                         if (yyleng == 3) {
-                            yylval.character[0] = '\0';
-                            yylval.character[1] = yytext[1];
+                            yylval.c[0] = '\0';
+                            yylval.c[1] = yytext[1];
                         }
                         else if (yyleng == 4) {
-                            yylval.character[0] = '\\';
-                            yylval.character[1] = yytext[2];
+                            yylval.c[0] = '\\';
+                            yylval.c[1] = yytext[2];
                         }
                         return CHARACTER;
                     }
@@ -186,7 +186,7 @@ void print_token(int token) {
         }
         case (CHARACTER) : {
             printf("Token: CHARACTER\n"
-                    "Valor: %c%c\n", yylval.character[0],yylval.character[1]);
+                    "Valor: %c%c\n", yylval.c[0],yylval.c[1]);
             break;
         }
         case (STRING) : {

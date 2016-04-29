@@ -10,13 +10,16 @@
 	float fval;
 	char *idval;
 	char *str;
-	char character[2];
+	char c[2];
 }
 
 
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
 %token 	<idval> ID
+%token  <str>   STRING
+%token 	<c>		CHARACTER  
+
 
 %token NL  
 
@@ -54,7 +57,7 @@ expr
     | expr '%' expr           
     | '-' expr
     | '(' expr ')'        
-    | '~'' expr                 
+    | '~' expr                 
     | expr AND expr 
     | expr OR expr    
     | expr LTOE expr    
@@ -71,9 +74,9 @@ literal
 	| CHARACTER
 	| ID
 	| STRING     /*ESTO NO SE SI VA AQUI*/
-	| TRUE
-	| FALSE
-	| NULL 
+	| JTRUE
+	| JFALSE
+	| JNULL 
 	;
 %%
 
