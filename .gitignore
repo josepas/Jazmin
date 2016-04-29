@@ -26,3 +26,11 @@
 *.exe
 *.out
 *.app
+
+# Lexer assets
+*.yy.c
+
+# Parser assets
+*.tab.h
+
+
