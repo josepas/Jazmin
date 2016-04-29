@@ -17,54 +17,64 @@
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
 %token 	<idval> ID
-%token NL  BOOL  BORN  BREAK  CHAR  CONFEDERATION  ELIF  ELSE
-%token JFALSE  FLOAT  FOR FUNC  HOLLOW  IF  INT  NEXT  JNULL  PROC  
-%token PUFF  READ  REF  RETURN  STEP  STRUCT TO  JTRUE  WHILE  WRITE  
-%token LTOE  GTOE  EQUAL  UNEQUAL PLUS_ASSIGN  MINUS_ASSIGN  MULT_ASSIGN  
-%token DIV_ASSIGN
-%token AND  OR  
-%token ARROW  
+%token NL  
+
+%token BOOL CHAR FLOAT INT HOLLOW
+
+%token CONFEDERATION STRUCT  
+
+%token IF ELIF ELSE
+
+%token JFALSE JTRUE JNULL
+
+%token FOR WHILE TO STEP BREAK NEXT
+
+%token FUNC PROC REF RETURN  
+
+%token BORN PUFF  
+
+%token READ WRITE  
+
+%token LTOE GTOE EQUAL UNEQUAL AND OR 
+
+%token PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
+
+%token ARROW 
+
 
 %%
 
-jaxmin 
-	: NL                  
-	| BOOL
-	| BORN
-	| BREAK
-	| CHAR
-	| CONFEDERATION
-	| ELIF
-	| ELSE
-	| JFALSE
-	| FLOAT
-	| FOR
-	| FUNC
-	| HOLLOW
-	| IF
-	| INT
-	| NEXT 
-	| JNULL
-	| PROC PUFF
-	| READ
-	| REF
-	| RETURN
-	| STEP
-	| STRUCT TO
-	| JTRUE
-	| WHILE
-	| WRITE
-	| LTOE
-	| GTOE
-	| EQUAL
-	| UNEQUAL PLUS_ASSIGN
-	| MINUS_ASSIGN
-	| MULT_ASSIGN
-	| DIV_ASSIGN
-	| AND
-	| OR
-	| ARROW  
+expr
+    : literal
+    | expr '+' expr          
+    | expr '-' expr         
+    | expr '*' expr          
+    | expr '/' expr           
+    | expr '%' expr           
+    | '-' expr
+    | '(' expr ')'        
+    | '~'' expr                 
+    | expr AND expr 
+    | expr OR expr    
+    | expr LTOE expr    
+    | expr GTOE expr    
+    | expr EQUAL expr         
+    | expr UNEQUAL expr       
+    | expr '<' expr         
+    | expr '>' expr         
+    ;
+
+literal
+	: NUMBER
+	| REAL
+	| CHARACTER
+	| ID
+	| STRING     /*ESTO NO SE SI VA AQUI*/
+	| TRUE
+	| FALSE
+	| NULL 
 	;
+
 
 %%
 
