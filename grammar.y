@@ -20,6 +20,7 @@
 %token  <str>   STRING
 %token 	<c>		CHARACTER
 
+%token PROGRAM
 
 %token NL
 
@@ -54,6 +55,7 @@
 %left '*' '/' '%'
 %right UNARY
 %nonassoc CALL
+
 
 %%
 
@@ -171,12 +173,8 @@ expr
     ;
 
 subrout_def
-    : ID '(' args_func ')' ARROW type block
-    | ID '(' args_proc ')' block
-    ;
-
-subrout_call
-    : ID '(' args_list ')'
+    : FUNC ID '(' args_func ')' ARROW type block
+    | PROC ID '(' args_proc ')' block
     ;
 
 arg_val
@@ -203,6 +201,10 @@ args_proc
 args_list
     : expr
     | args_list ',' expr
+    ;
+
+subrout_call
+    : ID '(' args_list ')'
     ;
 
 literal

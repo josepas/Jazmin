@@ -60,6 +60,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 "int"				return INT;
 "next"				return NEXT;
 "null"				return JNULL;
+"program"           return PROGRAM;
 "proc"				return PROC;
 "puff"				return PUFF;
 "read"				return READ;

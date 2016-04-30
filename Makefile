@@ -1,10 +1,10 @@
 LEX=flex
 
-scanner: lexer parser
+scanner: parser lexer
 	gcc lex.yy.c grammar.tab.c -lbsd -lfl -o scanner
 
 parser:
-	bison -d grammar.y
+	bison -d -v grammar.y
 
 lexer:
 	flex lexer.l
