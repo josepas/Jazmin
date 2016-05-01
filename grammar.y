@@ -87,6 +87,12 @@ instruction
     | block
     | jump
     | io_inst
+    | malloc
+    ;
+
+malloc
+    : BORN type
+    | PUFF '(' ID ')'
     ;
 
 io_inst
@@ -108,6 +114,7 @@ declaration
     | type ID dimension '=' expr
     | type point_d ID
     | s_c ID '{' dcl_list '}'
+    | s_c ID ID;
     ;
 
 dcl_list
@@ -129,7 +136,6 @@ dimension
     : '[' NUMBER ']'
     | dimension '[' NUMBER ']'
     ;
-
 
 type
     : HOLLOW
