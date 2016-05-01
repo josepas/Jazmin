@@ -1,2941 +1,3159 @@
 Terminals unused in grammar
 
-   STRING
-   PROGRAM
-   BREAK
-   NEXT
-   RETURN
    BORN
    PUFF
-   READ
-   WRITE
-   CALL
 
 
 Grammar
 
-    0 $accept: block $end
+    0 $accept: jaxmin $end
 
-    1 block: '{' ins_list '}'
-    2      | subrout_def
+    1 jaxmin: definitions PROGRAM block
+    2       | PROGRAM block
 
-    3 ins_list: instruction NL
-    4         | ins_list NL instruction NL
+    3 definitions: subrout_def
 
-    5 instruction: declaration
-    6            | assignment
-    7            | selection
-    8            | iteration
-    9            | block
+    4 block: '{' ins_list '}'
+    5      | subrout_def
 
-   10 declaration: type ID
-   11            | type ID '=' expr
-   12            | type ID dimension
-   13            | type ID dimension '=' expr
-   14            | type point_d ID
-   15            | s_c ID '{' dcl_list '}'
+    6 ins_list: instruction NL
+    7         | ins_list NL instruction NL
 
-   16 dcl_list: declaration
-   17         | dcl_list declaration
+    8 instruction: declaration
+    9            | assignment
+   10            | selection
+   11            | iteration
+   12            | block
+   13            | jump
+   14            | io_inst
 
-   18 s_c: STRUCT
-   19    | CONFEDERATION
+   15 io_inst: READ STRING ',' ID
+   16        | WRITE STRING
 
-   20 point_d: '*'
-   21        | point_d '*'
+   17 jump: NEXT
+   18     | BREAK
+   19     | RETURN
+   20     | RETURN expr
 
-   22 dimension: '[' NUMBER ']'
-   23          | dimension '[' NUMBER ']'
+   21 declaration: type ID
+   22            | type ID '=' expr
+   23            | type ID dimension
+   24            | type ID dimension '=' expr
+   25            | type point_d ID
+   26            | s_c ID '{' dcl_list '}'
 
-   24 type: HOLLOW
-   25     | INT
-   26     | CHAR
-   27     | FLOAT
-   28     | BOOL
+   27 dcl_list: declaration
+   28         | dcl_list declaration
 
-   29 assignment: ID '=' expr
-   30           | ID PLUS_ASSIGN expr
-   31           | ID MINUS_ASSIGN expr
-   32           | ID MULT_ASSIGN expr
-   33           | ID DIV_ASSIGN expr
+   29 s_c: STRUCT
+   30    | CONFEDERATION
 
-   34 iteration: WHILE expr block
-   35          | FOR for_args TO for_args block
-   36          | FOR for_args TO for_args STEP NUMBER block
+   31 point_d: '*'
+   32        | point_d '*'
 
-   37 for_args: %empty
+   33 dimension: '[' NUMBER ']'
+   34          | dimension '[' NUMBER ']'
 
-   38 expr: declaration
+   35 type: HOLLOW
+   36     | INT
+   37     | CHAR
+   38     | FLOAT
+   39     | BOOL
 
-   39 selection: IF expr block elif_stm ELSE block
-   40          | IF expr block elif_stm
-   41          | IF expr block ELSE block
-   42          | IF expr block
+   40 assignment: ID '=' expr
+   41           | ID PLUS_ASSIGN expr
+   42           | ID MINUS_ASSIGN expr
+   43           | ID MULT_ASSIGN expr
+   44           | ID DIV_ASSIGN expr
 
-   43 elif_stm: ELIF expr block
-   44         | elif_stm ELIF expr block
+   45 iteration: WHILE expr block
+   46          | FOR for_args TO for_args block
+   47          | FOR for_args TO for_args STEP NUMBER block
 
-   45 expr: literal
-   46     | ID
-   47     | subrout_call
-   48     | expr '+' expr
-   49     | expr '-' expr
-   50     | expr '*' expr
-   51     | expr '/' expr
-   52     | expr '%' expr
-   53     | '-' expr
-   54     | '(' expr ')'
-   55     | '~' expr
-   56     | expr AND expr
-   57     | expr OR expr
-   58     | expr LTOE expr
-   59     | expr GTOE expr
-   60     | expr EQUAL expr
-   61     | expr UNEQUAL expr
-   62     | expr '<' expr
-   63     | expr '>' expr
+   48 for_args: %empty
 
-   64 subrout_def: FUNC ID '(' args_func ')' ARROW type block
-   65            | PROC ID '(' args_proc ')' block
+   49 expr: declaration
 
-   66 arg_val: type ID
+   50 selection: IF expr block elif_stm ELSE block
+   51          | IF expr block elif_stm
+   52          | IF expr block ELSE block
+   53          | IF expr block
 
-   67 arg_ref: REF arg_val
+   54 elif_stm: ELIF expr block
+   55         | elif_stm ELIF expr block
 
-   68 args_func: %empty
-   69          | arg_val
-   70          | args_func ',' arg_val
+   56 expr: literal
+   57     | ID
+   58     | subrout_call
+   59     | expr '+' expr
+   60     | expr '-' expr
+   61     | expr '*' expr
+   62     | expr '/' expr
+   63     | expr '%' expr
+   64     | '-' expr
+   65     | '(' expr ')'
+   66     | '~' expr
+   67     | expr AND expr
+   68     | expr OR expr
+   69     | expr LTOE expr
+   70     | expr GTOE expr
+   71     | expr EQUAL expr
+   72     | expr UNEQUAL expr
+   73     | expr '<' expr
+   74     | expr '>' expr
 
-   71 args_proc: %empty
-   72          | arg_val
-   73          | args_proc ',' arg_val
-   74          | arg_ref
-   75          | args_proc ',' arg_ref
+   75 subrout_def: FUNC ID '(' args_func ')' ARROW type block
+   76            | PROC ID '(' args_proc ')' block
 
-   76 args_list: expr
-   77          | args_list ',' expr
+   77 arg_val: type ID
 
-   78 subrout_call: ID '(' args_list ')'
+   78 arg_ref: REF arg_val
 
-   79 literal: NUMBER
-   80        | REAL
-   81        | CHARACTER
-   82        | JTRUE
-   83        | JFALSE
-   84        | JNULL
+   79 args_func: %empty
+   80          | arg_val
+   81          | args_func ',' arg_val
+
+   82 args_proc: %empty
+   83          | arg_val
+   84          | args_proc ',' arg_val
+   85          | arg_ref
+   86          | args_proc ',' arg_ref
+
+   87 args_list: expr
+   88          | args_list ',' expr
+
+   89 subrout_call: ID '(' args_list ')'
+
+   90 literal: NUMBER
+   91        | REAL
+   92        | CHARACTER
+   93        | JTRUE
+   94        | JFALSE
+   95        | JNULL
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'%' (37) 52
-'(' (40) 54 64 65 78
-')' (41) 54 64 65 78
-'*' (42) 20 21 50
-'+' (43) 48
-',' (44) 70 73 75 77
-'-' (45) 49 53
-'/' (47) 51
-'<' (60) 62
-'=' (61) 11 13 29
-'>' (62) 63
-'[' (91) 22 23
-']' (93) 22 23
-'{' (123) 1 15
-'}' (125) 1 15
-'~' (126) 55
+'%' (37) 63
+'(' (40) 65 75 76 89
+')' (41) 65 75 76 89
+'*' (42) 31 32 61
+'+' (43) 59
+',' (44) 15 81 84 86 88
+'-' (45) 60 64
+'/' (47) 62
+'<' (60) 73
+'=' (61) 22 24 40
+'>' (62) 74
+'[' (91) 33 34
+']' (93) 33 34
+'{' (123) 4 26
+'}' (125) 4 26
+'~' (126) 66
 error (256)
-NUMBER (258) 22 23 36 79
-REAL (259) 80
-ID (260) 10 11 12 13 14 15 29 30 31 32 33 46 64 65 66 78
-STRING (261)
-CHARACTER (262) 81
-PROGRAM (263)
-NL (264) 3 4
-BOOL (265) 28
-CHAR (266) 26
-FLOAT (267) 27
-INT (268) 25
-HOLLOW (269) 24
-CONFEDERATION (270) 19
-STRUCT (271) 18
-IF (272) 39 40 41 42
-ELIF (273) 43 44
-ELSE (274) 39 41
-JFALSE (275) 83
-JTRUE (276) 82
-JNULL (277) 84
-FOR (278) 35 36
-WHILE (279) 34
-TO (280) 35 36
-STEP (281) 36
-BREAK (282)
-NEXT (283)
-FUNC (284) 64
-PROC (285) 65
-REF (286) 67
-RETURN (287)
+NUMBER (258) 33 34 47 90
+REAL (259) 91
+ID (260) 15 21 22 23 24 25 26 40 41 42 43 44 57 75 76 77 89
+STRING (261) 15 16
+CHARACTER (262) 92
+PROGRAM (263) 1 2
+NL (264) 6 7
+BOOL (265) 39
+CHAR (266) 37
+FLOAT (267) 38
+INT (268) 36
+HOLLOW (269) 35
+CONFEDERATION (270) 30
+STRUCT (271) 29
+IF (272) 50 51 52 53
+ELIF (273) 54 55
+ELSE (274) 50 52
+JFALSE (275) 94
+JTRUE (276) 93
+JNULL (277) 95
+FOR (278) 46 47
+WHILE (279) 45
+TO (280) 46 47
+STEP (281) 47
+BREAK (282) 18
+NEXT (283) 17
+FUNC (284) 75
+PROC (285) 76
+REF (286) 78
+RETURN (287) 19 20
 BORN (288)
 PUFF (289)
-READ (290)
-WRITE (291)
-LTOE (292) 58
-GTOE (293) 59
-EQUAL (294) 60
-UNEQUAL (295) 61
-AND (296) 56
-OR (297) 57
-PLUS_ASSIGN (298) 30
-MINUS_ASSIGN (299) 31
-MULT_ASSIGN (300) 32
-DIV_ASSIGN (301) 33
-ARROW (302) 64
+READ (290) 15
+WRITE (291) 16
+LTOE (292) 69
+GTOE (293) 70
+EQUAL (294) 71
+UNEQUAL (295) 72
+AND (296) 67
+OR (297) 68
+PLUS_ASSIGN (298) 41
+MINUS_ASSIGN (299) 42
+MULT_ASSIGN (300) 43
+DIV_ASSIGN (301) 44
+ARROW (302) 75
 UNARY (303)
-CALL (304)
 
 
 Nonterminals, with rules where they appear
 
-$accept (66)
+$accept (65)
     on left: 0
-block (67)
-    on left: 1 2, on right: 0 9 34 35 36 39 40 41 42 43 44 64 65
-ins_list (68)
-    on left: 3 4, on right: 1 4
-instruction (69)
-    on left: 5 6 7 8 9, on right: 3 4
-declaration (70)
-    on left: 10 11 12 13 14 15, on right: 5 16 17 38
-dcl_list (71)
-    on left: 16 17, on right: 15 17
-s_c (72)
-    on left: 18 19, on right: 15
-point_d (73)
-    on left: 20 21, on right: 14 21
-dimension (74)
-    on left: 22 23, on right: 12 13 23
-type (75)
-    on left: 24 25 26 27 28, on right: 10 11 12 13 14 64 66
-assignment (76)
-    on left: 29 30 31 32 33, on right: 6
-iteration (77)
-    on left: 34 35 36, on right: 8
-for_args (78)
-    on left: 37, on right: 35 36
-expr (79)
-    on left: 38 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61
-    62 63, on right: 11 13 29 30 31 32 33 34 39 40 41 42 43 44 48 49
-    50 51 52 53 54 55 56 57 58 59 60 61 62 63 76 77
-selection (80)
-    on left: 39 40 41 42, on right: 7
-elif_stm (81)
-    on left: 43 44, on right: 39 40 44
-subrout_def (82)
-    on left: 64 65, on right: 2
-arg_val (83)
-    on left: 66, on right: 67 69 70 72 73
-arg_ref (84)
-    on left: 67, on right: 74 75
-args_func (85)
-    on left: 68 69 70, on right: 64 70
-args_proc (86)
-    on left: 71 72 73 74 75, on right: 65 73 75
-args_list (87)
-    on left: 76 77, on right: 77 78
-subrout_call (88)
-    on left: 78, on right: 47
-literal (89)
-    on left: 79 80 81 82 83 84, on right: 45
+jaxmin (66)
+    on left: 1 2, on right: 0
+definitions (67)
+    on left: 3, on right: 1
+block (68)
+    on left: 4 5, on right: 1 2 12 45 46 47 50 51 52 53 54 55 75 76
+ins_list (69)
+    on left: 6 7, on right: 4 7
+instruction (70)
+    on left: 8 9 10 11 12 13 14, on right: 6 7
+io_inst (71)
+    on left: 15 16, on right: 14
+jump (72)
+    on left: 17 18 19 20, on right: 13
+declaration (73)
+    on left: 21 22 23 24 25 26, on right: 8 27 28 49
+dcl_list (74)
+    on left: 27 28, on right: 26 28
+s_c (75)
+    on left: 29 30, on right: 26
+point_d (76)
+    on left: 31 32, on right: 25 32
+dimension (77)
+    on left: 33 34, on right: 23 24 34
+type (78)
+    on left: 35 36 37 38 39, on right: 21 22 23 24 25 75 77
+assignment (79)
+    on left: 40 41 42 43 44, on right: 9
+iteration (80)
+    on left: 45 46 47, on right: 11
+for_args (81)
+    on left: 48, on right: 46 47
+expr (82)
+    on left: 49 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72
+    73 74, on right: 20 22 24 40 41 42 43 44 45 50 51 52 53 54 55 59
+    60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 87 88
+selection (83)
+    on left: 50 51 52 53, on right: 10
+elif_stm (84)
+    on left: 54 55, on right: 50 51 55
+subrout_def (85)
+    on left: 75 76, on right: 3 5
+arg_val (86)
+    on left: 77, on right: 78 80 81 83 84
+arg_ref (87)
+    on left: 78, on right: 85 86
+args_func (88)
+    on left: 79 80 81, on right: 75 81
+args_proc (89)
+    on left: 82 83 84 85 86, on right: 76 84 86
+args_list (90)
+    on left: 87 88, on right: 88 89
+subrout_call (91)
+    on left: 89, on right: 58
+literal (92)
+    on left: 90 91 92 93 94 95, on right: 56
 
 
 State 0
 
-    0 $accept: . block $end
+    0 $accept: . jaxmin $end
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
+    PROGRAM  shift, and go to state 1
+    FUNC     shift, and go to state 2
+    PROC     shift, and go to state 3
 
-    block        go to state 4
-    subrout_def  go to state 5
+    jaxmin       go to state 4
+    definitions  go to state 5
+    subrout_def  go to state 6
 
 
 State 1
 
-   64 subrout_def: FUNC . ID '(' args_func ')' ARROW type block
+    2 jaxmin: PROGRAM . block
 
-    ID  shift, and go to state 6
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
+
+    block        go to state 8
+    subrout_def  go to state 9
 
 
 State 2
 
-   65 subrout_def: PROC . ID '(' args_proc ')' block
+   75 subrout_def: FUNC . ID '(' args_func ')' ARROW type block
 
-    ID  shift, and go to state 7
+    ID  shift, and go to state 10
 
 
 State 3
 
-    1 block: '{' . ins_list '}'
+   76 subrout_def: PROC . ID '(' args_proc ')' block
 
-    ID             shift, and go to state 8
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    IF             shift, and go to state 16
-    FOR            shift, and go to state 17
-    WHILE          shift, and go to state 18
-    FUNC           shift, and go to state 1
-    PROC           shift, and go to state 2
-    '{'            shift, and go to state 3
-
-    block        go to state 19
-    ins_list     go to state 20
-    instruction  go to state 21
-    declaration  go to state 22
-    s_c          go to state 23
-    type         go to state 24
-    assignment   go to state 25
-    iteration    go to state 26
-    selection    go to state 27
-    subrout_def  go to state 5
+    ID  shift, and go to state 11
 
 
 State 4
 
-    0 $accept: block . $end
+    0 $accept: jaxmin . $end
 
-    $end  shift, and go to state 28
+    $end  shift, and go to state 12
 
 
 State 5
 
-    2 block: subrout_def .
+    1 jaxmin: definitions . PROGRAM block
 
-    $default  reduce using rule 2 (block)
+    PROGRAM  shift, and go to state 13
 
 
 State 6
 
-   64 subrout_def: FUNC ID . '(' args_func ')' ARROW type block
+    3 definitions: subrout_def .
 
-    '('  shift, and go to state 29
+    $default  reduce using rule 3 (definitions)
 
 
 State 7
 
-   65 subrout_def: PROC ID . '(' args_proc ')' block
+    4 block: '{' . ins_list '}'
 
-    '('  shift, and go to state 30
+    ID             shift, and go to state 14
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    IF             shift, and go to state 22
+    FOR            shift, and go to state 23
+    WHILE          shift, and go to state 24
+    BREAK          shift, and go to state 25
+    NEXT           shift, and go to state 26
+    FUNC           shift, and go to state 2
+    PROC           shift, and go to state 3
+    RETURN         shift, and go to state 27
+    READ           shift, and go to state 28
+    WRITE          shift, and go to state 29
+    '{'            shift, and go to state 7
+
+    block        go to state 30
+    ins_list     go to state 31
+    instruction  go to state 32
+    io_inst      go to state 33
+    jump         go to state 34
+    declaration  go to state 35
+    s_c          go to state 36
+    type         go to state 37
+    assignment   go to state 38
+    iteration    go to state 39
+    selection    go to state 40
+    subrout_def  go to state 9
 
 
 State 8
 
-   29 assignment: ID . '=' expr
-   30           | ID . PLUS_ASSIGN expr
-   31           | ID . MINUS_ASSIGN expr
-   32           | ID . MULT_ASSIGN expr
-   33           | ID . DIV_ASSIGN expr
+    2 jaxmin: PROGRAM block .
 
-    PLUS_ASSIGN   shift, and go to state 31
-    MINUS_ASSIGN  shift, and go to state 32
-    MULT_ASSIGN   shift, and go to state 33
-    DIV_ASSIGN    shift, and go to state 34
-    '='           shift, and go to state 35
+    $default  reduce using rule 2 (jaxmin)
 
 
 State 9
 
-   28 type: BOOL .
+    5 block: subrout_def .
 
-    $default  reduce using rule 28 (type)
+    $default  reduce using rule 5 (block)
 
 
 State 10
 
-   26 type: CHAR .
+   75 subrout_def: FUNC ID . '(' args_func ')' ARROW type block
 
-    $default  reduce using rule 26 (type)
+    '('  shift, and go to state 41
 
 
 State 11
 
-   27 type: FLOAT .
+   76 subrout_def: PROC ID . '(' args_proc ')' block
 
-    $default  reduce using rule 27 (type)
+    '('  shift, and go to state 42
 
 
 State 12
 
-   25 type: INT .
-
-    $default  reduce using rule 25 (type)
-
-
-State 13
-
-   24 type: HOLLOW .
-
-    $default  reduce using rule 24 (type)
-
-
-State 14
-
-   19 s_c: CONFEDERATION .
-
-    $default  reduce using rule 19 (s_c)
-
-
-State 15
-
-   18 s_c: STRUCT .
-
-    $default  reduce using rule 18 (s_c)
-
-
-State 16
-
-   39 selection: IF . expr block elif_stm ELSE block
-   40          | IF . expr block elif_stm
-   41          | IF . expr block ELSE block
-   42          | IF . expr block
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 47
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 17
-
-   35 iteration: FOR . for_args TO for_args block
-   36          | FOR . for_args TO for_args STEP NUMBER block
-
-    $default  reduce using rule 37 (for_args)
-
-    for_args  go to state 50
-
-
-State 18
-
-   34 iteration: WHILE . expr block
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 51
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 19
-
-    9 instruction: block .
-
-    $default  reduce using rule 9 (instruction)
-
-
-State 20
-
-    1 block: '{' ins_list . '}'
-    4 ins_list: ins_list . NL instruction NL
-
-    NL   shift, and go to state 52
-    '}'  shift, and go to state 53
-
-
-State 21
-
-    3 ins_list: instruction . NL
-
-    NL  shift, and go to state 54
-
-
-State 22
-
-    5 instruction: declaration .
-
-    $default  reduce using rule 5 (instruction)
-
-
-State 23
-
-   15 declaration: s_c . ID '{' dcl_list '}'
-
-    ID  shift, and go to state 55
-
-
-State 24
-
-   10 declaration: type . ID
-   11            | type . ID '=' expr
-   12            | type . ID dimension
-   13            | type . ID dimension '=' expr
-   14            | type . point_d ID
-
-    ID   shift, and go to state 56
-    '*'  shift, and go to state 57
-
-    point_d  go to state 58
-
-
-State 25
-
-    6 instruction: assignment .
-
-    $default  reduce using rule 6 (instruction)
-
-
-State 26
-
-    8 instruction: iteration .
-
-    $default  reduce using rule 8 (instruction)
-
-
-State 27
-
-    7 instruction: selection .
-
-    $default  reduce using rule 7 (instruction)
-
-
-State 28
-
-    0 $accept: block $end .
+    0 $accept: jaxmin $end .
 
     $default  accept
 
 
+State 13
+
+    1 jaxmin: definitions PROGRAM . block
+
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
+
+    block        go to state 43
+    subrout_def  go to state 9
+
+
+State 14
+
+   40 assignment: ID . '=' expr
+   41           | ID . PLUS_ASSIGN expr
+   42           | ID . MINUS_ASSIGN expr
+   43           | ID . MULT_ASSIGN expr
+   44           | ID . DIV_ASSIGN expr
+
+    PLUS_ASSIGN   shift, and go to state 44
+    MINUS_ASSIGN  shift, and go to state 45
+    MULT_ASSIGN   shift, and go to state 46
+    DIV_ASSIGN    shift, and go to state 47
+    '='           shift, and go to state 48
+
+
+State 15
+
+   39 type: BOOL .
+
+    $default  reduce using rule 39 (type)
+
+
+State 16
+
+   37 type: CHAR .
+
+    $default  reduce using rule 37 (type)
+
+
+State 17
+
+   38 type: FLOAT .
+
+    $default  reduce using rule 38 (type)
+
+
+State 18
+
+   36 type: INT .
+
+    $default  reduce using rule 36 (type)
+
+
+State 19
+
+   35 type: HOLLOW .
+
+    $default  reduce using rule 35 (type)
+
+
+State 20
+
+   30 s_c: CONFEDERATION .
+
+    $default  reduce using rule 30 (s_c)
+
+
+State 21
+
+   29 s_c: STRUCT .
+
+    $default  reduce using rule 29 (s_c)
+
+
+State 22
+
+   50 selection: IF . expr block elif_stm ELSE block
+   51          | IF . expr block elif_stm
+   52          | IF . expr block ELSE block
+   53          | IF . expr block
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 60
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 23
+
+   46 iteration: FOR . for_args TO for_args block
+   47          | FOR . for_args TO for_args STEP NUMBER block
+
+    $default  reduce using rule 48 (for_args)
+
+    for_args  go to state 63
+
+
+State 24
+
+   45 iteration: WHILE . expr block
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 64
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 25
+
+   18 jump: BREAK .
+
+    $default  reduce using rule 18 (jump)
+
+
+State 26
+
+   17 jump: NEXT .
+
+    $default  reduce using rule 17 (jump)
+
+
+State 27
+
+   19 jump: RETURN .
+   20     | RETURN . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    $default  reduce using rule 19 (jump)
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 65
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 28
+
+   15 io_inst: READ . STRING ',' ID
+
+    STRING  shift, and go to state 66
+
+
 State 29
 
-   64 subrout_def: FUNC ID '(' . args_func ')' ARROW type block
+   16 io_inst: WRITE . STRING
 
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
-
-    $default  reduce using rule 68 (args_func)
-
-    type       go to state 59
-    arg_val    go to state 60
-    args_func  go to state 61
+    STRING  shift, and go to state 67
 
 
 State 30
 
-   65 subrout_def: PROC ID '(' . args_proc ')' block
+   12 instruction: block .
 
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
-    REF     shift, and go to state 62
-
-    $default  reduce using rule 71 (args_proc)
-
-    type       go to state 59
-    arg_val    go to state 63
-    arg_ref    go to state 64
-    args_proc  go to state 65
+    $default  reduce using rule 12 (instruction)
 
 
 State 31
 
-   30 assignment: ID PLUS_ASSIGN . expr
+    4 block: '{' ins_list . '}'
+    7 ins_list: ins_list . NL instruction NL
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 66
-    subrout_call  go to state 48
-    literal       go to state 49
+    NL   shift, and go to state 68
+    '}'  shift, and go to state 69
 
 
 State 32
 
-   31 assignment: ID MINUS_ASSIGN . expr
+    6 ins_list: instruction . NL
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 67
-    subrout_call  go to state 48
-    literal       go to state 49
+    NL  shift, and go to state 70
 
 
 State 33
 
-   32 assignment: ID MULT_ASSIGN . expr
+   14 instruction: io_inst .
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 68
-    subrout_call  go to state 48
-    literal       go to state 49
+    $default  reduce using rule 14 (instruction)
 
 
 State 34
 
-   33 assignment: ID DIV_ASSIGN . expr
+   13 instruction: jump .
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 69
-    subrout_call  go to state 48
-    literal       go to state 49
+    $default  reduce using rule 13 (instruction)
 
 
 State 35
 
-   29 assignment: ID '=' . expr
+    8 instruction: declaration .
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 70
-    subrout_call  go to state 48
-    literal       go to state 49
+    $default  reduce using rule 8 (instruction)
 
 
 State 36
 
-   79 literal: NUMBER .
+   26 declaration: s_c . ID '{' dcl_list '}'
 
-    $default  reduce using rule 79 (literal)
+    ID  shift, and go to state 71
 
 
 State 37
 
-   80 literal: REAL .
+   21 declaration: type . ID
+   22            | type . ID '=' expr
+   23            | type . ID dimension
+   24            | type . ID dimension '=' expr
+   25            | type . point_d ID
 
-    $default  reduce using rule 80 (literal)
+    ID   shift, and go to state 72
+    '*'  shift, and go to state 73
+
+    point_d  go to state 74
 
 
 State 38
 
-   46 expr: ID .
-   78 subrout_call: ID . '(' args_list ')'
+    9 instruction: assignment .
 
-    '('  shift, and go to state 71
-
-    $default  reduce using rule 46 (expr)
+    $default  reduce using rule 9 (instruction)
 
 
 State 39
 
-   81 literal: CHARACTER .
+   11 instruction: iteration .
 
-    $default  reduce using rule 81 (literal)
+    $default  reduce using rule 11 (instruction)
 
 
 State 40
 
-   83 literal: JFALSE .
+   10 instruction: selection .
 
-    $default  reduce using rule 83 (literal)
+    $default  reduce using rule 10 (instruction)
 
 
 State 41
 
-   82 literal: JTRUE .
+   75 subrout_def: FUNC ID '(' . args_func ')' ARROW type block
 
-    $default  reduce using rule 82 (literal)
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
+
+    $default  reduce using rule 79 (args_func)
+
+    type       go to state 75
+    arg_val    go to state 76
+    args_func  go to state 77
 
 
 State 42
 
-   84 literal: JNULL .
+   76 subrout_def: PROC ID '(' . args_proc ')' block
 
-    $default  reduce using rule 84 (literal)
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
+    REF     shift, and go to state 78
+
+    $default  reduce using rule 82 (args_proc)
+
+    type       go to state 75
+    arg_val    go to state 79
+    arg_ref    go to state 80
+    args_proc  go to state 81
 
 
 State 43
 
-   53 expr: '-' . expr
+    1 jaxmin: definitions PROGRAM block .
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 72
-    subrout_call  go to state 48
-    literal       go to state 49
+    $default  reduce using rule 1 (jaxmin)
 
 
 State 44
 
-   54 expr: '(' . expr ')'
+   41 assignment: ID PLUS_ASSIGN . expr
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 73
-    subrout_call  go to state 48
-    literal       go to state 49
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 82
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 45
 
-   55 expr: '~' . expr
+   42 assignment: ID MINUS_ASSIGN . expr
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 74
-    subrout_call  go to state 48
-    literal       go to state 49
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 83
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 46
 
-   38 expr: declaration .
+   43 assignment: ID MULT_ASSIGN . expr
 
-    $default  reduce using rule 38 (expr)
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 84
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 47
 
-   39 selection: IF expr . block elif_stm ELSE block
-   40          | IF expr . block elif_stm
-   41          | IF expr . block ELSE block
-   42          | IF expr . block
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   44 assignment: ID DIV_ASSIGN . expr
 
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 2
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-    '{'      shift, and go to state 3
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    block        go to state 88
-    subrout_def  go to state 5
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 85
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 48
 
-   47 expr: subrout_call .
+   40 assignment: ID '=' . expr
 
-    $default  reduce using rule 47 (expr)
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 86
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 49
 
-   45 expr: literal .
+   90 literal: NUMBER .
 
-    $default  reduce using rule 45 (expr)
+    $default  reduce using rule 90 (literal)
 
 
 State 50
 
-   35 iteration: FOR for_args . TO for_args block
-   36          | FOR for_args . TO for_args STEP NUMBER block
+   91 literal: REAL .
 
-    TO  shift, and go to state 89
+    $default  reduce using rule 91 (literal)
 
 
 State 51
 
-   34 iteration: WHILE expr . block
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   57 expr: ID .
+   89 subrout_call: ID . '(' args_list ')'
 
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 2
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-    '{'      shift, and go to state 3
-
-    block        go to state 90
-    subrout_def  go to state 5
-
-
-State 52
-
-    4 ins_list: ins_list NL . instruction NL
-
-    ID             shift, and go to state 8
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    IF             shift, and go to state 16
-    FOR            shift, and go to state 17
-    WHILE          shift, and go to state 18
-    FUNC           shift, and go to state 1
-    PROC           shift, and go to state 2
-    '{'            shift, and go to state 3
-
-    block        go to state 19
-    instruction  go to state 91
-    declaration  go to state 22
-    s_c          go to state 23
-    type         go to state 24
-    assignment   go to state 25
-    iteration    go to state 26
-    selection    go to state 27
-    subrout_def  go to state 5
-
-
-State 53
-
-    1 block: '{' ins_list '}' .
-
-    $default  reduce using rule 1 (block)
-
-
-State 54
-
-    3 ins_list: instruction NL .
-
-    $default  reduce using rule 3 (ins_list)
-
-
-State 55
-
-   15 declaration: s_c ID . '{' dcl_list '}'
-
-    '{'  shift, and go to state 92
-
-
-State 56
-
-   10 declaration: type ID .
-   11            | type ID . '=' expr
-   12            | type ID . dimension
-   13            | type ID . dimension '=' expr
-
-    '='  shift, and go to state 93
-    '['  shift, and go to state 94
-
-    $default  reduce using rule 10 (declaration)
-
-    dimension  go to state 95
-
-
-State 57
-
-   20 point_d: '*' .
-
-    $default  reduce using rule 20 (point_d)
-
-
-State 58
-
-   14 declaration: type point_d . ID
-   21 point_d: point_d . '*'
-
-    ID   shift, and go to state 96
-    '*'  shift, and go to state 97
-
-
-State 59
-
-   66 arg_val: type . ID
-
-    ID  shift, and go to state 98
-
-
-State 60
-
-   69 args_func: arg_val .
-
-    $default  reduce using rule 69 (args_func)
-
-
-State 61
-
-   64 subrout_def: FUNC ID '(' args_func . ')' ARROW type block
-   70 args_func: args_func . ',' arg_val
-
-    ')'  shift, and go to state 99
-    ','  shift, and go to state 100
-
-
-State 62
-
-   67 arg_ref: REF . arg_val
-
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
-
-    type     go to state 59
-    arg_val  go to state 101
-
-
-State 63
-
-   72 args_proc: arg_val .
-
-    $default  reduce using rule 72 (args_proc)
-
-
-State 64
-
-   74 args_proc: arg_ref .
-
-    $default  reduce using rule 74 (args_proc)
-
-
-State 65
-
-   65 subrout_def: PROC ID '(' args_proc . ')' block
-   73 args_proc: args_proc . ',' arg_val
-   75          | args_proc . ',' arg_ref
-
-    ')'  shift, and go to state 102
-    ','  shift, and go to state 103
-
-
-State 66
-
-   30 assignment: ID PLUS_ASSIGN expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 30 (assignment)
-
-
-State 67
-
-   31 assignment: ID MINUS_ASSIGN expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 31 (assignment)
-
-
-State 68
-
-   32 assignment: ID MULT_ASSIGN expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 32 (assignment)
-
-
-State 69
-
-   33 assignment: ID DIV_ASSIGN expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 33 (assignment)
-
-
-State 70
-
-   29 assignment: ID '=' expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 29 (assignment)
-
-
-State 71
-
-   78 subrout_call: ID '(' . args_list ')'
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 104
-    args_list     go to state 105
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 72
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   53     | '-' expr .
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    $default  reduce using rule 53 (expr)
-
-
-State 73
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   54     | '(' expr . ')'
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-    ')'      shift, and go to state 106
-
-
-State 74
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   55     | '~' expr .
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    $default  reduce using rule 55 (expr)
-
-
-State 75
-
-   58 expr: expr LTOE . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 107
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 76
-
-   59 expr: expr GTOE . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 108
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 77
-
-   60 expr: expr EQUAL . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 109
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 78
-
-   61 expr: expr UNEQUAL . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 110
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 79
-
-   56 expr: expr AND . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 111
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 80
-
-   57 expr: expr OR . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 112
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 81
-
-   63 expr: expr '>' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 113
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 82
-
-   62 expr: expr '<' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 114
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 83
-
-   48 expr: expr '+' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 115
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 84
-
-   49 expr: expr '-' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 116
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 85
-
-   50 expr: expr '*' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 117
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 86
-
-   51 expr: expr '/' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 118
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 87
-
-   52 expr: expr '%' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 119
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 88
-
-   39 selection: IF expr block . elif_stm ELSE block
-   40          | IF expr block . elif_stm
-   41          | IF expr block . ELSE block
-   42          | IF expr block .
-
-    ELIF  shift, and go to state 120
-    ELSE  shift, and go to state 121
-
-    $default  reduce using rule 42 (selection)
-
-    elif_stm  go to state 122
-
-
-State 89
-
-   35 iteration: FOR for_args TO . for_args block
-   36          | FOR for_args TO . for_args STEP NUMBER block
-
-    $default  reduce using rule 37 (for_args)
-
-    for_args  go to state 123
-
-
-State 90
-
-   34 iteration: WHILE expr block .
-
-    $default  reduce using rule 34 (iteration)
-
-
-State 91
-
-    4 ins_list: ins_list NL instruction . NL
-
-    NL  shift, and go to state 124
-
-
-State 92
-
-   15 declaration: s_c ID '{' . dcl_list '}'
-
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-
-    declaration  go to state 125
-    dcl_list     go to state 126
-    s_c          go to state 23
-    type         go to state 24
-
-
-State 93
-
-   11 declaration: type ID '=' . expr
-
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
-
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 127
-    subrout_call  go to state 48
-    literal       go to state 49
-
-
-State 94
-
-   22 dimension: '[' . NUMBER ']'
-
-    NUMBER  shift, and go to state 128
-
-
-State 95
-
-   12 declaration: type ID dimension .
-   13            | type ID dimension . '=' expr
-   23 dimension: dimension . '[' NUMBER ']'
-
-    '='  shift, and go to state 129
-    '['  shift, and go to state 130
-
-    $default  reduce using rule 12 (declaration)
-
-
-State 96
-
-   14 declaration: type point_d ID .
-
-    $default  reduce using rule 14 (declaration)
-
-
-State 97
-
-   21 point_d: point_d '*' .
-
-    $default  reduce using rule 21 (point_d)
-
-
-State 98
-
-   66 arg_val: type ID .
-
-    $default  reduce using rule 66 (arg_val)
-
-
-State 99
-
-   64 subrout_def: FUNC ID '(' args_func ')' . ARROW type block
-
-    ARROW  shift, and go to state 131
-
-
-State 100
-
-   70 args_func: args_func ',' . arg_val
-
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
-
-    type     go to state 59
-    arg_val  go to state 132
-
-
-State 101
-
-   67 arg_ref: REF arg_val .
-
-    $default  reduce using rule 67 (arg_ref)
-
-
-State 102
-
-   65 subrout_def: PROC ID '(' args_proc ')' . block
-
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
-
-    block        go to state 133
-    subrout_def  go to state 5
-
-
-State 103
-
-   73 args_proc: args_proc ',' . arg_val
-   75          | args_proc ',' . arg_ref
-
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
-    REF     shift, and go to state 62
-
-    type     go to state 59
-    arg_val  go to state 134
-    arg_ref  go to state 135
-
-
-State 104
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-   76 args_list: expr .
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 76 (args_list)
-
-
-State 105
-
-   77 args_list: args_list . ',' expr
-   78 subrout_call: ID '(' args_list . ')'
-
-    ')'  shift, and go to state 136
-    ','  shift, and go to state 137
-
-
-State 106
-
-   54 expr: '(' expr ')' .
-
-    $default  reduce using rule 54 (expr)
-
-
-State 107
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   58     | expr LTOE expr .
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    '+'  shift, and go to state 83
-    '-'  shift, and go to state 84
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
-
-    LTOE  error (nonassociative)
-    GTOE  error (nonassociative)
-    '>'   error (nonassociative)
-    '<'   error (nonassociative)
-
-    $default  reduce using rule 58 (expr)
-
-
-State 108
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   59     | expr GTOE expr .
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    '+'  shift, and go to state 83
-    '-'  shift, and go to state 84
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
-
-    LTOE  error (nonassociative)
-    GTOE  error (nonassociative)
-    '>'   error (nonassociative)
-    '<'   error (nonassociative)
-
-    $default  reduce using rule 59 (expr)
-
-
-State 109
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   60     | expr EQUAL expr .
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE  shift, and go to state 75
-    GTOE  shift, and go to state 76
-    '>'   shift, and go to state 81
-    '<'   shift, and go to state 82
-    '+'   shift, and go to state 83
-    '-'   shift, and go to state 84
-    '*'   shift, and go to state 85
-    '/'   shift, and go to state 86
-    '%'   shift, and go to state 87
-
-    $default  reduce using rule 60 (expr)
-
-
-State 110
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   61     | expr UNEQUAL expr .
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE  shift, and go to state 75
-    GTOE  shift, and go to state 76
-    '>'   shift, and go to state 81
-    '<'   shift, and go to state 82
-    '+'   shift, and go to state 83
-    '-'   shift, and go to state 84
-    '*'   shift, and go to state 85
-    '/'   shift, and go to state 86
-    '%'   shift, and go to state 87
-
-    $default  reduce using rule 61 (expr)
-
-
-State 111
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   56     | expr AND expr .
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-
-    $default  reduce using rule 56 (expr)
-
-
-State 112
-
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   57     | expr OR expr .
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
+    '('  shift, and go to state 87
 
     $default  reduce using rule 57 (expr)
 
 
-State 113
+State 52
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-   63     | expr '>' expr .
+   92 literal: CHARACTER .
 
-    '+'  shift, and go to state 83
-    '-'  shift, and go to state 84
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
-
-    LTOE  error (nonassociative)
-    GTOE  error (nonassociative)
-    '>'   error (nonassociative)
-    '<'   error (nonassociative)
-
-    $default  reduce using rule 63 (expr)
+    $default  reduce using rule 92 (literal)
 
 
-State 114
+State 53
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   62     | expr '<' expr .
-   63     | expr . '>' expr
+   94 literal: JFALSE .
 
-    '+'  shift, and go to state 83
-    '-'  shift, and go to state 84
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
-
-    LTOE  error (nonassociative)
-    GTOE  error (nonassociative)
-    '>'   error (nonassociative)
-    '<'   error (nonassociative)
-
-    $default  reduce using rule 62 (expr)
+    $default  reduce using rule 94 (literal)
 
 
-State 115
+State 54
 
-   48 expr: expr . '+' expr
-   48     | expr '+' expr .
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   93 literal: JTRUE .
 
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
-
-    $default  reduce using rule 48 (expr)
+    $default  reduce using rule 93 (literal)
 
 
-State 116
+State 55
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   49     | expr '-' expr .
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   95 literal: JNULL .
 
-    '*'  shift, and go to state 85
-    '/'  shift, and go to state 86
-    '%'  shift, and go to state 87
+    $default  reduce using rule 95 (literal)
+
+
+State 56
+
+   64 expr: '-' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 88
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 57
+
+   65 expr: '(' . expr ')'
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 89
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 58
+
+   66 expr: '~' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 90
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 59
+
+   49 expr: declaration .
 
     $default  reduce using rule 49 (expr)
 
 
+State 60
+
+   50 selection: IF expr . block elif_stm ELSE block
+   51          | IF expr . block elif_stm
+   52          | IF expr . block ELSE block
+   53          | IF expr . block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    FUNC     shift, and go to state 2
+    PROC     shift, and go to state 3
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+    '{'      shift, and go to state 7
+
+    block        go to state 104
+    subrout_def  go to state 9
+
+
+State 61
+
+   58 expr: subrout_call .
+
+    $default  reduce using rule 58 (expr)
+
+
+State 62
+
+   56 expr: literal .
+
+    $default  reduce using rule 56 (expr)
+
+
+State 63
+
+   46 iteration: FOR for_args . TO for_args block
+   47          | FOR for_args . TO for_args STEP NUMBER block
+
+    TO  shift, and go to state 105
+
+
+State 64
+
+   45 iteration: WHILE expr . block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    FUNC     shift, and go to state 2
+    PROC     shift, and go to state 3
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+    '{'      shift, and go to state 7
+
+    block        go to state 106
+    subrout_def  go to state 9
+
+
+State 65
+
+   20 jump: RETURN expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 20 (jump)
+
+
+State 66
+
+   15 io_inst: READ STRING . ',' ID
+
+    ','  shift, and go to state 107
+
+
+State 67
+
+   16 io_inst: WRITE STRING .
+
+    $default  reduce using rule 16 (io_inst)
+
+
+State 68
+
+    7 ins_list: ins_list NL . instruction NL
+
+    ID             shift, and go to state 14
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    IF             shift, and go to state 22
+    FOR            shift, and go to state 23
+    WHILE          shift, and go to state 24
+    BREAK          shift, and go to state 25
+    NEXT           shift, and go to state 26
+    FUNC           shift, and go to state 2
+    PROC           shift, and go to state 3
+    RETURN         shift, and go to state 27
+    READ           shift, and go to state 28
+    WRITE          shift, and go to state 29
+    '{'            shift, and go to state 7
+
+    block        go to state 30
+    instruction  go to state 108
+    io_inst      go to state 33
+    jump         go to state 34
+    declaration  go to state 35
+    s_c          go to state 36
+    type         go to state 37
+    assignment   go to state 38
+    iteration    go to state 39
+    selection    go to state 40
+    subrout_def  go to state 9
+
+
+State 69
+
+    4 block: '{' ins_list '}' .
+
+    $default  reduce using rule 4 (block)
+
+
+State 70
+
+    6 ins_list: instruction NL .
+
+    $default  reduce using rule 6 (ins_list)
+
+
+State 71
+
+   26 declaration: s_c ID . '{' dcl_list '}'
+
+    '{'  shift, and go to state 109
+
+
+State 72
+
+   21 declaration: type ID .
+   22            | type ID . '=' expr
+   23            | type ID . dimension
+   24            | type ID . dimension '=' expr
+
+    '='  shift, and go to state 110
+    '['  shift, and go to state 111
+
+    $default  reduce using rule 21 (declaration)
+
+    dimension  go to state 112
+
+
+State 73
+
+   31 point_d: '*' .
+
+    $default  reduce using rule 31 (point_d)
+
+
+State 74
+
+   25 declaration: type point_d . ID
+   32 point_d: point_d . '*'
+
+    ID   shift, and go to state 113
+    '*'  shift, and go to state 114
+
+
+State 75
+
+   77 arg_val: type . ID
+
+    ID  shift, and go to state 115
+
+
+State 76
+
+   80 args_func: arg_val .
+
+    $default  reduce using rule 80 (args_func)
+
+
+State 77
+
+   75 subrout_def: FUNC ID '(' args_func . ')' ARROW type block
+   81 args_func: args_func . ',' arg_val
+
+    ','  shift, and go to state 116
+    ')'  shift, and go to state 117
+
+
+State 78
+
+   78 arg_ref: REF . arg_val
+
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
+
+    type     go to state 75
+    arg_val  go to state 118
+
+
+State 79
+
+   83 args_proc: arg_val .
+
+    $default  reduce using rule 83 (args_proc)
+
+
+State 80
+
+   85 args_proc: arg_ref .
+
+    $default  reduce using rule 85 (args_proc)
+
+
+State 81
+
+   76 subrout_def: PROC ID '(' args_proc . ')' block
+   84 args_proc: args_proc . ',' arg_val
+   86          | args_proc . ',' arg_ref
+
+    ','  shift, and go to state 119
+    ')'  shift, and go to state 120
+
+
+State 82
+
+   41 assignment: ID PLUS_ASSIGN expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 41 (assignment)
+
+
+State 83
+
+   42 assignment: ID MINUS_ASSIGN expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 42 (assignment)
+
+
+State 84
+
+   43 assignment: ID MULT_ASSIGN expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 43 (assignment)
+
+
+State 85
+
+   44 assignment: ID DIV_ASSIGN expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 44 (assignment)
+
+
+State 86
+
+   40 assignment: ID '=' expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 40 (assignment)
+
+
+State 87
+
+   89 subrout_call: ID '(' . args_list ')'
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 121
+    args_list     go to state 122
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 88
+
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   64     | '-' expr .
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    $default  reduce using rule 64 (expr)
+
+
+State 89
+
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   65     | '(' expr . ')'
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+    ')'      shift, and go to state 123
+
+
+State 90
+
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   66     | '~' expr .
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    $default  reduce using rule 66 (expr)
+
+
+State 91
+
+   69 expr: expr LTOE . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 124
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 92
+
+   70 expr: expr GTOE . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 125
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 93
+
+   71 expr: expr EQUAL . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 126
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 94
+
+   72 expr: expr UNEQUAL . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 127
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 95
+
+   67 expr: expr AND . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 128
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 96
+
+   68 expr: expr OR . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 129
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 97
+
+   74 expr: expr '>' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 130
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 98
+
+   73 expr: expr '<' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 131
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 99
+
+   59 expr: expr '+' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 132
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 100
+
+   60 expr: expr '-' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 133
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 101
+
+   61 expr: expr '*' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 134
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 102
+
+   62 expr: expr '/' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 135
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 103
+
+   63 expr: expr '%' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 136
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 104
+
+   50 selection: IF expr block . elif_stm ELSE block
+   51          | IF expr block . elif_stm
+   52          | IF expr block . ELSE block
+   53          | IF expr block .
+
+    ELIF  shift, and go to state 137
+    ELSE  shift, and go to state 138
+
+    $default  reduce using rule 53 (selection)
+
+    elif_stm  go to state 139
+
+
+State 105
+
+   46 iteration: FOR for_args TO . for_args block
+   47          | FOR for_args TO . for_args STEP NUMBER block
+
+    $default  reduce using rule 48 (for_args)
+
+    for_args  go to state 140
+
+
+State 106
+
+   45 iteration: WHILE expr block .
+
+    $default  reduce using rule 45 (iteration)
+
+
+State 107
+
+   15 io_inst: READ STRING ',' . ID
+
+    ID  shift, and go to state 141
+
+
+State 108
+
+    7 ins_list: ins_list NL instruction . NL
+
+    NL  shift, and go to state 142
+
+
+State 109
+
+   26 declaration: s_c ID '{' . dcl_list '}'
+
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+
+    declaration  go to state 143
+    dcl_list     go to state 144
+    s_c          go to state 36
+    type         go to state 37
+
+
+State 110
+
+   22 declaration: type ID '=' . expr
+
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 145
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 111
+
+   33 dimension: '[' . NUMBER ']'
+
+    NUMBER  shift, and go to state 146
+
+
+State 112
+
+   23 declaration: type ID dimension .
+   24            | type ID dimension . '=' expr
+   34 dimension: dimension . '[' NUMBER ']'
+
+    '='  shift, and go to state 147
+    '['  shift, and go to state 148
+
+    $default  reduce using rule 23 (declaration)
+
+
+State 113
+
+   25 declaration: type point_d ID .
+
+    $default  reduce using rule 25 (declaration)
+
+
+State 114
+
+   32 point_d: point_d '*' .
+
+    $default  reduce using rule 32 (point_d)
+
+
+State 115
+
+   77 arg_val: type ID .
+
+    $default  reduce using rule 77 (arg_val)
+
+
+State 116
+
+   81 args_func: args_func ',' . arg_val
+
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
+
+    type     go to state 75
+    arg_val  go to state 149
+
+
 State 117
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   50     | expr '*' expr .
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   75 subrout_def: FUNC ID '(' args_func ')' . ARROW type block
 
-    $default  reduce using rule 50 (expr)
+    ARROW  shift, and go to state 150
 
 
 State 118
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   51     | expr '/' expr .
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   78 arg_ref: REF arg_val .
 
-    $default  reduce using rule 51 (expr)
+    $default  reduce using rule 78 (arg_ref)
 
 
 State 119
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   52     | expr '%' expr .
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   84 args_proc: args_proc ',' . arg_val
+   86          | args_proc ',' . arg_ref
 
-    $default  reduce using rule 52 (expr)
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
+    REF     shift, and go to state 78
+
+    type     go to state 75
+    arg_val  go to state 151
+    arg_ref  go to state 152
 
 
 State 120
 
-   43 elif_stm: ELIF . expr block
+   76 subrout_def: PROC ID '(' args_proc ')' . block
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 138
-    subrout_call  go to state 48
-    literal       go to state 49
+    block        go to state 153
+    subrout_def  go to state 9
 
 
 State 121
 
-   41 selection: IF expr block ELSE . block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+   87 args_list: expr .
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
 
-    block        go to state 139
-    subrout_def  go to state 5
+    $default  reduce using rule 87 (args_list)
 
 
 State 122
 
-   39 selection: IF expr block elif_stm . ELSE block
-   40          | IF expr block elif_stm .
-   44 elif_stm: elif_stm . ELIF expr block
+   88 args_list: args_list . ',' expr
+   89 subrout_call: ID '(' args_list . ')'
 
-    ELIF  shift, and go to state 140
-    ELSE  shift, and go to state 141
-
-    $default  reduce using rule 40 (selection)
+    ','  shift, and go to state 154
+    ')'  shift, and go to state 155
 
 
 State 123
 
-   35 iteration: FOR for_args TO for_args . block
-   36          | FOR for_args TO for_args . STEP NUMBER block
+   65 expr: '(' expr ')' .
 
-    STEP  shift, and go to state 142
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
-
-    block        go to state 143
-    subrout_def  go to state 5
+    $default  reduce using rule 65 (expr)
 
 
 State 124
 
-    4 ins_list: ins_list NL instruction NL .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   69     | expr LTOE expr .
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 4 (ins_list)
+    '+'  shift, and go to state 99
+    '-'  shift, and go to state 100
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
+
+    LTOE  error (nonassociative)
+    GTOE  error (nonassociative)
+    '>'   error (nonassociative)
+    '<'   error (nonassociative)
+
+    $default  reduce using rule 69 (expr)
 
 
 State 125
 
-   16 dcl_list: declaration .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   70     | expr GTOE expr .
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 16 (dcl_list)
+    '+'  shift, and go to state 99
+    '-'  shift, and go to state 100
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
+
+    LTOE  error (nonassociative)
+    GTOE  error (nonassociative)
+    '>'   error (nonassociative)
+    '<'   error (nonassociative)
+
+    $default  reduce using rule 70 (expr)
 
 
 State 126
 
-   15 declaration: s_c ID '{' dcl_list . '}'
-   17 dcl_list: dcl_list . declaration
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   71     | expr EQUAL expr .
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    '}'            shift, and go to state 144
+    LTOE  shift, and go to state 91
+    GTOE  shift, and go to state 92
+    '>'   shift, and go to state 97
+    '<'   shift, and go to state 98
+    '+'   shift, and go to state 99
+    '-'   shift, and go to state 100
+    '*'   shift, and go to state 101
+    '/'   shift, and go to state 102
+    '%'   shift, and go to state 103
 
-    declaration  go to state 145
-    s_c          go to state 23
-    type         go to state 24
+    $default  reduce using rule 71 (expr)
 
 
 State 127
 
-   11 declaration: type ID '=' expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   72     | expr UNEQUAL expr .
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
+    LTOE  shift, and go to state 91
+    GTOE  shift, and go to state 92
+    '>'   shift, and go to state 97
+    '<'   shift, and go to state 98
+    '+'   shift, and go to state 99
+    '-'   shift, and go to state 100
+    '*'   shift, and go to state 101
+    '/'   shift, and go to state 102
+    '%'   shift, and go to state 103
 
-    $default  reduce using rule 11 (declaration)
+    $default  reduce using rule 72 (expr)
 
 
 State 128
 
-   22 dimension: '[' NUMBER . ']'
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   67     | expr AND expr .
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    ']'  shift, and go to state 146
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 67 (expr)
 
 
 State 129
 
-   13 declaration: type ID dimension '=' . expr
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   68     | expr OR expr .
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 147
-    subrout_call  go to state 48
-    literal       go to state 49
+    $default  reduce using rule 68 (expr)
 
 
 State 130
 
-   23 dimension: dimension '[' . NUMBER ']'
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+   74     | expr '>' expr .
 
-    NUMBER  shift, and go to state 148
+    '+'  shift, and go to state 99
+    '-'  shift, and go to state 100
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
+
+    LTOE  error (nonassociative)
+    GTOE  error (nonassociative)
+    '>'   error (nonassociative)
+    '<'   error (nonassociative)
+
+    $default  reduce using rule 74 (expr)
 
 
 State 131
 
-   64 subrout_def: FUNC ID '(' args_func ')' ARROW . type block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   73     | expr '<' expr .
+   74     | expr . '>' expr
 
-    BOOL    shift, and go to state 9
-    CHAR    shift, and go to state 10
-    FLOAT   shift, and go to state 11
-    INT     shift, and go to state 12
-    HOLLOW  shift, and go to state 13
+    '+'  shift, and go to state 99
+    '-'  shift, and go to state 100
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
 
-    type  go to state 149
+    LTOE  error (nonassociative)
+    GTOE  error (nonassociative)
+    '>'   error (nonassociative)
+    '<'   error (nonassociative)
+
+    $default  reduce using rule 73 (expr)
 
 
 State 132
 
-   70 args_func: args_func ',' arg_val .
+   59 expr: expr . '+' expr
+   59     | expr '+' expr .
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 70 (args_func)
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
+
+    $default  reduce using rule 59 (expr)
 
 
 State 133
 
-   65 subrout_def: PROC ID '(' args_proc ')' block .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   60     | expr '-' expr .
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 65 (subrout_def)
+    '*'  shift, and go to state 101
+    '/'  shift, and go to state 102
+    '%'  shift, and go to state 103
+
+    $default  reduce using rule 60 (expr)
 
 
 State 134
 
-   73 args_proc: args_proc ',' arg_val .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   61     | expr '*' expr .
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 73 (args_proc)
+    $default  reduce using rule 61 (expr)
 
 
 State 135
 
-   75 args_proc: args_proc ',' arg_ref .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   62     | expr '/' expr .
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 75 (args_proc)
+    $default  reduce using rule 62 (expr)
 
 
 State 136
 
-   78 subrout_call: ID '(' args_list ')' .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   63     | expr '%' expr .
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 78 (subrout_call)
+    $default  reduce using rule 63 (expr)
 
 
 State 137
 
-   77 args_list: args_list ',' . expr
+   54 elif_stm: ELIF . expr block
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 150
-    subrout_call  go to state 48
-    literal       go to state 49
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 156
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 138
 
-   43 elif_stm: ELIF expr . block
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   52 selection: IF expr block ELSE . block
 
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 2
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-    '{'      shift, and go to state 3
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
 
-    block        go to state 151
-    subrout_def  go to state 5
+    block        go to state 157
+    subrout_def  go to state 9
 
 
 State 139
 
-   41 selection: IF expr block ELSE block .
+   50 selection: IF expr block elif_stm . ELSE block
+   51          | IF expr block elif_stm .
+   55 elif_stm: elif_stm . ELIF expr block
 
-    $default  reduce using rule 41 (selection)
+    ELIF  shift, and go to state 158
+    ELSE  shift, and go to state 159
+
+    $default  reduce using rule 51 (selection)
 
 
 State 140
 
-   44 elif_stm: elif_stm ELIF . expr block
+   46 iteration: FOR for_args TO for_args . block
+   47          | FOR for_args TO for_args . STEP NUMBER block
 
-    NUMBER         shift, and go to state 36
-    REAL           shift, and go to state 37
-    ID             shift, and go to state 38
-    CHARACTER      shift, and go to state 39
-    BOOL           shift, and go to state 9
-    CHAR           shift, and go to state 10
-    FLOAT          shift, and go to state 11
-    INT            shift, and go to state 12
-    HOLLOW         shift, and go to state 13
-    CONFEDERATION  shift, and go to state 14
-    STRUCT         shift, and go to state 15
-    JFALSE         shift, and go to state 40
-    JTRUE          shift, and go to state 41
-    JNULL          shift, and go to state 42
-    '-'            shift, and go to state 43
-    '('            shift, and go to state 44
-    '~'            shift, and go to state 45
+    STEP  shift, and go to state 160
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
 
-    declaration   go to state 46
-    s_c           go to state 23
-    type          go to state 24
-    expr          go to state 152
-    subrout_call  go to state 48
-    literal       go to state 49
+    block        go to state 161
+    subrout_def  go to state 9
 
 
 State 141
 
-   39 selection: IF expr block elif_stm ELSE . block
+   15 io_inst: READ STRING ',' ID .
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
-
-    block        go to state 153
-    subrout_def  go to state 5
+    $default  reduce using rule 15 (io_inst)
 
 
 State 142
 
-   36 iteration: FOR for_args TO for_args STEP . NUMBER block
+    7 ins_list: ins_list NL instruction NL .
 
-    NUMBER  shift, and go to state 154
+    $default  reduce using rule 7 (ins_list)
 
 
 State 143
 
-   35 iteration: FOR for_args TO for_args block .
+   27 dcl_list: declaration .
 
-    $default  reduce using rule 35 (iteration)
+    $default  reduce using rule 27 (dcl_list)
 
 
 State 144
 
-   15 declaration: s_c ID '{' dcl_list '}' .
+   26 declaration: s_c ID '{' dcl_list . '}'
+   28 dcl_list: dcl_list . declaration
 
-    $default  reduce using rule 15 (declaration)
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    '}'            shift, and go to state 162
+
+    declaration  go to state 163
+    s_c          go to state 36
+    type         go to state 37
 
 
 State 145
 
-   17 dcl_list: dcl_list declaration .
+   22 declaration: type ID '=' expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 17 (dcl_list)
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 22 (declaration)
 
 
 State 146
 
-   22 dimension: '[' NUMBER ']' .
+   33 dimension: '[' NUMBER . ']'
 
-    $default  reduce using rule 22 (dimension)
+    ']'  shift, and go to state 164
 
 
 State 147
 
-   13 declaration: type ID dimension '=' expr .
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   24 declaration: type ID dimension '=' . expr
 
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    $default  reduce using rule 13 (declaration)
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 165
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 148
 
-   23 dimension: dimension '[' NUMBER . ']'
+   34 dimension: dimension '[' . NUMBER ']'
 
-    ']'  shift, and go to state 155
+    NUMBER  shift, and go to state 166
 
 
 State 149
 
-   64 subrout_def: FUNC ID '(' args_func ')' ARROW type . block
+   81 args_func: args_func ',' arg_val .
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
-
-    block        go to state 156
-    subrout_def  go to state 5
+    $default  reduce using rule 81 (args_func)
 
 
 State 150
 
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
-   77 args_list: args_list ',' expr .
+   75 subrout_def: FUNC ID '(' args_func ')' ARROW . type block
 
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
+    BOOL    shift, and go to state 15
+    CHAR    shift, and go to state 16
+    FLOAT   shift, and go to state 17
+    INT     shift, and go to state 18
+    HOLLOW  shift, and go to state 19
 
-    $default  reduce using rule 77 (args_list)
+    type  go to state 167
 
 
 State 151
 
-   43 elif_stm: ELIF expr block .
+   84 args_proc: args_proc ',' arg_val .
 
-    $default  reduce using rule 43 (elif_stm)
+    $default  reduce using rule 84 (args_proc)
 
 
 State 152
 
-   44 elif_stm: elif_stm ELIF expr . block
-   48 expr: expr . '+' expr
-   49     | expr . '-' expr
-   50     | expr . '*' expr
-   51     | expr . '/' expr
-   52     | expr . '%' expr
-   56     | expr . AND expr
-   57     | expr . OR expr
-   58     | expr . LTOE expr
-   59     | expr . GTOE expr
-   60     | expr . EQUAL expr
-   61     | expr . UNEQUAL expr
-   62     | expr . '<' expr
-   63     | expr . '>' expr
+   86 args_proc: args_proc ',' arg_ref .
 
-    FUNC     shift, and go to state 1
-    PROC     shift, and go to state 2
-    LTOE     shift, and go to state 75
-    GTOE     shift, and go to state 76
-    EQUAL    shift, and go to state 77
-    UNEQUAL  shift, and go to state 78
-    AND      shift, and go to state 79
-    OR       shift, and go to state 80
-    '>'      shift, and go to state 81
-    '<'      shift, and go to state 82
-    '+'      shift, and go to state 83
-    '-'      shift, and go to state 84
-    '*'      shift, and go to state 85
-    '/'      shift, and go to state 86
-    '%'      shift, and go to state 87
-    '{'      shift, and go to state 3
-
-    block        go to state 157
-    subrout_def  go to state 5
+    $default  reduce using rule 86 (args_proc)
 
 
 State 153
 
-   39 selection: IF expr block elif_stm ELSE block .
+   76 subrout_def: PROC ID '(' args_proc ')' block .
 
-    $default  reduce using rule 39 (selection)
+    $default  reduce using rule 76 (subrout_def)
 
 
 State 154
 
-   36 iteration: FOR for_args TO for_args STEP NUMBER . block
+   88 args_list: args_list ',' . expr
 
-    FUNC  shift, and go to state 1
-    PROC  shift, and go to state 2
-    '{'   shift, and go to state 3
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
 
-    block        go to state 158
-    subrout_def  go to state 5
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 168
+    subrout_call  go to state 61
+    literal       go to state 62
 
 
 State 155
 
-   23 dimension: dimension '[' NUMBER ']' .
+   89 subrout_call: ID '(' args_list ')' .
 
-    $default  reduce using rule 23 (dimension)
+    $default  reduce using rule 89 (subrout_call)
 
 
 State 156
 
-   64 subrout_def: FUNC ID '(' args_func ')' ARROW type block .
+   54 elif_stm: ELIF expr . block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
 
-    $default  reduce using rule 64 (subrout_def)
+    FUNC     shift, and go to state 2
+    PROC     shift, and go to state 3
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+    '{'      shift, and go to state 7
+
+    block        go to state 169
+    subrout_def  go to state 9
 
 
 State 157
 
-   44 elif_stm: elif_stm ELIF expr block .
+   52 selection: IF expr block ELSE block .
 
-    $default  reduce using rule 44 (elif_stm)
+    $default  reduce using rule 52 (selection)
 
 
 State 158
 
-   36 iteration: FOR for_args TO for_args STEP NUMBER block .
+   55 elif_stm: elif_stm ELIF . expr block
 
-    $default  reduce using rule 36 (iteration)
+    NUMBER         shift, and go to state 49
+    REAL           shift, and go to state 50
+    ID             shift, and go to state 51
+    CHARACTER      shift, and go to state 52
+    BOOL           shift, and go to state 15
+    CHAR           shift, and go to state 16
+    FLOAT          shift, and go to state 17
+    INT            shift, and go to state 18
+    HOLLOW         shift, and go to state 19
+    CONFEDERATION  shift, and go to state 20
+    STRUCT         shift, and go to state 21
+    JFALSE         shift, and go to state 53
+    JTRUE          shift, and go to state 54
+    JNULL          shift, and go to state 55
+    '-'            shift, and go to state 56
+    '('            shift, and go to state 57
+    '~'            shift, and go to state 58
+
+    declaration   go to state 59
+    s_c           go to state 36
+    type          go to state 37
+    expr          go to state 170
+    subrout_call  go to state 61
+    literal       go to state 62
+
+
+State 159
+
+   50 selection: IF expr block elif_stm ELSE . block
+
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
+
+    block        go to state 171
+    subrout_def  go to state 9
+
+
+State 160
+
+   47 iteration: FOR for_args TO for_args STEP . NUMBER block
+
+    NUMBER  shift, and go to state 172
+
+
+State 161
+
+   46 iteration: FOR for_args TO for_args block .
+
+    $default  reduce using rule 46 (iteration)
+
+
+State 162
+
+   26 declaration: s_c ID '{' dcl_list '}' .
+
+    $default  reduce using rule 26 (declaration)
+
+
+State 163
+
+   28 dcl_list: dcl_list declaration .
+
+    $default  reduce using rule 28 (dcl_list)
+
+
+State 164
+
+   33 dimension: '[' NUMBER ']' .
+
+    $default  reduce using rule 33 (dimension)
+
+
+State 165
+
+   24 declaration: type ID dimension '=' expr .
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 24 (declaration)
+
+
+State 166
+
+   34 dimension: dimension '[' NUMBER . ']'
+
+    ']'  shift, and go to state 173
+
+
+State 167
+
+   75 subrout_def: FUNC ID '(' args_func ')' ARROW type . block
+
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
+
+    block        go to state 174
+    subrout_def  go to state 9
+
+
+State 168
+
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+   88 args_list: args_list ',' expr .
+
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+
+    $default  reduce using rule 88 (args_list)
+
+
+State 169
+
+   54 elif_stm: ELIF expr block .
+
+    $default  reduce using rule 54 (elif_stm)
+
+
+State 170
+
+   55 elif_stm: elif_stm ELIF expr . block
+   59 expr: expr . '+' expr
+   60     | expr . '-' expr
+   61     | expr . '*' expr
+   62     | expr . '/' expr
+   63     | expr . '%' expr
+   67     | expr . AND expr
+   68     | expr . OR expr
+   69     | expr . LTOE expr
+   70     | expr . GTOE expr
+   71     | expr . EQUAL expr
+   72     | expr . UNEQUAL expr
+   73     | expr . '<' expr
+   74     | expr . '>' expr
+
+    FUNC     shift, and go to state 2
+    PROC     shift, and go to state 3
+    LTOE     shift, and go to state 91
+    GTOE     shift, and go to state 92
+    EQUAL    shift, and go to state 93
+    UNEQUAL  shift, and go to state 94
+    AND      shift, and go to state 95
+    OR       shift, and go to state 96
+    '>'      shift, and go to state 97
+    '<'      shift, and go to state 98
+    '+'      shift, and go to state 99
+    '-'      shift, and go to state 100
+    '*'      shift, and go to state 101
+    '/'      shift, and go to state 102
+    '%'      shift, and go to state 103
+    '{'      shift, and go to state 7
+
+    block        go to state 175
+    subrout_def  go to state 9
+
+
+State 171
+
+   50 selection: IF expr block elif_stm ELSE block .
+
+    $default  reduce using rule 50 (selection)
+
+
+State 172
+
+   47 iteration: FOR for_args TO for_args STEP NUMBER . block
+
+    FUNC  shift, and go to state 2
+    PROC  shift, and go to state 3
+    '{'   shift, and go to state 7
+
+    block        go to state 176
+    subrout_def  go to state 9
+
+
+State 173
+
+   34 dimension: dimension '[' NUMBER ']' .
+
+    $default  reduce using rule 34 (dimension)
+
+
+State 174
+
+   75 subrout_def: FUNC ID '(' args_func ')' ARROW type block .
+
+    $default  reduce using rule 75 (subrout_def)
+
+
+State 175
+
+   55 elif_stm: elif_stm ELIF expr block .
+
+    $default  reduce using rule 55 (elif_stm)
+
+
+State 176
+
+   47 iteration: FOR for_args TO for_args STEP NUMBER block .
+
+    $default  reduce using rule 47 (iteration)

@@ -90,8 +90,7 @@ extern int yydebug;
     MULT_ASSIGN = 300,
     DIV_ASSIGN = 301,
     ARROW = 302,
-    UNARY = 303,
-    CALL = 304
+    UNARY = 303
   };
 #endif
 
@@ -108,7 +107,7 @@ union YYSTYPE
 	char *str;
 	char c[2];
 
-#line 112 "grammar.tab.h" /* yacc.c:1909  */
+#line 111 "grammar.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

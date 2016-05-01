@@ -54,10 +54,20 @@
 %left '+' '-'
 %left '*' '/' '%'
 %right UNARY
-%nonassoc CALL
 
+%start jaxmin
 
 %%
+
+jaxmin
+	: definitions PROGRAM block
+	| PROGRAM block
+	;
+
+definitions
+	: subrout_def
+	;
+
 
 block
     : '{' ins_list '}'
@@ -75,7 +85,21 @@ instruction
     | selection
     | iteration
     | block
+    | jump
+    | io_inst
     ;
+
+io_inst
+	: READ STRING ',' ID
+	| WRITE STRING
+	;
+
+jump
+	: NEXT
+	| BREAK
+	| RETURN
+	| RETURN expr
+	;
 
 declaration
     : type ID
