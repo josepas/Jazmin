@@ -147,6 +147,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 ")"		return ')';
 "."		return '.';
 ","     return ',';
+";"     return ';';
 "="		return '=';
 "+"		return '+';
 "-"		return '-';

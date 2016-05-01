@@ -78,8 +78,8 @@ instruction
     ;
 
 declaration
-    : type id_list
-    | type id_list '=' expr
+    : type ID
+    | type ID '=' expr
     | type ID dimension
     | type ID dimension '=' expr
     | type point_d ID
@@ -104,11 +104,6 @@ point_d
 dimension
     : '[' NUMBER ']'
     | dimension '[' NUMBER ']'
-    ;
-
-id_list
-    : ID
-    | id_list ',' ID
     ;
 
 
