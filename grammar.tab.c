@@ -65,9 +65,10 @@
 #line 1 "grammar.y" /* yacc.c:339  */
 
  #include <stdio.h>
+extern int yylineno;
 void yyerror (char const *s);
 
-#line 71 "grammar.tab.c" /* yacc.c:339  */
+#line 72 "grammar.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -156,7 +157,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 6 "grammar.y" /* yacc.c:355  */
+#line 7 "grammar.y" /* yacc.c:355  */
 
 	int ival;
 	float fval;
@@ -164,7 +165,7 @@ union YYSTYPE
 	char *str;
 	char c[2];
 
-#line 168 "grammar.tab.c" /* yacc.c:355  */
+#line 169 "grammar.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -193,7 +194,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 197 "grammar.tab.c" /* yacc.c:358  */
+#line 198 "grammar.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -497,17 +498,17 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    62,    62,    63,    66,    68,    72,    73,    77,    78,
-      79,    83,    87,    88,    92,    93,    94,    95,    96,    97,
-      98,    99,   103,   104,   108,   109,   113,   114,   115,   116,
-     120,   121,   122,   123,   124,   125,   126,   130,   131,   135,
-     136,   140,   141,   145,   146,   150,   151,   152,   153,   154,
-     158,   159,   160,   161,   162,   166,   167,   168,   171,   173,
-     176,   177,   178,   179,   183,   184,   188,   189,   190,   191,
-     192,   193,   194,   195,   196,   197,   198,   199,   200,   201,
-     202,   203,   204,   205,   206,   210,   211,   215,   219,   221,
-     223,   224,   227,   229,   230,   231,   232,   236,   237,   241,
-     245,   246,   247,   248,   249,   250
+       0,    63,    63,    64,    67,    69,    75,    76,    80,    81,
+      82,    86,    90,    91,    95,    96,    97,    98,    99,   100,
+     101,   102,   106,   107,   111,   112,   116,   117,   118,   119,
+     123,   124,   125,   126,   127,   128,   129,   133,   134,   138,
+     139,   143,   144,   148,   149,   153,   154,   155,   156,   157,
+     161,   162,   163,   164,   165,   169,   170,   171,   174,   176,
+     179,   180,   181,   182,   186,   187,   191,   192,   193,   194,
+     195,   196,   197,   198,   199,   200,   201,   202,   203,   204,
+     205,   206,   207,   208,   209,   213,   214,   218,   222,   224,
+     226,   227,   230,   232,   233,   234,   235,   239,   240,   244,
+     248,   249,   250,   251,   252,   253
 };
 #endif
 
@@ -1554,13 +1555,13 @@ yyreduce:
   switch (yyn)
     {
         case 69:
-#line 191 "grammar.y" /* yacc.c:1646  */
+#line 194 "grammar.y" /* yacc.c:1646  */
     {printf("holaaa!");}
-#line 1560 "grammar.tab.c" /* yacc.c:1646  */
+#line 1561 "grammar.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1564 "grammar.tab.c" /* yacc.c:1646  */
+#line 1565 "grammar.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1795,11 +1796,11 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 252 "grammar.y" /* yacc.c:1906  */
+#line 255 "grammar.y" /* yacc.c:1906  */
 
 
 void yyerror (char const *s)
 {
-    fprintf (stderr, "%s\n", s);
+    fprintf (stderr, "%s %d:%d\n", s, yylineno, yylloc.first_column);
 }
 

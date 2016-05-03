@@ -14,11 +14,9 @@ int main(int argc, char *argv[]) {
 		switch (c) {
 			case 'l':
 				stage = LEXER;
-				goto lexer;
 				break;
 			case 'p':
 				stage = PARSER;
-				goto parser;
 				break;
 			case '?':
 				break;
@@ -32,14 +30,15 @@ int main(int argc, char *argv[]) {
     else
     	yyin = stdin;
 
-	lexer:;
-    int token;
-    while (token = yylex()) {
-    	print_token(token);
+    if (stage == LEXER) {
+        int token;
+        while (token = yylex()) {
+        	print_token(token);
+        }
+        return 0;
     }
-    return 0;
 
-    parser:
+
     printf("estoy en el parser\n");
     yyparse();
 

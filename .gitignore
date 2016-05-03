@@ -32,5 +32,6 @@
 
 # Parser assets
 *.tab.h
+*.output
 
 

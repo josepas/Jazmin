@@ -1,5 +1,6 @@
 %{
  #include <stdio.h>
+extern int yylineno;
 void yyerror (char const *s);
 %}
 %locations
@@ -59,7 +60,7 @@ void yyerror (char const *s);
 
 
 jaxmin
-    : definitions PROGRAM block
+    : definitions PROGRAM block 
     | PROGRAM block
     ;
 
@@ -67,6 +68,8 @@ e
     : /* lambda */
     | NL 
     ;
+
+    
 
 definitions
 	: outer_def
@@ -253,6 +256,6 @@ literal
 
 void yyerror (char const *s)
 {
-    fprintf (stderr, "%s\n", s);
+    fprintf (stderr, "%s %d:%d\n", s, yylineno, yylloc.first_column);
 }
 

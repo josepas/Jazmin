@@ -99,7 +99,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 6 "grammar.y" /* yacc.c:1909  */
+#line 7 "grammar.y" /* yacc.c:1909  */
 
 	int ival;
 	float fval;
