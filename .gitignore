@@ -32,6 +32,8 @@
 
 # Parser assets
 *.tab.h
+*.tab.c
 *.output
 
-
+# Compilador
+jaxmin
