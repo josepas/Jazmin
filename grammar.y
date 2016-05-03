@@ -9,7 +9,7 @@ void yyerror (char const *s);
 	float fval;
 	char *idval;
 	char *str;
-	char c[2];
+	char c;
 }
 
 
@@ -60,20 +60,20 @@ void yyerror (char const *s);
 
 
 jaxmin
-    : definitions PROGRAM block 
+    : definitions PROGRAM block
     | PROGRAM block
     ;
 
-e 
+e
     : /* lambda */
-    | NL 
+    | NL
     ;
 
-    
+
 
 definitions
 	: outer_def
-    | definitions NL outer_def 
+    | definitions NL outer_def
 	;
 
 outer_def
@@ -87,7 +87,7 @@ block
     ;
 
 ins_list
-    : instruction 
+    : instruction
     | ins_list instruction
     ;
 
@@ -95,7 +95,7 @@ instruction
     : declaration
     | block
     | selection
-    | iteration 
+    | iteration
     | assignment NL
     | jump NL
     | io_inst NL
@@ -103,7 +103,7 @@ instruction
     ;
 
 malloc
-    : BORN '(' ID ',' type ')' 
+    : BORN '(' ID ',' type ')'
     | PUFF '(' ID ')'
     ;
 

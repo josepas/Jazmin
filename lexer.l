@@ -95,13 +95,28 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 					}
 
 {CHARACTER}         {
-                        if (yyleng == 3) {
-                            yylval.c[0] = '\0';
-                            yylval.c[1] = yytext[1];
+                        if (yytext[1]=='\\') {
+                            switch (yytext[2]) {
+                                case ('0'): {
+                                    yylval.c = '\0';
+                                    break;
+                                }
+                                case ('a'): {
+                                    yylval.c = '\a';
+                                    break;
+                                }
+                                case ('t'): {
+                                    yylval.c = '\t';
+                                    break;
+                                }
+                                case ('n'): {
+                                    yylval.c = '\n';
+                                    break;
+                                }
+                            }
                         }
-                        else if (yyleng == 4) {
-                            yylval.c[0] = '\\';
-                            yylval.c[1] = yytext[2];
+                        else {
+                            yylval.c = yytext[1];
                         }
                         return CHARACTER;
                     }
@@ -117,6 +132,8 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 {STRING}            {
                         // El valor ya esta asignado en el YY_USER_ACTION
+                        yylval.str = strdup(++yytext);
+                        yylval.str[yyleng-2] = '\0';
                         return STRING;
                     }
 
@@ -197,7 +214,7 @@ void print_token(int token) {
         }
         case (CHARACTER) : {
             printf("Token: CHARACTER\n"
-                    "Valor: %c%c\n", yylval.c[0],yylval.c[1]);
+                    "Valor: %c\n", yylval.c);
             break;
         }
         case (STRING) : {
