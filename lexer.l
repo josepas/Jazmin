@@ -83,8 +83,6 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                         else {
                             fprintf(stderr, "Error:%d:%d:El entero %s no es valido (%s)\n\n",
                                     yylineno, yylloc.first_column, yytext, error);
-
-                            free(error);
                         }
 					}
 
@@ -93,7 +91,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 						yylval.fval = strtof(yytext, NULL);
                         if (errno==0)
                             return REAL;
-                        else
+                        else {
                             if (yylval.fval == 0) {
                                 fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (underflow)\n\n",
                                         yylineno, yylloc.first_column, yytext);
@@ -138,7 +136,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                     }
 {BAD_CHAR2}         {
                         fprintf(stderr, "Error:%d:%d:Un char no puede estar compuesto por más de un caracter\n\n",
-                                yylineno, yylloc.first_column, error);
+                                yylineno, yylloc.first_column);
                     }
 
 {STRING}            {
