@@ -14,10 +14,12 @@ int main(int argc, char *argv[]) {
 		switch (c) {
 			case 'l':
 				stage = LEXER;
+				goto lexer;
 				break;
 			case 'p':
-				break;
 				stage = PARSER;
+				goto parser;
+				break;
 			case '?':
 				break;
 			default:
@@ -25,13 +27,21 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
+	if ( optind == argc-1 ) 
+        yyin = fopen( argv[optind], "r" );
+    else
+    	yyin = stdin;
 
-
-	if ( optind == argc-1 ) { 
-        FILE *yyin = fopen( argv[optind], "r" );
+	lexer:;
+    int token;
+    while (token = yylex()) {
+    	print_token(token);
     }
+    return 0;
 
-
+    parser:
+    printf("estoy en el parser\n");
+    yyparse();
 
 
 

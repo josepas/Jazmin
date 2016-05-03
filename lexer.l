@@ -38,7 +38,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 %%
 [ \t]+   			/* Nada */
-\n+ 				{
+\n  				{
                         yycolumn = 1;
                         yylloc.first_line--;
                         return NL;

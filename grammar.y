@@ -1,8 +1,6 @@
 %{
  #include <stdio.h>
- void yyerror (char const *s) {
-   fprintf (stderr, "%s\n", s);
- }
+void yyerror (char const *s);
 %}
 %locations
 %union {
@@ -190,7 +188,7 @@ expr
     : literal
     | ID
     | subrout_call
-    | expr '+' expr
+    | expr '+' expr        {printf("holaaa!");}
     | expr '-' expr
     | expr '*' expr
     | expr '/' expr
@@ -253,4 +251,8 @@ literal
 	;
 %%
 
+void yyerror (char const *s)
+{
+    fprintf (stderr, "%s\n", s);
+}
 
