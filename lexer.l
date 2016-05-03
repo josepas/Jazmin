@@ -81,7 +81,10 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
     						return NUMBER;
                         }
                         else {
-                            return -2;
+                            fprintf(stderr, "Error:%d:%d:El entero %s no es valido (%s)\n\n",
+                                    yylineno, yylloc.first_column, yytext, error);
+
+                            free(error);
                         }
 					}
 
@@ -91,7 +94,15 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                         if (errno==0)
                             return REAL;
                         else
-                            return -3;
+                            if (yylval.fval == 0) {
+                                fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (underflow)\n\n",
+                                        yylineno, yylloc.first_column, yytext);
+                            }
+                            else {
+                                fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (overflow)\n\n",
+                                        yylineno, yylloc.first_column, yytext);
+                            }
+                        }
 					}
 
 {CHARACTER}         {
@@ -122,12 +133,12 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                     }
 
 {BAD_CHAR1}         {
-                        error = "Falta esperando por el caracter: '";
-                        return -1;
+                        fprintf(stderr, "Error:%d:%d:Esperando por el caracter: '\n\n",
+                                yylineno, yylloc.first_column);
                     }
 {BAD_CHAR2}         {
-                        error = "Un char no puede estar compuesto por más de un caracter";
-                        return -1;
+                        fprintf(stderr, "Error:%d:%d:Un char no puede estar compuesto por más de un caracter\n\n",
+                                yylineno, yylloc.first_column, error);
                     }
 
 {STRING}            {
@@ -138,8 +149,8 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                     }
 
 {BAD_STRING}        {
-                        error = "Falta esperando por el caracter: \"";
-                        return -1;
+                        fprintf(stderr, "Error:%d:%d:Esperando por el caracter: \"\n\n",
+                                yylineno, yylloc.first_column);
                     }
 
 "<="		return LTOE;
@@ -189,7 +200,8 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 .		{
             error = "Caracter inesperado";
-            return -4;
+            fprintf(stderr, "Error:%d:%d:Caracter inesperado (%s)\n\n",
+                    yylineno, yylloc.first_column, yytext);
         }
 
 
@@ -236,26 +248,3 @@ void print_token(int token) {
 	printf("Fila: %d\n"
 		"Columna: %d\n\n", yylloc.first_line, yylloc.first_column);
 }
-
-void print_error(int errort) {
-    if(errort == -1)
-        fprintf(stderr, "Error:%d:%d:%s\n\n",
-            yylineno, yylloc.first_column, error);
-    else if (errort == -2)
-        fprintf(stderr, "Error:%d:%d:El entero %s no es valido (%s)\n\n",
-                yylineno, yylloc.first_column, yytext, error);
-    else if (errort == -3) {
-        if (yylval.fval == 0)
-            fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (underflow)\n\n",
-                    yylineno, yylloc.first_column, yytext);
-        else
-            fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (overflow)\n\n",
-                    yylineno, yylloc.first_column, yytext);
-    }
-    else if(errort == -4)
-        fprintf(stderr, "Error:%d:%d:%s (%s)\n\n",
-            yylineno, yylloc.first_column, error, yytext);
-
-}
-
-
