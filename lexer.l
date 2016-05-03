@@ -241,26 +241,4 @@ void print_error(int errort) {
 
 }
 
-int main(int argc, char const *argv[]) {
-    ++argv, --argc;  /* skip over program name */
-    if ( argc > 0 )
-        yyin = fopen( argv[0], "r" );
-    else
-        yyin = stdin;
 
-    int token;
-
-    while((token = yylex())) {
-        if(token < 0) {
-            error_num++;
-            print_error(token);
-        }
-        else {
-            print_token(token);
-        }
-	}
-
-    fprintf(stderr, "Se encontraron %d errores.\n", error_num);
-    return 0;
-
-}

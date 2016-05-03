@@ -59,39 +59,50 @@
 
 %%
 
+
 jaxmin
-	: definitions PROGRAM block
-	| PROGRAM block
-	;
+    : definitions PROGRAM block
+    | PROGRAM block
+    ;
+
+e 
+    : /* lambda */
+    | NL 
+    ;
 
 definitions
-	: subrout_def
+	: outer_def
+    | definitions NL outer_def 
 	;
 
+outer_def
+    : declaration
+    | subrout_def
+    | malloc NL
+    ;
 
 block
-    : '{' ins_list '}'
-    | subrout_def
+    : e '{' NL ins_list '}'
     ;
 
 ins_list
-    : instruction NL
-    | ins_list NL instruction NL
+    : instruction 
+    | ins_list instruction
     ;
 
 instruction
     : declaration
-    | assignment
-    | selection
-    | iteration
     | block
-    | jump
-    | io_inst
-    | malloc
+    | selection
+    | iteration 
+    | assignment NL
+    | jump NL
+    | io_inst NL
+    | malloc NL
     ;
 
 malloc
-    : BORN type
+    : BORN '(' ID ',' type ')' 
     | PUFF '(' ID ')'
     ;
 
@@ -108,13 +119,13 @@ jump
 	;
 
 declaration
-    : type ID
-    | type ID '=' expr
-    | type ID dimension
-    | type ID dimension '=' expr
-    | type point_d ID
+    : type ID NL
+    | type ID '=' expr NL
+    | type ID dimension NL
+    | type ID dimension '=' expr NL
+    | type point_d ID NL
     | s_c ID '{' dcl_list '}'
-    | s_c ID ID;
+    | s_c ID ID NL
     ;
 
 dcl_list

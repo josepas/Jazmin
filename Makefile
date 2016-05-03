@@ -1,7 +1,9 @@
 LEX=flex
+CCFLAGS=-g 
+
 
 scanner: parser lexer
-	gcc lex.yy.c grammar.tab.c -lbsd -lfl -o scanner
+	gcc $(CCFLAGS) lex.yy.c grammar.tab.c -lbsd -lfl -o scanner
 
 parser:
 	bison -d -v grammar.y

@@ -1,0 +1,3 @@
+Aclaraciones.txt
+
+Antes de la llave que abre puede o no ir un NL, despues de la llave debe ir siempre un NL
