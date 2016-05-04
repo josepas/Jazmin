@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
     if (stage == LEXER) {
         int token;
-        while (token = yylex()) {
+        while ( ( token = yylex() ) ) {
         	print_token(token);
         }
         if (!error_num) {

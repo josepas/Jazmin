@@ -1,5 +1,5 @@
 LEX=flex
-CCFLAGS=-g 
+CCFLAGS=-g -Wall
 
 jaxmin: main.c grammar.tab.c lex.yy.c
 	gcc $(CCFLAGS) main.c grammar.tab.c -lbsd -lfl -o $@

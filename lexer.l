@@ -20,6 +20,8 @@ const char * tokens[] = {"NUMBER", "REAL", "ID", "CHARACTER", "STRING", "NL", "B
 
 %option yylineno
 %option noyywrap
+%option nounput
+%option noinput
 
 
 ID          [[:lower:]][[:alnum:]_]*

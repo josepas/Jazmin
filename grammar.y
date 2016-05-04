@@ -1,9 +1,13 @@
 %{
  #include <stdio.h>
+
 extern int yylineno;
 extern char* yytext;
+
 int has_error = 0;
+
 void yyerror (char const *s);
+extern int yylex();
 %}
 %locations
 %union {
@@ -84,7 +88,6 @@ definitions
 outer_def
     : declaration
     | subrout_def
-    | malloc
     ;
 
 block
