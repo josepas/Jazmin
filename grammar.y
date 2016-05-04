@@ -60,35 +60,38 @@ void yyerror (char const *s);
 
 
 jaxmin
-    : definitions PROGRAM block
-    | PROGRAM block
+    : definitions nls PROGRAM block opt_nls
+    | PROGRAM block opt_nls
     ;
 
-e
+opt_nls
     : /* lambda */
-    | NL
+    | nls
     ;
 
-
+nls
+    : NL
+    | nls NL
+    ;
 
 definitions
 	: outer_def
-    | definitions NL outer_def
+    | definitions nls outer_def
 	;
 
 outer_def
     : declaration
     | subrout_def
-    | malloc NL
+    | malloc
     ;
 
 block
-    : e '{' NL ins_list '}'
+    : '{' opt_nls ins_list opt_nls '}'
     ;
 
 ins_list
     : instruction
-    | ins_list instruction
+    | ins_list nls instruction
     ;
 
 instruction
@@ -96,10 +99,10 @@ instruction
     | block
     | selection
     | iteration
-    | assignment NL
-    | jump NL
-    | io_inst NL
-    | malloc NL
+    | assignment
+    | jump
+    | io_inst
+    | malloc
     ;
 
 malloc
@@ -108,8 +111,10 @@ malloc
     ;
 
 io_inst
-	: READ STRING ',' ID
-	| WRITE STRING
+    : READ STRING ',' ID
+	| READ ID
+    | WRITE STRING
+	| WRITE ID
 	;
 
 jump
@@ -120,18 +125,18 @@ jump
 	;
 
 declaration
-    : type ID NL
-    | type ID '=' expr NL
-    | type ID dimension NL
-    | type ID dimension '=' expr NL
-    | type point_d ID NL
-    | s_c ID '{' dcl_list '}'
-    | s_c ID ID NL
+    : type ID
+    | type ID '=' expr
+    | type ID dimension
+    | type ID dimension '=' expr
+    | type point_d ID
+    | s_c ID '{' opt_nls dcl_list opt_nls '}'
+    | s_c ID ID
     ;
 
 dcl_list
     : declaration
-    | dcl_list declaration
+    | dcl_list nls declaration
     ;
 
 s_c
@@ -173,7 +178,8 @@ iteration
 
 for_args
     : expr
-    : declaration
+    | declaration
+    ;
 
 selection
     : IF expr block elif_stm ELSE block
@@ -191,7 +197,7 @@ expr
     : literal
     | ID
     | subrout_call
-    | expr '+' expr        {printf("holaaa!");}
+    | expr '+' expr
     | expr '-' expr
     | expr '*' expr
     | expr '/' expr
