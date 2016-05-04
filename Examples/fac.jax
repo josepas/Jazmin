@@ -1,0 +1,16 @@
+program {
+    int c
+    int n
+    int fact = 1
+
+    write "Dame un numero\n"
+    read n
+
+    for c to n {
+        fact = fact * c
+    }
+    write "Factorial de "
+    write n
+    write " es:"
+    write fact
+}
