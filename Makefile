@@ -1,17 +1,16 @@
 LEX=flex
 CCFLAGS=-g 
 
-main: scanner
+jaxmin: main.c grammar.tab.c lex.yy.c
 	gcc $(CCFLAGS) main.c grammar.tab.c -lbsd -lfl -o jaxmin
 
-scanner: parser lexer
-	gcc -c $(CCFLAGS) lex.yy.c grammar.tab.c -lbsd -lfl 
+grammar.tab.c grammar.tab.h: grammar.y
+	bison -d -v $^
 
-parser:
-	bison -d -v grammar.y
-
-lexer:
-	flex lexer.l
+lex.yy.c: lexer.l
+	flex $^
 
 clean:
-	rm -f lex.yy.c grammar.tab.c grammar.tab.h grammar.output *.o *.gch
+	rm -f lex.yy.c grammar.tab.c grammar.tab.h grammar.output 
+	rm -f *.o *.gch 
+	rm -f jaxmin
