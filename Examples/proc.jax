@@ -1,0 +1,13 @@
+# Probando definiciones antes de program
+
+proc foo(int i, ref float b, char c, ref int bla) {
+    int j
+}
+
+func bar() -> char {
+    return letra('a')
+}
+
+program {
+    int qux
+}

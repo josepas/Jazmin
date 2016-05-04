@@ -1,0 +1,25 @@
+program {
+    int j
+    float k = 2 + 3
+    char c[2]
+    int i[1][4]
+    float ** p
+
+    struct Foo {
+        struct Bar {
+            int j
+        }
+
+        float mini
+    }
+
+    confederation Qux {
+        confederation Zap {
+            int j
+        }
+
+        float maax
+    }
+
+    confederation Qux baa
+}
