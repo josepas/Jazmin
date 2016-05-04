@@ -1,0 +1,48 @@
+malloc
+error seg fault
+listas vacias
+
+clase de laboratorio3 tablas de simbolos
+
+planteara dos soluciioones basicas de como darle la vuelta a las tablas de simbolos
+
+tabla de hash dar lo minimo
+funcion de hash jenkins one by one
+la clase simbolo que por ahora llevara solo linea y columna
+
+jerarquia de las tablas, wrap de las tablas de hash en una estructura de arbol pero tambien relacion entre hermanos
+
+
+tabla de hash
+    lookup
+    insert
+    dump mostrar la tabla
+    destroy
+
+arbol de tablas
+    creartabla(padre)
+    lookup() solo quiere saber si existe el simbolo
+        desde el actual hasta el tope
+    dump para mostrar todo el arbol de tablas
+    destroy
+    enterScope crea una nueva tabla vacia y mueve el current
+    exitScope()
+
+Implementacion:
+    Tabla actual y aritmetica de apuntadores
+
+    las cosas predefinidas en el scope 0
+    comienzo en el scope 1 con las variables globales
+    declaraciones de subritinas y procedimentos con apuntadores a sus tablas
+    donde van los strings, en una tabla separada solo para los strings constantes en una de tabla de hash sola global donde pueden ir las constantes manifiestas
+
+Metodo 2 Leblanc-Cook
+es un solo hash grande con un primo grande (rafael) con un identificador de anidamiento
+
+ademas una pila de anidamientos manejadad por enter y exit scope
+
+
+Impresion:
+debe llevar el id y en que bucket de la tabla de hash se encuentra y cada anidamiento en
+
+

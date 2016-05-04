@@ -24,28 +24,34 @@ int main(int argc, char *argv[]) {
 				abort();
 		}
 	}
-	
-	if ( optind == argc-1 ) 
+
+	if ( optind == argc-1 )
         yyin = fopen( argv[optind], "r" );
     else
     	yyin = stdin;
+
+    extern int has_error;
+    extern int error_num;
 
     if (stage == LEXER) {
         int token;
         while (token = yylex()) {
         	print_token(token);
         }
-        return 0;
+        if (!error_num) {
+            printf("Se econtraron %d errores.\n", error_num);
+            has_error = 1;
+            return(EXIT_FAILURE);
+        }
+        return(EXIT_SUCCESS);
     }
 
-
-    printf("estoy en el parser\n");
     yyparse();
 
 
-
-	if (0) 
+	if (has_error)
+        return(EXIT_FAILURE);
+    else
 		return(EXIT_SUCCESS);
-	else 
-		return(EXIT_FAILURE);
+
 }

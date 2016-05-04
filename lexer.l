@@ -84,6 +84,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
     						return NUMBER;
                         }
                         else {
+                            error_num++;
                             fprintf(stderr, "Error:%d:%d:El entero %s no es valido (%s)\n\n",
                                     yylineno, yylloc.first_column, yytext, error);
                         }
@@ -95,6 +96,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                         if (errno==0)
                             return REAL;
                         else {
+                            error_num++;
                             if (yylval.fval == 0) {
                                 fprintf(stderr, "Error:%d:%d:El flotante %s no es valido (underflow)\n\n",
                                         yylineno, yylloc.first_column, yytext);
@@ -134,10 +136,12 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                     }
 
 {BAD_CHAR1}         {
+                        error_num++;
                         fprintf(stderr, "Error:%d:%d:Esperando por el caracter: '\n\n",
                                 yylineno, yylloc.first_column);
                     }
 {BAD_CHAR2}         {
+                        error_num++;
                         fprintf(stderr, "Error:%d:%d:Un char no puede estar compuesto por más de un caracter\n\n",
                                 yylineno, yylloc.first_column);
                     }
@@ -150,6 +154,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
                     }
 
 {BAD_STRING}        {
+                        error_num++;
                         fprintf(stderr, "Error:%d:%d:Esperando por el caracter: \"\n\n",
                                 yylineno, yylloc.first_column);
                     }
@@ -200,7 +205,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 
 
 .		{
-            error = "Caracter inesperado";
+            error_num++;
             fprintf(stderr, "Error:%d:%d:Caracter inesperado (%s)\n\n",
                     yylineno, yylloc.first_column, yytext);
         }

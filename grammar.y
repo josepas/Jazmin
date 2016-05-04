@@ -1,6 +1,8 @@
 %{
  #include <stdio.h>
 extern int yylineno;
+extern char* yytext;
+int has_error = 0;
 void yyerror (char const *s);
 %}
 %locations
@@ -262,6 +264,7 @@ literal
 
 void yyerror (char const *s)
 {
-    fprintf (stderr, "%s %d:%d\n", s, yylineno, yylloc.first_column);
+    has_error++;
+    fprintf (stderr, "%s %d:%d en %s\n", s, yylineno, yylloc.first_column, yytext);
 }
 
