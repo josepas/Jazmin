@@ -22,7 +22,8 @@ const char * tokens[] = {"NUMBER", "REAL", "ID", "CHARACTER", "STRING", "NL", "B
 %option noyywrap
 
 
-ID			[[:alpha:]][[:alnum:]_]*
+ID          [[:lower:]][[:alnum:]_]*
+STRUCT_ID   [[:upper:]][[:alnum:]_]*
 NUMBER 		[[:digit:]]+
 FLOAT  		[[:digit:]]*\.[[:digit:]]+([eE][+-]?[[:digit:]]+)?
 STRING      \"([^"\n]|\\\")*\"
@@ -72,7 +73,9 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 "True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
+
 {ID} 				return ID;
+{STRUCT_ID}         return SC_ID;
 
 {NUMBER} 			{
                         errno = 0;

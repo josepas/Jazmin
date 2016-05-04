@@ -7,7 +7,6 @@ void yyerror (char const *s);
 %union {
 	int ival;
 	float fval;
-	char *idval;
 	char *str;
 	char c;
 }
@@ -15,13 +14,14 @@ void yyerror (char const *s);
 
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
-%token 	<idval> ID
 %token  <str>   STRING
-%token 	<c>		CHARACTER
+%token  <c>     CHARACTER
 
 %token PROGRAM
 
 %token NL
+
+%token ID SC_ID
 
 %token BOOL CHAR FLOAT INT HOLLOW
 
@@ -130,8 +130,8 @@ declaration
     | type ID dimension
     | type ID dimension '=' expr
     | type point_d ID
-    | s_c ID '{' opt_nls dcl_list opt_nls '}'
-    | s_c ID ID
+    | s_c SC_ID '{' opt_nls dcl_list opt_nls '}'
+    | s_c SC_ID ID
     ;
 
 dcl_list

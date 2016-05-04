@@ -1,5 +1,0 @@
-los caracteres y strings (quitar el "")
-comer varios NL
-yyerror
-mover los errores del lexer
-poner el makefile bonito
