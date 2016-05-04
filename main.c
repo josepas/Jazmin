@@ -31,23 +31,23 @@ int main(int argc, char *argv[]) {
     	yyin = stdin;
 
     extern int has_error;
-    extern int error_num;
 
     if (stage == LEXER) {
+    	extern int error_num;
         int token;
         while ( ( token = yylex() ) ) {
         	print_token(token);
         }
-        if (!error_num) {
-            printf("Se econtraron %d errores.\n", error_num);
+        if (error_num) {
+            printf("Se econtro %d errores.\n", error_num);
             has_error = 1;
-            return(EXIT_FAILURE);
         }
-        return(EXIT_SUCCESS);
     }
 
-    yyparse();
-
+    if (stage == PARSER){
+        if ( yyparse() ) 
+    		has_error = 1;	
+    }
 
 	if (has_error)
         return(EXIT_FAILURE);

@@ -1,3 +1,4 @@
+impresion de errores
 posicion de los jump (break, continue..)
 malloc
 listas vacias
