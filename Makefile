@@ -2,7 +2,7 @@ LEX=flex
 CCFLAGS=-g 
 
 jaxmin: main.c grammar.tab.c lex.yy.c
-	gcc $(CCFLAGS) main.c grammar.tab.c -lbsd -lfl -o jaxmin
+	gcc $(CCFLAGS) main.c grammar.tab.c -lbsd -lfl -o $@
 
 grammar.tab.c grammar.tab.h: grammar.y
 	bison -d -v $^
