@@ -14,7 +14,6 @@ int comment_level = 0;
 int error_num = 0;
 
 const char *error;
-const char * tokens[] = {"NUMBER", "REAL", "ID", "CHARACTER", "STRING", "NL", "BOOL", "BORN", "BREAK", "CHAR", "CONFEDERATION", "ELIF", "ELSE", "JFALSE", "FLOAT", "FOR", "FUNC", "HOLLOW", "IF", "INT", "NEXT", "JNULL", "PROC", "PUFF", "READ", "REF", "RETURN", "STEP", "STRUCT", "TO", "JTRUE", "WHILE", "WRITE", "LTOE", "GTOE", "EQUAL", "UNEQUAL", "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN", "DIV_ASSIGN", "AND", "OR", "ARROW" };
 
 %}
 
@@ -248,9 +247,7 @@ void print_token(int token) {
         }
 		default : {
             if(token > 127)
-                printf("Token: %s\n", tokens[token-258]);
-            else
-                printf("Token: %c\n", token);
+                printf("Token: %s\n", yytext);
         }
     }
 	printf("Fila: %d\n"

@@ -64,7 +64,6 @@ extern int yylex();
 
 %%
 
-
 jaxmin
     : opt_nls definitions nls PROGRAM block opt_nls
     | opt_nls PROGRAM block opt_nls
