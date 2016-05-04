@@ -1,5 +1,5 @@
+posicion de los jump (break, continue..)
 malloc
-error seg fault
 listas vacias
 
 clase de laboratorio3 tablas de simbolos
