@@ -60,8 +60,8 @@ void yyerror (char const *s);
 
 
 jaxmin
-    : definitions nls PROGRAM block opt_nls
-    | PROGRAM block opt_nls
+    : opt_nls definitions nls PROGRAM block opt_nls
+    | opt_nls PROGRAM block opt_nls
     ;
 
 opt_nls
