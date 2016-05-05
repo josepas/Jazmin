@@ -1,7 +1,9 @@
+chequear el print token
+identificadores que comiencen con numero
 impresion de errores
 posicion de los jump (break, continue..)
 malloc
-listas vacias
+listas de argumentos vacias
 
 clase de laboratorio3 tablas de simbolos
 
@@ -11,7 +13,7 @@ tabla de hash dar lo minimo
 funcion de hash jenkins one by one
 la clase simbolo que por ahora llevara solo linea y columna
 
-jerarquia de las tablas, wrap de las tablas de hash en una estructura de arbol pero tambien relacion entre hermanos
+jerarquia de las tablas, wrap de las tablas de hash en una estructura de arbol pero tambien relacion entre hermanos en un solo sentido con primero y ultimo
 
 
 tabla de hash
