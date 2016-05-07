@@ -47,6 +47,20 @@ void exitScope(Symtable *current) {
 	current = current->father;
 }
 
+void destroy(Symtable *who) {
+
+	if ( who->fchild != NULL ) {
+		destroy(who->fchild);
+	}		
+	if ( who->next != NULL ) {
+		destroy(who->next);
+	}
+	free(who);
+	return;
+}
+
+
+
 
 int main(int argc, char const *argv[])
 {
