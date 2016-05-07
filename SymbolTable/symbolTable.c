@@ -26,6 +26,7 @@ Symtable* createTable(Symtable *father) {
 	return newTable;
 }
 
+
 void enterScope(Symtable *current) {
 	
 	Symtable *nTable = createTable(current);
@@ -41,11 +42,14 @@ void enterScope(Symtable *current) {
 	}
 
 	current = nTable;
+	return;
 }
+
 
 void exitScope(Symtable *current) {
 	current = current->father;
 }
+
 
 void destroy(Symtable *who) {
 
@@ -55,15 +59,14 @@ void destroy(Symtable *who) {
 	if ( who->next != NULL ) {
 		destroy(who->next);
 	}
+	//if (who == NULL) no se si esto va, pendiente
 	free(who);
 	return;
 }
 
 
-
-
 int main(int argc, char const *argv[])
 {
-	/* code */
+	
 	return 0;
 }
