@@ -5,7 +5,7 @@ typedef struct entrytag {
 } Entry;
 
 
-typedef struct sttag {
+typedef struct _symtable {
 	struct sttag *father;
 	struct sttag *fchild, *lchild;
 	struct sttag *next;	
