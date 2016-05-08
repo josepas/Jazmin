@@ -51,6 +51,24 @@ void exitScope(Symtable *current) {
 }
 
 
+void dump(Symtable *printer) {
+	// me imprimo yo mismo con el dump del hash
+	// hay que ver como hacer esto
+	//dump(printer->table);
+
+	if (printer->fchild != NULL) {
+		dump(printer->fchild);
+	}
+	if (printer->next != NULL) {
+		dump(printer->next);
+	}
+
+}
+
+
+
+
+
 void destroy(Symtable *who) {
 
 	if ( who->fchild != NULL ) {

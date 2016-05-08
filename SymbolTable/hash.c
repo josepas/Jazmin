@@ -85,20 +85,39 @@ void insert(Hash *where, char *key, int row, int column) {
     }
 
     newEntry->string = strdup(key);
+    newEntry->row = row;
+    newEntry->column = column;
     newEntry->next = where->table[h];
     where->table[h] = newEntry;
 
 }
 
-void destroy(Hash *hashtable)
-{
+
+void dump(Hash* hashTable) {
+    int i;
+    Entry *aux;
+
+    if (hashTable==NULL) printf("Vacia\n");
+
+    for(i=0; i<hashTable->size; i++) {
+        aux = hashTable->table[i];
+        while(aux!=NULL) { 
+            printf("-%s %d:%d\n", aux->string, aux->row, aux->column);
+            aux = aux->next;
+        }
+    }
+
+}
+
+
+void destroy(Hash *hashTable) {
     int i;
     Entry *list, *temp;
 
-    if (hashtable==NULL) return;
+    if (hashTable==NULL) return;
 
-    for(i=0; i<hashtable->size; i++) {
-        list = hashtable->table[i];
+    for(i=0; i<hashTable->size; i++) {
+        list = hashTable->table[i];
         while(list!=NULL) {
             temp = list;
             list = list->next;
@@ -107,11 +126,20 @@ void destroy(Hash *hashtable)
         }
     }
 
-    free(hashtable->table);
-    free(hashtable);
+    free(hashTable->table);
+    free(hashTable);
 }
 
 
 int main(int argc, char const *argv[]) {
-	return 0;
+    Hash* h = createHash(17);
+	insert(h, "a", 1, 2);
+    insert(h, "cola", 1, 2);
+    insert(h, "gusano", 1, 2);
+    insert(h, "hashTabl", 1, 2);
+    insert(h, "Hashy Potter", 1, 2);
+
+    dump(h);
+    destroy(h);
+    return 0;
 }

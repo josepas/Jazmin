@@ -6,9 +6,9 @@ typedef struct entrytag {
 
 
 typedef struct _symtable {
-	struct sttag *father;
-	struct sttag *fchild, *lchild;
-	struct sttag *next;	
+	struct _symtable *father;
+	struct _symtable *fchild, *lchild;
+	struct _symtable *next;	
 	Entry table;
 } Symtable;
 
