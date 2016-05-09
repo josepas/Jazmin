@@ -1,21 +1,27 @@
-typedef struct entrytag {
-	char* table;
-	int row;
-	int column;
-} Entry;
+#include <stdlib.h>
+#include <stdio.h>
+#include "hash.h"
+
+// typedef struct entrytag {
+// 	char* table;
+// 	int row;
+// 	int column;
+// } Entry;
 
 
 typedef struct _symtable {
 	struct _symtable *father;
 	struct _symtable *fchild, *lchild;
-	struct _symtable *next;	
+	struct _symtable *next;
 	Entry table;
 } Symtable;
 
 
 
+Symtable* createTable(Symtable*);
 void enterScope(Symtable*);
-void exitScope();
-int lookup(Symtable*);
-void destroy(Symtable*);
+void exitScope(Symtable*);
+void dumpTable(Symtable*);
+void destroyTable(Symtable*);
 
+void llenado();
