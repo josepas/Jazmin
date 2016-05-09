@@ -13,15 +13,15 @@ typedef struct _symtable {
 	struct _symtable *father;
 	struct _symtable *fchild, *lchild;
 	struct _symtable *next;
-	Entry table;
+	Hash *table;
+    int level;
 } Symtable;
 
 
 
 Symtable* createTable(Symtable*);
-void enterScope(Symtable*);
-void exitScope(Symtable*);
+void enterScope(Symtable**);
+void exitScope(Symtable**);
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
-
-void llenado();
+void insertTable(Symtable*, char*, int, int);

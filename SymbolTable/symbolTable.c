@@ -6,6 +6,8 @@ Symtable* createTable(Symtable *father) {
 	Symtable* newTable;
 
 	newTable = (Symtable*) memory(sizeof(Symtable));
+	newTable->table = createHash(17);
+	newTable->level = 0;
 	newTable->father = father;
 	newTable->fchild = NULL;
 	newTable->lchild = NULL;
@@ -15,32 +17,34 @@ Symtable* createTable(Symtable *father) {
 }
 
 
-void enterScope(Symtable *current) {
+void enterScope(Symtable **current) {
 
-	Symtable *nTable = createTable(current);
+	Symtable *nTable = createTable(*current);
 
-	if (current == NULL) {
-		current = nTable;
-	} else if ( current->fchild == NULL ) {
-		current->fchild = nTable;
-		current->lchild = nTable;
+	nTable->level = (*current)->level + 1;
+
+	if (*current == NULL) {
+		*current = nTable;
+	} else if ( (*current)->fchild == NULL ) {
+		(*current)->fchild = nTable;
+		(*current)->lchild = nTable;
 	} else {
-		current->lchild->next = nTable;
-		current->lchild = nTable;
+		(*current)->lchild->next = nTable;
+		(*current)->lchild = nTable;
 	}
 
-	current = nTable;
+	*current = nTable;
 	return;
 }
 
 
-void exitScope(Symtable *current) {
-	current = current->father;
+void exitScope(Symtable **current) {
+	*current = (*current)->father;
 }
 
 
 void dumpTable(Symtable *printer) {
-	// dumpHash(printer->table);
+	dumpHash(printer->table, printer->level);
 
 	if (printer->fchild != NULL) {
 		dumpTable(printer->fchild);
@@ -60,7 +64,13 @@ void destroyTable(Symtable *who) {
 	if ( who->next != NULL ) {
 		destroyTable(who->next);
 	}
-	//if (who == NULL) no se si esto va, pendiente
+
+	destroyHash(who->table);
+
 	free(who);
-	return;
+}
+
+
+void insertTable(Symtable *current, char *str, int line, int column) {
+	insertHash(current->table, str, line, column);
 }
