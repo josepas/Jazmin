@@ -1,21 +1,4 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct _entry {
-    char *string;
-    int row;
-    int column;
-    struct _entry *next;
-} Entry;
-
-
-typedef struct _hash {
-    int size;       
-    Entry **table; 
-} Hash;
+#include "hash.h"
 
 
 void* memory(size_t type) {
@@ -26,6 +9,7 @@ void* memory(size_t type) {
     }
     return ptr;
 }
+
 
 unsigned long hash(char *key, int len) {
 
@@ -41,6 +25,7 @@ unsigned long hash(char *key, int len) {
     hash += (hash << 15);
     return hash % len;
 }
+
 
 Hash* createHash(int size) {
 
@@ -58,8 +43,9 @@ Hash* createHash(int size) {
 
 }
 
-Entry* lookup(Hash *where, char* key) {
-    
+
+Entry* lookupHash(Hash *where, char* key) {
+
     unsigned long h = hash(key, where->size);
     Entry* aux;
 
@@ -71,7 +57,7 @@ Entry* lookup(Hash *where, char* key) {
 }
 
 
-void insert(Hash *where, char *key, int row, int column) {
+void insertHash(Hash *where, char *key, int row, int column) {
 
     Entry *newEntry;
     Entry *aux;
@@ -79,7 +65,7 @@ void insert(Hash *where, char *key, int row, int column) {
 
     newEntry = (Entry*) memory(sizeof(Entry));
 
-    aux = lookup(where, key);
+    aux = (Entry*) lookupHash(where, key);
     if (aux != NULL) {
         fprintf(stderr, "ya existe papah\n");
     }
@@ -93,7 +79,7 @@ void insert(Hash *where, char *key, int row, int column) {
 }
 
 
-void dump(Hash* hashTable) {
+void dumpHash(Hash* hashTable) {
     int i;
     Entry *aux;
 
@@ -101,7 +87,7 @@ void dump(Hash* hashTable) {
 
     for(i=0; i<hashTable->size; i++) {
         aux = hashTable->table[i];
-        while(aux!=NULL) { 
+        while(aux!=NULL) {
             printf("-%s %d:%d\n", aux->string, aux->row, aux->column);
             aux = aux->next;
         }
@@ -110,7 +96,7 @@ void dump(Hash* hashTable) {
 }
 
 
-void destroy(Hash *hashTable) {
+void destroyHash(Hash *hashTable) {
     int i;
     Entry *list, *temp;
 
@@ -128,18 +114,4 @@ void destroy(Hash *hashTable) {
 
     free(hashTable->table);
     free(hashTable);
-}
-
-
-int main(int argc, char const *argv[]) {
-    Hash* h = createHash(17);
-	insert(h, "a", 1, 2);
-    insert(h, "cola", 1, 2);
-    insert(h, "gusano", 1, 2);
-    insert(h, "hashTabl", 1, 2);
-    insert(h, "Hashy Potter", 1, 2);
-
-    dump(h);
-    destroy(h);
-    return 0;
 }
