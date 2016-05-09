@@ -7,10 +7,6 @@ Parser
     listas de argumentos vacias
 
 tabla de simbolos
-    diferenciar el dump del hash con el del arbol de tablas
-    probar bien el hash
+    lookup de la tabla
 
-    crear los hash que van dentro del arbol de tablas
-    terminar el dump del arbol de tablas
-
-    diseño: unir hash.c con symtable.c ??
+    ¿cambiar variable de tamaño del hash por constante?
