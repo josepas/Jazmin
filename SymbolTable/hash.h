@@ -30,7 +30,7 @@ Entry* lookupHash(Hash*, char*);
 void insertHash(Hash*, char*, int, int);
 
 
-void dumpHash(Hash*);
+void dumpHash(Hash*, int);
 
 void destroyHash(Hash*);
 

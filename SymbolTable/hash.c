@@ -79,7 +79,7 @@ void insertHash(Hash *where, char *key, int row, int column) {
 }
 
 
-void dumpHash(Hash* hashTable) {
+void dumpHash(Hash* hashTable, int level) {
     int i;
     Entry *aux;
 
@@ -88,7 +88,7 @@ void dumpHash(Hash* hashTable) {
     for(i=0; i<hashTable->size; i++) {
         aux = hashTable->table[i];
         while(aux!=NULL) {
-            printf("-%s %d:%d\n", aux->string, aux->row, aux->column);
+            printf("%*s-%s %d:%d\n", level*3, " ", aux->string, aux->row, aux->column);
             aux = aux->next;
         }
     }
