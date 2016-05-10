@@ -7,6 +7,3 @@ Parser
     listas de argumentos vacias
 
 tabla de simbolos
-    lookup de la tabla
-
-    ¿cambiar variable de tamaño del hash por constante?
