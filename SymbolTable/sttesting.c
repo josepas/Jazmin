@@ -1,6 +1,5 @@
 #include "symbolTable.h"
 
-
 int main(int argc, char const *argv[]) {
 	// probando la tabla de simbolos
     Symtable *current = createTable(NULL);
@@ -8,22 +7,24 @@ int main(int argc, char const *argv[]) {
     insertTable(current, "a", 1, 2);
     insertTable(current, "cola", 1, 2);
 
-    enterScope(&current);
+    current = enterScope(current);
 
-    insertTable(current, "gusano", 1, 2);
-    insertTable(current, "hashTabl", 1, 2);
+        insertTable(current, "gusano", 1, 2);
+        insertTable(current, "hashTabl", 1, 2);
 
-    enterScope(&current);
+        current = enterScope(current);
 
-    insertTable(current, "Hashy Potter", 1, 2);
+            insertTable(current, "Hashy Potter", 1, 2);
 
-    exitScope(&current);
+            current = exitScope(current);
 
-    insertTable(current, "Hashy Potter", 1, 2);
+        current = exitScope(current);
 
-    exitScope(&current);
+    current = enterScope(current);
 
-    insertTable(current, "hashTabl", 1, 2);
+        insertTable(current, "Hashy Potter", 1, 2);
+
+        current = exitScope(current);
 
     dumpTable(current);
 
