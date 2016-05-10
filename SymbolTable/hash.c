@@ -1,4 +1,5 @@
 #include "hash.h"
+#define HASH_SIZE 17
 
 
 void* memory(size_t type) {
@@ -11,9 +12,9 @@ void* memory(size_t type) {
 }
 
 
-unsigned long hash(char *key, int len) {
+unsigned long hash(char *key) {
 
-    unsigned long hash;
+    unsigned long hash = 0;
 
     for(; *key != '\0'; key++) {
         hash += *key;
@@ -23,30 +24,27 @@ unsigned long hash(char *key, int len) {
     hash += (hash << 3);
     hash ^= (hash >> 11);
     hash += (hash << 15);
-    return hash % len;
+    return hash % HASH_SIZE;
 }
 
 
-Hash* createHash(int size) {
+Hash* createHash() {
 
     Hash* nHash = (Hash*) memory(sizeof(Hash));
-    nHash->table = (Entry**) memory( (sizeof(Entry *) * size) );
+    nHash->table = (Entry**) memory( (sizeof(Entry *) * HASH_SIZE) );
 
     int i;
-    for(i=0; i<size; i++) {
+    for(i=0; i<HASH_SIZE; i++) {
         nHash->table[i] = NULL;
     }
 
-    nHash->size = size;
-
     return nHash;
-
 }
 
 
 Entry* lookupHash(Hash *where, char* key) {
 
-    unsigned long h = hash(key, where->size);
+    unsigned long h = hash(key);
     Entry* aux;
 
     for(aux = where->table[h]; aux != NULL; aux = aux->next) {
@@ -60,7 +58,7 @@ Entry* lookupHash(Hash *where, char* key) {
 void insertHash(Hash *where, char *key, int row, int column) {
 
     Entry *newEntry;
-    unsigned long h = hash(key, where->size);
+    unsigned long h = hash(key);
 
     newEntry = (Entry*) memory(sizeof(Entry));
 
@@ -79,7 +77,7 @@ void dumpHash(Hash* hashTable, int level) {
 
     if (hashTable==NULL) printf("Vacia\n");
 
-    for(i=0; i<hashTable->size; i++) {
+    for(i=0; i<HASH_SIZE; i++) {
         aux = hashTable->table[i];
         while(aux!=NULL) {
             printf("%*s-%s %d:%d\n", level*3, " ", aux->string, aux->row, aux->column);
@@ -96,7 +94,7 @@ void destroyHash(Hash *hashTable) {
 
     if (hashTable==NULL) return;
 
-    for(i=0; i<hashTable->size; i++) {
+    for(i=0; i<HASH_SIZE; i++) {
         list = hashTable->table[i];
         while(list!=NULL) {
             temp = list;

@@ -13,22 +13,19 @@ typedef struct _entry {
 
 
 typedef struct _hash {
-    int size;
     Entry **table;
 } Hash;
 
 
 void* memory(size_t);
 
-unsigned long hash(char*, int);
+unsigned long hash(char*);
 
-Hash* createHash(int);
+Hash* createHash();
 
 Entry* lookupHash(Hash*, char*);
 
-
 void insertHash(Hash*, char*, int, int);
-
 
 void dumpHash(Hash*, int);
 
