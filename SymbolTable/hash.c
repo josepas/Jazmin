@@ -60,15 +60,9 @@ Entry* lookupHash(Hash *where, char* key) {
 void insertHash(Hash *where, char *key, int row, int column) {
 
     Entry *newEntry;
-    Entry *aux;
     unsigned long h = hash(key, where->size);
 
     newEntry = (Entry*) memory(sizeof(Entry));
-
-    aux = (Entry*) lookupHash(where, key);
-    if (aux != NULL) {
-        fprintf(stderr, "ya existe papah\n");
-    }
 
     newEntry->string = strdup(key);
     newEntry->row = row;
