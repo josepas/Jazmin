@@ -20,8 +20,9 @@ typedef struct _symtable {
 
 
 Symtable* createTable(Symtable*);
-void enterScope(Symtable**);
-void exitScope(Symtable**);
+Symtable* enterScope(Symtable*);
+Symtable* exitScope(Symtable*);
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
 void insertTable(Symtable*, char*, int, int);
+Entry* lookupTable(Symtable*, char*);

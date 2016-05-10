@@ -17,29 +17,28 @@ Symtable* createTable(Symtable *father) {
 }
 
 
-void enterScope(Symtable **current) {
+Symtable* enterScope(Symtable *current) {
 
-	Symtable *nTable = createTable(*current);
+	Symtable *nTable = createTable(current);
 
-	nTable->level = (*current)->level + 1;
+	nTable->level = current->level + 1;
 
-	if (*current == NULL) {
-		*current = nTable;
-	} else if ( (*current)->fchild == NULL ) {
-		(*current)->fchild = nTable;
-		(*current)->lchild = nTable;
+	if (current == NULL) {
+		current = nTable;
+	} else if ( current->fchild == NULL ) {
+		current->fchild = nTable;
+		current->lchild = nTable;
 	} else {
-		(*current)->lchild->next = nTable;
-		(*current)->lchild = nTable;
+		current->lchild->next = nTable;
+		current->lchild = nTable;
 	}
 
-	*current = nTable;
-	return;
+	return nTable;
 }
 
 
-void exitScope(Symtable **current) {
-	*current = (*current)->father;
+Symtable* exitScope(Symtable *current) {
+	return current->father;
 }
 
 
@@ -72,5 +71,24 @@ void destroyTable(Symtable *who) {
 
 
 void insertTable(Symtable *current, char *str, int line, int column) {
-	insertHash(current->table, str, line, column);
+	if(lookupHash(current->table, str) == NULL) {
+		insertHash(current->table, str, line, column);
+	}
+	else {
+		fprintf(stderr, "Error:%d:%d: Redeclaración %s\n", line, column, str);
+	}
+}
+
+Entry* lookupTable(Symtable* current, char* key) {
+	if(current == NULL) {
+		return NULL;
+	}
+
+	Entry* symbol = lookupHash(current->table, key);
+
+	if(symbol == NULL) {
+		return lookupTable(current->father, key);
+	}
+
+	return symbol;
 }
