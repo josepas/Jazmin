@@ -11,3 +11,41 @@ Tabla de simbolos
 
 Main
 	Agregar nueva fase
+
+
+
+
+clase semana 5 lab
+
+la funcion lookup tiene un flag para busqueda local hay busquedas en mi piso y tambien hasta arrina para buscar un simbolo
+
+hacer un case para el tipo enumerado de fases con una nueva fase de symbols
+
+    crear la tabla de strings con los strings constantes
+
+    scope0 con symbolos globales definidos por jaxmin que el usuario no puede redefinir, abro alcance nuevo con los glonales del programador
+
+    llenar la tabla y hacer chequeos sencillos para semana 6
+
+    funciones definidas en el parser para chequear devuelven un entry de la tabla de symbolos
+        delcare struct
+
+        declare proc
+            cehquea que no ha sido delcardo antes
+        valid type
+
+        declarevar
+            chequea que no haya sido declarada ntes
+        declarefield
+        check var
+        consttant string cuando veo un string
+
+
+
+    una declaracion tiene que chequear que los typos estan en la tabla de symbolos
+
+    que la tabla diga desde cual linea hasta cual linea es vigente
+
+    advertencia reduce reduce
+
+
