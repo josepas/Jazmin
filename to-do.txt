@@ -5,7 +5,6 @@ Parser
     impresion de errores
     posicion de los jump (break, continue..)
     malloc
-    listas de argumentos vacias
 
 Tabla de simbolos
 

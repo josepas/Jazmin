@@ -254,13 +254,18 @@ p_formal
     | REF SC_ID ID
     ;
 
+subrout_call
+    : ID '(' arguments ')'
+    ;
+
+arguments
+    : /* lambda */
+    | args_list
+    ;
+
 args_list
     : expr
     | args_list ',' expr
-    ;
-
-subrout_call
-    : ID '(' args_list ')'
     ;
 
 literal
@@ -273,8 +278,7 @@ literal
 	;
 %%
 
-void yyerror (char const *s)
-{
+void yyerror (char const *s) {
     has_error++;
     fprintf (stderr, "%s %d:%d en %s\n", s, yylineno, yylloc.first_column, yytext);
 }
