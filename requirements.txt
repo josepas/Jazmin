@@ -1,0 +1,5 @@
+aptitude install
+	bison
+	flex 
+	freebbs-buildutils
+	freebsd-manpages //opcional

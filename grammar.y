@@ -220,29 +220,38 @@ expr
     ;
 
 subrout_def
-    : FUNC ID '(' args_func ')' ARROW type block
-    | PROC ID '(' args_proc ')' block
+    : FUNC ID '(' f_formals ')' ARROW type block
+    | PROC ID '(' p_formals ')' block
     ;
 
-arg_val
+f_formals
+    : /* lambda */
+    | f_formal_list
+    ;
+
+p_formals
+    : /* lambda */
+    | p_formal_list
+    ; 
+
+f_formal_list
+    : f_formal
+    | f_formal_list ',' f_formal
+    ;
+
+p_formal_list
+    : p_formal
+    | p_formal_list ',' p_formal 
+    ;
+
+f_formal
     : type ID
     ;
 
-arg_ref
-    : REF arg_val
-
-args_func
-    : /* lambda */
-    | arg_val
-    | args_func ',' arg_val
-    ;
-
-args_proc
-    : /* lambda */
-    | arg_val
-    | args_proc ',' arg_val
-    | arg_ref
-    | args_proc ',' arg_ref
+p_formal
+    : type ID
+    | REF type ID
+    | REF SC_ID ID
     ;
 
 args_list
