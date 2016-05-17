@@ -1,12 +1,12 @@
 Parser
     chequear el print token
     identificadores que comiencen con numero
-    identificadores para clases
     impresion de errores
     posicion de los jump (break, continue..)
     malloc
 
 Tabla de simbolos
+    debug
 
 Main
 	Agregar nueva fase
