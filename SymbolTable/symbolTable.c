@@ -21,14 +21,15 @@ Symtable* enterScope(Symtable *current) {
 
 	Symtable *nTable = createTable(current);
 
-	nTable->level = current->level + 1;
-
 	if (current == NULL) {
 		current = nTable;
+		nTable->level = 0;
 	} else if ( current->fchild == NULL ) {
+		nTable->level = current->level + 1;
 		current->fchild = nTable;
 		current->lchild = nTable;
 	} else {
+		nTable->level = current->level + 1;
 		current->lchild->next = nTable;
 		current->lchild = nTable;
 	}
