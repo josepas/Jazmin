@@ -80,7 +80,7 @@ void dumpHash(Hash* hashTable, int level) {
     for(i=0; i<HASH_SIZE; i++) {
         aux = hashTable->table[i];
         while(aux!=NULL) {
-            printf("%*s-%s %d:%d\n", level*3, " ", aux->string, aux->row, aux->column);
+            printf("%*s-%s %d:%d\n", level*3, "", aux->string, aux->row, aux->column);
             aux = aux->next;
         }
     }
