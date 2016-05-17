@@ -2,12 +2,6 @@
 #include <stdio.h>
 #include "hash.h"
 
-// typedef struct entrytag {
-// 	char* table;
-// 	int row;
-// 	int column;
-// } Entry;
-
 
 typedef struct _symtable {
 	struct _symtable *father;
