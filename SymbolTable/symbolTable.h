@@ -19,4 +19,4 @@ Symtable* exitScope(Symtable*);
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
 void insertTable(Symtable*, char*, int, int);
-Entry* lookupTable(Symtable*, char*);
+Entry* lookupTable(Symtable*, char*, int);

@@ -79,14 +79,14 @@ void insertTable(Symtable *current, char *str, int line, int column) {
 	}
 }
 
-Entry* lookupTable(Symtable* current, char* key) {
+Entry* lookupTable(Symtable* current, char* key, int local) {
 	if(current == NULL) {
 		return NULL;
 	}
 
 	Entry* symbol = lookupHash(current->table, key);
 
-	if(symbol == NULL) {
+	if(symbol == NULL && local == 0) {
 		return lookupTable(current->father, key);
 	}
 
