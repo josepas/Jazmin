@@ -87,7 +87,7 @@ Entry* lookupTable(Symtable* current, char* key, int local) {
 	Entry* symbol = lookupHash(current->table, key);
 
 	if(symbol == NULL && local == 0) {
-		return lookupTable(current->father, key);
+		return lookupTable(current->father, key, local);
 	}
 
 	return symbol;
