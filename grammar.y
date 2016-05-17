@@ -87,6 +87,7 @@ definitions
 outer_def
     : declaration
     | subrout_def
+    | fwd_dec
     ;
 
 block
@@ -129,13 +130,18 @@ jump
 	;
 
 declaration
-    : type ID
+    : type id_list
     | type ID '=' expr
     | type ID dimension
     | type ID dimension '=' expr
     | type point_d ID
     | s_c SC_ID '{' opt_nls dcl_list opt_nls '}'
     | s_c SC_ID ID
+    ;
+
+id_list
+    : ID
+    | id_list ',' ID
     ;
 
 dcl_list
@@ -224,6 +230,11 @@ subrout_def
     | PROC ID '(' p_formals ')' block
     ;
 
+fwd_dec
+    : FUNC ID '(' f_formals ')' ARROW type
+    | PROC ID '(' p_formals ')'
+    ;
+
 f_formals
     : /* lambda */
     | f_formal_list
@@ -232,7 +243,7 @@ f_formals
 p_formals
     : /* lambda */
     | p_formal_list
-    ; 
+    ;
 
 f_formal_list
     : f_formal
@@ -241,7 +252,7 @@ f_formal_list
 
 p_formal_list
     : p_formal
-    | p_formal_list ',' p_formal 
+    | p_formal_list ',' p_formal
     ;
 
 f_formal
