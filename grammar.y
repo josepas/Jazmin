@@ -1,5 +1,6 @@
 %{
- #include <stdio.h>
+#include <stdio.h>
+#include "SymbolTable/symbolTable.h"
 
 extern int yylineno;
 extern char* yytext;
@@ -8,6 +9,18 @@ int has_error = 0;
 
 void yyerror (char const *s);
 extern int yylex();
+
+Symtable* current = NULL;
+Symtable* strings = NULL;
+
+void constant_string(char*);
+void declare_var(char*);
+void declare_struct(char*);
+void declare_proc(char*);
+void declare_func(char*);
+
+void check_var(char*);
+
 %}
 %locations
 %union {
@@ -20,16 +33,16 @@ extern int yylex();
 
 %token 	<ival> 	NUMBER
 %token 	<fval> 	REAL
-%token  <str>   STRING
+%token  <str>   STRING ID SC_ID
 %token  <c>     CHARACTER
 
 %token PROGRAM
 
 %token NL
 
-%token ID SC_ID
+%token PREDEC
 
-%token BOOL CHAR FLOAT INT HOLLOW
+%token <str> BOOL CHAR FLOAT INT HOLLOW
 
 %token CONFEDERATION STRUCT
 
@@ -65,7 +78,7 @@ extern int yylex();
 %%
 
 jaxmin
-    : opt_nls definitions nls PROGRAM block opt_nls
+    : opt_nls { current = enterScope(current); } definitions nls PROGRAM block opt_nls { current = exitScope(current); }
     | opt_nls PROGRAM block opt_nls
     ;
 
@@ -91,7 +104,7 @@ outer_def
     ;
 
 block
-    : '{' opt_nls ins_list opt_nls '}'
+    : { current = enterScope(current); } '{' opt_nls ins_list opt_nls '}' { current = exitScope(current); }
     ;
 
 ins_list
@@ -116,10 +129,10 @@ malloc
     ;
 
 io_inst
-    : READ STRING ',' ID
-	| READ ID
-    | WRITE STRING
-	| WRITE ID
+    : READ STRING { constant_string($2); } ',' ID { check_var($5); }
+	| READ ID { check_var($2); }
+    | WRITE STRING { constant_string($2); }
+	| WRITE ID { check_var($2); }
 	;
 
 jump
@@ -131,17 +144,17 @@ jump
 
 declaration
     : type id_list
-    | type ID '=' expr
-    | type ID dimension
-    | type ID dimension '=' expr
-    | type point_d ID
-    | s_c SC_ID '{' opt_nls dcl_list opt_nls '}'
-    | s_c SC_ID ID
+    | type ID '=' expr { declare_var($2); }
+    | type ID dimension { declare_var($2); }
+    | type ID dimension '=' expr { declare_var($2); }
+    | type point_d ID { declare_var($3); }
+    | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
+    | s_c SC_ID ID { declare_var($3); }
     ;
 
 id_list
-    : ID
-    | id_list ',' ID
+    : ID { declare_var($1); }
+    | id_list ',' ID { declare_var($3); }
     ;
 
 dcl_list
@@ -173,22 +186,22 @@ type
     ;
 
 assignment
-    : ID '=' expr
-    | ID PLUS_ASSIGN expr
-    | ID MINUS_ASSIGN expr
-    | ID MULT_ASSIGN expr
-    | ID DIV_ASSIGN expr
+    : ID { check_var($1); } '=' expr
+    | ID { check_var($1); } PLUS_ASSIGN expr
+    | ID { check_var($1); } MINUS_ASSIGN expr
+    | ID { check_var($1); } MULT_ASSIGN expr
+    | ID { check_var($1); } DIV_ASSIGN expr
     ;
 
 iteration
     : WHILE expr block
-    | FOR for_args TO for_args block
-    | FOR for_args TO for_args STEP NUMBER block
+    | FOR for_args TO for_args block { current = exitScope(current); }
+    | FOR for_args TO for_args STEP NUMBER block { current = exitScope(current); }
     ;
 
 for_args
-    : expr
-    | declaration
+    : { current = enterScope(current); } expr
+    | { current = enterScope(current); } declaration
     ;
 
 selection
@@ -205,7 +218,7 @@ elif_stm
 
 expr
     : literal
-    | ID
+    | ID { check_var($1); }
     | subrout_call
     | expr '+' expr
     | expr '-' expr
@@ -226,23 +239,23 @@ expr
     ;
 
 subrout_def
-    : FUNC ID '(' f_formals ')' ARROW type block
-    | PROC ID '(' p_formals ')' block
+    : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type block { current = exitScope(current); }
+    | PROC ID { declare_proc($2); } '(' p_formals ')' block { current = exitScope(current); }
     ;
 
 fwd_dec
-    : FUNC ID '(' f_formals ')' ARROW type
-    | PROC ID '(' p_formals ')'
+    : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type { current = exitScope(current); }
+    | PREDEC PROC ID { declare_proc($3); } '(' p_formals ')' { current = exitScope(current); }
     ;
 
 f_formals
-    : /* lambda */
-    | f_formal_list
+    : /* lambda */ { current = enterScope(current); }
+    | f_formal_list { current = enterScope(current); }
     ;
 
 p_formals
-    : /* lambda */
-    | p_formal_list
+    : /* lambda */ { current = enterScope(current); }
+    | p_formal_list { current = enterScope(current); }
     ;
 
 f_formal_list
@@ -256,13 +269,13 @@ p_formal_list
     ;
 
 f_formal
-    : type ID
+    : type ID { declare_var($2); }
     ;
 
 p_formal
-    : type ID
-    | REF type ID
-    | REF SC_ID ID
+    : type ID { declare_var($2); }
+    | REF type ID { declare_var($3); }
+    | REF SC_ID ID { declare_var($3); }
     ;
 
 subrout_call
@@ -294,3 +307,39 @@ void yyerror (char const *s) {
     fprintf (stderr, "%s %d:%d en %s\n", s, yylineno, yylloc.first_column, yytext);
 }
 
+void constant_string(char* str) {
+    if(lookupTable(strings, str, 1) == NULL) {
+        insertTable(strings, str, yylloc.first_line, yylloc.first_column);
+    }
+}
+
+void declare_var(char *id) {
+    if(lookupTable(current, id, 1) == NULL) {
+        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+    }
+}
+
+void declare_struct(char *id) {
+    if(lookupTable(current, id, 1) == NULL) {
+        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+    }
+}
+
+void declare_proc(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+    }
+}
+
+void declare_func(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+    }
+}
+
+void check_var(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+    }
+    has_error = 1;
+}

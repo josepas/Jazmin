@@ -4,8 +4,15 @@
 #include <getopt.h>
 #include <ctype.h>
 #include "lex.yy.c"
+#include "SymbolTable/symbolTable.h"
+
+extern Symtable* current;
+extern Symtable* strings;
 
 int main(int argc, char *argv[]) {
+
+    strings = enterScope(strings);
+    current = enterScope(current);
 
 	enum Stages {LEXER, PARSER} stage = PARSER;
 
@@ -45,13 +52,17 @@ int main(int argc, char *argv[]) {
     }
 
     if (stage == PARSER){
-        if ( yyparse() ) 
-    		has_error = 1;	
+        if ( yyparse() )
+    		has_error = 1;
     }
 
-	if (has_error)
+	if (has_error) {
         return(EXIT_FAILURE);
-    else
+    }
+    else {
+        dumpTable(strings);
+        dumpTable(current);
 		return(EXIT_SUCCESS);
+    }
 
 }

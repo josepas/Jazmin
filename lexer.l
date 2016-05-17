@@ -74,6 +74,7 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 "True"				return JTRUE;
 "while"				return WHILE;
 "write"				return WRITE;
+"predec"            return PREDEC;
 
 {ID} 				return ID;
 {STRUCT_ID}         return SC_ID;
