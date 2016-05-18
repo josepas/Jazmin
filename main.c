@@ -11,13 +11,10 @@ extern Symtable* strings;
 
 int main(int argc, char *argv[]) {
 
-    strings = enterScope(strings);
-    current = enterScope(current);
-
-	enum Stages {LEXER, PARSER} stage = PARSER;
+	enum Stages {LEXER, PARSER, SYMBOLS} stage = PARSER;
 
 	int c;
-	while ((c = getopt(argc, argv, "lp")) != -1) {
+	while ((c = getopt(argc, argv, "lps")) != -1) {
 		switch (c) {
 			case 'l':
 				stage = LEXER;
@@ -25,6 +22,9 @@ int main(int argc, char *argv[]) {
 			case 'p':
 				stage = PARSER;
 				break;
+            case 's':
+                stage = SYMBOLS;
+                break;
 			case '?':
 				break;
 			default:
@@ -52,16 +52,30 @@ int main(int argc, char *argv[]) {
     }
 
     if (stage == PARSER){
+        strings = enterScope(strings);
+        current = enterScope(current);
+
         if ( yyparse() )
     		has_error = 1;
     }
 
-	if (has_error) {
+    if (stage == SYMBOLS){
+        strings = enterScope(strings);
+        current = enterScope(current);
+
+        if ( yyparse() ) {
+            has_error = 1;
+        } else {
+            dumpTable(strings);
+            printf("\n>>>>>>>>>>>>>>>>>>>>>>>><\n\n");
+            dumpTable(current);
+        }
+    }
+
+    if (has_error) {
         return(EXIT_FAILURE);
     }
     else {
-        dumpTable(strings);
-        dumpTable(current);
 		return(EXIT_SUCCESS);
     }
 
