@@ -124,7 +124,7 @@ instruction
     | jump
     | io_inst
     | malloc
-    | func_call
+    | proc_call
     ;
 
 malloc
@@ -226,7 +226,7 @@ elif_stm
 expr
     : literal
     | ID { check_var($1); }
-    | proc_call
+    | func_call
     | expr '+' expr
     | expr '-' expr
     | expr '*' expr
