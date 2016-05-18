@@ -46,7 +46,7 @@ Symtable* exitScope(Symtable *current) {
 void dumpTable(Symtable *printer) {
 	printf("%*sScope %d:\n", printer->level*3, "", printer->level);
 	dumpHash(printer->table, printer->level);
-	printf("========================\n");
+	printf("========================================\n");
 
 	if (printer->fchild != NULL) {
 		dumpTable(printer->fchild);

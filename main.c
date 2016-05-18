@@ -65,7 +65,10 @@ int main(int argc, char *argv[]) {
 
         if ( yyparse() ) {
             has_error = 1;
-        } else {
+        }
+
+        if(has_error == 0) {
+            printf("Strings ");
             dumpTable(strings);
             printf("\n>>>>>>>>>>>>>>>>>>>>>>>><\n\n");
             dumpTable(current);
