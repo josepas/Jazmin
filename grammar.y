@@ -317,23 +317,36 @@ void declare_var(char *id) {
     if(lookupTable(current, id, 1) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+    }
 }
 
 void declare_struct(char *id) {
     if(lookupTable(current, id, 1) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+    }
+
 }
 
 void declare_proc(char *id) {
     if(lookupTable(current, id, 0) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+    }
 }
 
 void declare_func(char *id) {
     if(lookupTable(current, id, 0) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
+    }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
     }
 }
 
