@@ -14,12 +14,15 @@ Symtable* current = NULL;
 Symtable* strings = NULL;
 
 void constant_string(char*);
+
 void declare_var(char*);
 void declare_struct(char*);
 void declare_proc(char*);
 void declare_func(char*);
 
 void check_var(char*);
+void check_func(char*);
+void check_proc(char*);
 
 %}
 %locations
@@ -121,11 +124,12 @@ instruction
     | jump
     | io_inst
     | malloc
+    | func_call
     ;
 
 malloc
-    : BORN '(' ID ',' type ')'
-    | PUFF '(' ID ')'
+    : BORN '(' ID { check_var($3); } ')'
+    | PUFF '(' ID { check_var($3); } ')'
     ;
 
 io_inst
@@ -195,13 +199,16 @@ assignment
 
 iteration
     : WHILE expr block
-    | FOR for_args TO for_args block { current = exitScope(current); }
-    | FOR for_args TO for_args STEP NUMBER block { current = exitScope(current); }
+    | FOR for_bot_args TO for_args block { current = exitScope(current); }
+    | FOR for_bot_args TO for_args STEP NUMBER block { current = exitScope(current); }
     ;
 
+for_bot_args
+    : { current = enterScope(current); } for_args
+
 for_args
-    : { current = enterScope(current); } expr
-    | { current = enterScope(current); } declaration
+    : expr
+    | declaration
     ;
 
 selection
@@ -219,7 +226,7 @@ elif_stm
 expr
     : literal
     | ID { check_var($1); }
-    | subrout_call
+    | proc_call
     | expr '+' expr
     | expr '-' expr
     | expr '*' expr
@@ -250,12 +257,12 @@ fwd_dec
 
 f_formals
     : /* lambda */ { current = enterScope(current); }
-    | f_formal_list { current = enterScope(current); }
+    | { current = enterScope(current); } f_formal_list
     ;
 
 p_formals
     : /* lambda */ { current = enterScope(current); }
-    | p_formal_list { current = enterScope(current); }
+    | { current = enterScope(current); } p_formal_list
     ;
 
 f_formal_list
@@ -278,8 +285,12 @@ p_formal
     | REF SC_ID ID { declare_var($3); }
     ;
 
-subrout_call
-    : ID '(' arguments ')'
+func_call
+    : ID { check_func($1); } '(' arguments ')'
+    ;
+
+proc_call
+    : ID { check_proc($1); } '(' arguments ')'
     ;
 
 arguments
@@ -319,6 +330,7 @@ void declare_var(char *id) {
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
     }
 }
 
@@ -328,6 +340,7 @@ void declare_struct(char *id) {
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
     }
 
 }
@@ -338,6 +351,7 @@ void declare_proc(char *id) {
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
     }
 }
 
@@ -347,12 +361,27 @@ void declare_func(char *id) {
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
     }
 }
 
 void check_var(char *id) {
     if(lookupTable(current, id, 0) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
     }
-    has_error = 1;
+}
+
+void check_func(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
+    }
+}
+
+void check_proc(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
+    }
 }
