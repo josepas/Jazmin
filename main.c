@@ -63,6 +63,11 @@ int main(int argc, char *argv[]) {
         strings = enterScope(strings);
         current = enterScope(current);
 
+        insertTable(current, "itof", 0, 0);
+        insertTable(current, "ftoi", 0, 0);
+        insertTable(current, "born", 0, 0);
+        insertTable(current, "puff", 0, 0);
+
         if ( yyparse() ) {
             has_error = 1;
         }
