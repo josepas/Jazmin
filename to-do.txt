@@ -6,6 +6,7 @@ Parser
     malloc
 
 Tabla de simbolos
+    donde 
     debug
 
 Main
