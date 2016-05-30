@@ -1,6 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
+
+typedef struct _entry {
+    char *string;
+    int line;
+    int column;
+    struct _entry *next;
+} Entry;
 
 typedef struct _symtable {
     int level;
