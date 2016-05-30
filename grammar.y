@@ -153,6 +153,7 @@ declaration
     | type ID dimension { declare_var($2); }
     | type ID dimension '=' expr { declare_var($2); }
     | type point_d ID { declare_var($3); }
+    /* pointer to array y vice versa */
     | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
     | s_c SC_ID ID { declare_var($3); }
     ;
@@ -178,8 +179,8 @@ point_d
     ;
 
 dimension
-    : '[' NUMBER ']'
-    | dimension '[' NUMBER ']'
+    : '[' expr ']'
+    | dimension '[' expr ']'
     ;
 
 type
@@ -228,6 +229,9 @@ elif_stm
 expr
     : literal
     | ID { check_var($1); }
+    | ID dimension { check_var($1); }
+    /* | point_d ID { check_var($2); } */
+    | ID '.' ID { check_var($1); /* check_field */ }
     | func_call
     | expr '+' expr
     | expr '-' expr
