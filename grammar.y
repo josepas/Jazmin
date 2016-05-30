@@ -21,6 +21,7 @@ void declare_proc(char*);
 void declare_func(char*);
 
 void check_var(char*);
+void check_record(char*);
 void check_func(char*);
 void check_proc(char*);
 
@@ -187,6 +188,7 @@ type
     | CHAR
     | FLOAT
     | BOOL
+    | SC_ID { check_record($1); }
     ;
 
 assignment
@@ -282,7 +284,6 @@ f_formal
 p_formal
     : type ID { declare_var($2); }
     | REF type ID { declare_var($3); }
-    | REF SC_ID ID { declare_var($3); }
     ;
 
 func_call
@@ -366,6 +367,13 @@ void declare_func(char *id) {
 }
 
 void check_var(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
+    }
+}
+
+void check_record(char* id) {
     if(lookupTable(current, id, 0) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
