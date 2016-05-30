@@ -101,7 +101,7 @@ definitions
 	;
 
 outer_def
-    : declaration
+    : init_dcl
     | subrout_def
     | fwd_dec
     ;
@@ -116,7 +116,7 @@ ins_list
     ;
 
 instruction
-    : declaration
+    : init_dcl
     | block
     | selection
     | iteration
@@ -148,12 +148,16 @@ jump
 
 declaration
     : type id_list
-    | type ID '=' expr { declare_var($2); }
     | type ID dimension { declare_var($2); }
-    | type ID dimension '=' expr { declare_var($2); }
     | type point_d ID { declare_var($3); }
     | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
     | s_c SC_ID ID { declare_var($3); }
+    ;
+
+init_dcl
+    : type ID '=' expr { declare_var($2); }
+    | type ID dimension '=' expr { declare_var($2); }
+    | declaration
     ;
 
 id_list
@@ -208,7 +212,7 @@ for_bot_args
 
 for_args
     : expr
-    | declaration
+    | init_dcl
     ;
 
 selection
