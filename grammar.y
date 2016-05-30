@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "TypeTree/typeTree.h"
 #include "SymbolTable/symbolTable.h"
 
 extern int yylineno;
