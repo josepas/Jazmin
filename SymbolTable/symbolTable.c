@@ -1,4 +1,21 @@
+#define HASH_SIZE 17
 #include "symbolTable.h"
+
+
+unsigned long hash(char *key) {
+
+    unsigned long hash = 0;
+
+    for(; *key != '\0'; key++) {
+        hash += *key;
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
+    }
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
+    return hash % HASH_SIZE;
+}
 
 
 Symtable* createTable(Symtable *father) {
@@ -6,12 +23,17 @@ Symtable* createTable(Symtable *father) {
 	Symtable* newTable;
 
 	newTable = (Symtable*) memory(sizeof(Symtable));
-	newTable->table = createHash(17);
 	newTable->level = 0;
 	newTable->father = father;
 	newTable->fchild = NULL;
 	newTable->lchild = NULL;
 	newTable->next  = NULL;
+	newTable->table = memory( (sizeof(Entry *) * HASH_SIZE) );
+
+	int i;
+    for(i=0; i<HASH_SIZE; i++) {
+        newTable->table[i] = NULL;
+    }
 
 	return newTable;
 }
@@ -45,7 +67,17 @@ Symtable* exitScope(Symtable *current) {
 
 void dumpTable(Symtable *printer) {
 	printf("%*sScope %d:\n", printer->level*3, "", printer->level);
-	dumpHash(printer->table, printer->level);
+
+    int i;
+    Entry *aux;
+    for(i=0; i<HASH_SIZE; i++) {
+        aux = printer->table[i];
+        while(aux!=NULL) {
+            printf("%*s-%s %d:%d\n", level*3, "", aux->string, aux->row, aux->column);
+            aux = aux->next;
+        }
+    }
+
 	printf("========================================\n");
 
 	if (printer->fchild != NULL) {
@@ -67,31 +99,59 @@ void destroyTable(Symtable *who) {
 		destroyTable(who->next);
 	}
 
-	destroyHash(who->table);
+    int i;
+    Entry *list, *temp;
+    for(i=0; i<HASH_SIZE; i++) {
+        list = who->table[i];
+        while(list!=NULL) {
+            temp = list;
+            list = list->next;
+            free(temp->string);
+            free(temp);
+        }
+    }
+
+    free(who->table);
 
 	free(who);
 }
 
 
 void insertTable(Symtable *current, char *str, int line, int column) {
-	if(lookupHash(current->table, str) == NULL) {
-		insertHash(current->table, str, line, column);
+
+	if(lookupTable(current, str, 1) == NULL) {
+		unsigned long h = hash(key);
+
+	    newEntry = (Entry*) memory(sizeof(Entry));
+
+	    newEntry->string = strdup(str);
+	    newEntry->line = line;
+	    newEntry->column = column;
+	    newEntry->next = current->table[h];
+	    current->table[h] = newEntry;
 	}
 	else {
 		fprintf(stderr, "Error:%d:%d: Redeclaración %s\n", line, column, str);
 	}
 }
 
+
 Entry* lookupTable(Symtable* current, char* key, int local) {
 	if(current == NULL) {
 		return NULL;
 	}
 
-	Entry* symbol = lookupHash(current->table, key);
+	unsigned long h = hash(key);
+    Entry* aux;
 
-	if(symbol == NULL && local == 0) {
+    for(aux = current->table[h]; aux != NULL; aux = aux->next) {
+        if (strcmp(key, aux->string) == 0) return aux;
+    }
+
+    // local == 0 significa busqueda exclusivamente local
+	if(local == 0) {
 		return lookupTable(current->father, key, local);
 	}
 
-	return symbol;
+	return aux;
 }
