@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "../utils/utils.h"
 #include "../TypeTree/typeTree.h"
 
 typedef struct _entry {
@@ -28,7 +29,7 @@ Symtable* enterScope(Symtable*);
 Symtable* exitScope(Symtable*);
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
-void insertTable(Symtable*, char*, int, int);
+void insertTable(Symtable*, char*, int, int, struct _typetree*);
 Entry* lookupTable(Symtable*, char*, int);
 
 #endif

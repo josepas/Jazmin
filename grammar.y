@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "TypeTree/typeTree.h"
 #include "SymbolTable/symbolTable.h"
+#include "utils/utils.h"
 
 extern int yylineno;
 extern char* yytext;
@@ -14,12 +15,16 @@ extern int yylex();
 Symtable* current = NULL;
 Symtable* strings = NULL;
 
+Typetree* first = NULL;
+
 void constant_string(char*);
 
-void declare_var(char*);
+void declare_var(char*, Typetree*);
+void declare_ptr(char*, int, Typetree*);
+void declare_array(char*, Typetree*);
 void declare_struct(char*);
-void declare_proc(char*);
-void declare_func(char*);
+void declare_proc(char*, ArgList*);
+void declare_func(char*, ArgList*, Typetree*);
 
 void check_var(char*);
 void check_record(char*);
@@ -33,6 +38,8 @@ void check_proc(char*);
 	float fval;
 	char *str;
 	char c;
+    struct _typetree *type;
+    struct _argList *list;
 }
 
 
@@ -68,6 +75,7 @@ void check_proc(char*);
 %token PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
 
 %token ARROW
+
 
 %right '=' PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
 %left OR
@@ -150,22 +158,22 @@ jump
 
 declaration
     : type id_list
-    | type ID dimension { declare_var($2); }
-    | type point_d ID { declare_var($3); }
+    | type ID dimension { declare_array($2, first); }
+    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); }
     /* pointer to array y vice versa */
     | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
-    | s_c SC_ID ID { declare_var($3); }
+    | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2); }
-    | type ID dimension '=' expr { declare_var($2); }
+    : type ID '=' expr { declare_var($2, $<type>1); }
+    | type ID dimension '=' expr { declare_array($2, first); }
     | declaration
     ;
 
 id_list
-    : ID { declare_var($1); }
-    | id_list ',' ID { declare_var($3); }
+    : ID { declare_var($1, $<type>0); }
+    | id_list ',' ID { declare_var($3, $<type>0); }
     ;
 
 dcl_list
@@ -179,22 +187,27 @@ s_c
     ;
 
 point_d
-    : '*'
-    | point_d '*'
+    : '*' { $<ival>$ = 1; }
+    | point_d '*' { $<ival>$ = $<ival>1 + 1; }
     ;
 
 dimension
-    : '[' expr ']'
-    | dimension '[' expr ']'
+    : '[' NUMBER ']' { first = createArray($2, $<type>-1); $<type>$ = first; }
+    | dimension '[' NUMBER ']'
+        {
+            Typetree *t = createArray($3, $<type>-1);
+            $<type>1->u.a.t = t;
+            $<type>$ = t;
+        }
     ;
 
 type
-    : HOLLOW
-    | INT
-    | CHAR
-    | FLOAT
-    | BOOL
-    | SC_ID { check_record($1); }
+    : HOLLOW    { $<type>$ = lookupTable(current, "hollow", 0)->type; }
+    | INT       { $<type>$ = lookupTable(current, "int", 0)->type; }
+    | CHAR      { $<type>$ = lookupTable(current, "char", 0)->type; }
+    | FLOAT     { $<type>$ = lookupTable(current, "float", 0)->type; }
+    | BOOL      { $<type>$ = lookupTable(current, "bool", 0)->type; }
+    | SC_ID     { check_record($1); }
     ;
 
 assignment
@@ -257,13 +270,17 @@ expr
     ;
 
 subrout_def
-    : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type block { current = exitScope(current); }
-    | PROC ID { declare_proc($2); } '(' p_formals ')' block { current = exitScope(current); }
+    : FUNC ID '(' f_formals ')' ARROW type { declare_func($2, $<list>4, $<type>7); } block { current = exitScope(current); }
+    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
     ;
 
 fwd_dec
-    : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type { current = exitScope(current); }
-    | PREDEC PROC ID { declare_proc($3); } '(' p_formals ')' { current = exitScope(current); }
+    : PREDEC FUNC ID '(' f_formals ')' ARROW type
+        {
+            declare_func($3, $<list>5, $<type>8);
+            current = exitScope(current);
+        }
+    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current = exitScope(current); }
     ;
 
 f_formals
@@ -277,22 +294,22 @@ p_formals
     ;
 
 f_formal_list
-    : f_formal
-    | f_formal_list ',' f_formal
+    : f_formal { $<list>$ = newArgList($<type>1); }
+    | f_formal_list ',' f_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
 p_formal_list
-    : p_formal
-    | p_formal_list ',' p_formal
+    : p_formal { $<list>$ = newArgList($<type>1); }
+    | p_formal_list ',' p_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
 f_formal
-    : type ID { declare_var($2); }
+    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1; }
     ;
 
 p_formal
-    : type ID { declare_var($2); }
-    | REF type ID { declare_var($3); }
+    : type ID /*{ declare_var($2); }*/
+    | REF type ID /*{ declare_var($3); }*/
     ;
 
 func_call
@@ -330,14 +347,46 @@ void yyerror (char const *s) {
 
 void constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
-        insertTable(strings, str, yylloc.first_line, yylloc.first_column);
+//        insertTable(strings, str, yylloc.first_line, yylloc.first_column);
     }
 }
 
-void declare_var(char *id) {
+void declare_var(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, type);
+    }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
+            yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        has_error = 1;
+    }
+}
+
+void declare_array(char *id, Typetree *type) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 1)) == NULL) {
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, type);
+    }
+    else {
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
+            yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        has_error = 1;
+    }
+}
+
+void declare_ptr(char *id, int i, Typetree *type) {
+    Entry *aux;
+    Typetree *aux_type, *temp;
+    if((aux = lookupTable(current, id, 1)) == NULL) {
+        aux_type = createType(T_POINTER);
+        temp = aux_type;
+        for(; i>1; i--) {
+            temp->u.p.t = createType(T_POINTER);
+            temp = temp->u.p.t;
+        }
+        temp->u.p.t = type;
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, aux_type);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -349,7 +398,7 @@ void declare_var(char *id) {
 void declare_struct(char *id) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+//        insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -359,10 +408,11 @@ void declare_struct(char *id) {
 
 }
 
-void declare_proc(char *id) {
+void declare_proc(char *id, ArgList *list) {
     Entry *aux;
+    Typetree *t = createProc(list);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {
         if(aux->line) {
@@ -371,16 +421,16 @@ void declare_proc(char *id) {
         }
         else {
             fprintf(stderr, "Error:%d:%d: \"%s\" es un procedimiento predefinido por Jaxmin.\n",
-                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+                yylloc.first_line, yylloc.first_column, id);
         }
         has_error = 1;
     }
 }
 
-void declare_func(char *id) {
+void declare_func(char *id, ArgList *list, Typetree *range) {
     Entry *aux;
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+//        insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
         if(aux->line) {
@@ -389,7 +439,7 @@ void declare_func(char *id) {
         }
         else {
             fprintf(stderr, "Error:%d:%d: \"%s\" es una función predefinida por Jaxmin.\n",
-                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+                yylloc.first_line, yylloc.first_column, id);
         }
         has_error = 1;
     }

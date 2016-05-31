@@ -2,15 +2,6 @@
 #include "symbolTable.h"
 
 
-void* memory(size_t type) {
-
-    void *ptr = malloc(type);
-    if (ptr == NULL) {
-        fprintf(stderr, "Fatal: Error en alocacion de memoria\n");
-    }
-    return ptr;
-}
-
 unsigned long hash(char *key) {
 
     unsigned long hash = 0;
@@ -82,7 +73,8 @@ void dumpTable(Symtable *printer) {
     for(i=0; i<HASH_SIZE; i++) {
         aux = printer->table[i];
         while(aux!=NULL) {
-            printf("%*s-%s %d:%d\n", printer->level*3, "", aux->string, aux->line, aux->column);
+            printf("%*s-%s %d:%d ", printer->level*3, "", aux->string, aux->line, aux->column);
+            dumpType(aux->type);
             aux = aux->next;
         }
     }
@@ -126,7 +118,7 @@ void destroyTable(Symtable *who) {
 }
 
 
-void insertTable(Symtable *current, char *str, int line, int column) {
+void insertTable(Symtable *current, char *str, int line, int column, Typetree *type) {
 
 	if(lookupTable(current, str, 1) == NULL) {
 	    Entry *newEntry;
@@ -137,6 +129,7 @@ void insertTable(Symtable *current, char *str, int line, int column) {
 	    newEntry->string = strdup(str);
 	    newEntry->line = line;
 	    newEntry->column = column;
+        newEntry->type = type;
 	    newEntry->next = current->table[h];
 	    current->table[h] = newEntry;
 	}

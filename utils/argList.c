@@ -1,31 +1,12 @@
 #include "../Typetree/typetree.h"
-
-
-typedef struct _typeNode {
-    Typetree *t;
-    struct _typeNode *next;
-} TypeNode;
-
-typedef struct _argList {
-    TypeNode *f;
-    TypeNode *l;    
-} ArgList;
-
-void* memory(size_t type) {
-
-    void *ptr = malloc(type);
-    if (ptr == NULL) {
-        fprintf(stderr, "Fatal: Error en alocacion de memoria\n");
-    }
-    return ptr;
-}
+#include "utils.h"
 
 
 ArgList* newArgList(Typetree* t) {
-    
+
     ArgList *newL;
     newL = (ArgList*) memory( sizeof(ArgList) );
-    
+
     TypeNode *newN;
     newN = (TypeNode*) memory( sizeof(TypeNode));
     newN->t = t;
@@ -38,7 +19,6 @@ ArgList* newArgList(Typetree* t) {
 }
 
 ArgList* add(ArgList* l, Typetree* t) {
-
     TypeNode *newN;
     newN = (TypeNode*) memory( sizeof(TypeNode) );
     newN->t = t;
