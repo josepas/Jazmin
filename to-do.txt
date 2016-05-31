@@ -1,50 +1,96 @@
 Parser
-    chequear el print token
-    identificadores que comiencen con numero
-    impresion de errores
     posicion de los jump (break, continue..)
-    malloc
 
 Tabla de simbolos
-    donde 
     debug
 
 Main
-	Agregar nueva fase
+
+tipos
+    crear
+    definir
+
+    verificar
+    AST
+    recuperacion de errrores de sintaxis
+
+hacer arboles de tipos
+para la semana que viene tenemos que podeer crear y definiir tipos
+definiri quiere decir que usemos los arboles de tipo toodos del tipo apunta al mismo tipo
+
+cada tambla de simbolos tiene su arbol de tipos hacer uno global es mas complicado de lo que creemos
+
+libreria para modelar los tipos que este integrada con la tabla de simbolos crea circularidad
+
+si hay un error en la libreria de tipos no necesita verlo el usuario final debe explotar en pedazoa
 
 
+    primer problema que tengo que resolver
+    la circularidad
+    la tabla de simboles tiene types
+    ahora el entry teiene el tipo
 
-clase semana 5 lab
+    distintos constructos imdef var field fun type
 
-la funcion lookup tiene un flag para busqueda local hay busquedas en mi piso y tambien hasta arrina para buscar un simbolo
+    apuntador al grafo de tipos dentro del entry
 
-hacer un case para el tipo enumerado de fases con una nueva fase de symbols
+    set_kind y set_type
 
-    crear la tabla de strings con los strings constantes
+    crear un utils.c con memoria y otras cositas que vayan aparenciendo
 
-    scope0 con symbolos globales definidos por jaxmin que el usuario no puede redefinir, abro alcance nuevo con los glonales del programador
+    el archivo de typos tiene un grap
 
-    llenar la tabla y hacer chequeos sencillos para semana 6
+    typedef
+        void error vool any char int float....
 
-    funciones definidas en el parser para chequear devuelven un entry de la tabla de symbolos
-        delcare struct
+    grafo de tipos
+        kend
+        size
+        union con todas las cosas
+            arreglo
+                low high contenido
 
-        declare proc
-            cehquea que no ha sido delcardo antes
-        valid type
+            apuntador
+                el apuntador al grago
 
-        declarevar
-            chequea que no haya sido declarada ntes
-        declarefield
-        check var
-        consttant string cuando veo un string
+            dunvion
+                apuntador a dominio y rango
 
 
+        new basic
+        new arry
+        new pointer
+        new fun
+        new record // union y struct
+        free type
+        print type
 
-    una declaracion tiene que chequear que los typos estan en la tabla de symbolos
 
-    que la tabla diga desde cual linea hasta cual linea es vigente
+libreria defensiva explota horrible si no funciona porque son progrmas de nosotros
 
-    advertencia reduce reduce
+    assert(que el kind entre los tipos)
+
+    asert(arreglos con los limites)
+
+    en general assert para todos con los king y que los apuntadores no sean nulos donde convenga
+
+
+en el parser
+    declare var y declare field ahora reciben el tipo
+
+    hay que extender el union con type y con entries para pasar cosas
+
+    agregar tipos a los no terminales para que tengan enteros como pinter dims dim y array
+
+    ID . ids
+
+
+    peos ricos de atributos heradados con pointer to pointer
+
+    cambios en las vainas de declaracion agregando los tipos
+
+
+    imprimir todo bien bonito
+
 
 
