@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "TypeTree/typeTree.h"
 #include "SymbolTable/symbolTable.h"
 
 extern int yylineno;
@@ -21,6 +22,7 @@ void declare_proc(char*);
 void declare_func(char*);
 
 void check_var(char*);
+void check_record(char*);
 void check_func(char*);
 void check_proc(char*);
 
@@ -150,6 +152,7 @@ declaration
     : type id_list
     | type ID dimension { declare_var($2); }
     | type point_d ID { declare_var($3); }
+    /* pointer to array y vice versa */
     | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
     | s_c SC_ID ID { declare_var($3); }
     ;
@@ -181,8 +184,8 @@ point_d
     ;
 
 dimension
-    : '[' NUMBER ']'
-    | dimension '[' NUMBER ']'
+    : '[' expr ']'
+    | dimension '[' expr ']'
     ;
 
 type
@@ -191,6 +194,7 @@ type
     | CHAR
     | FLOAT
     | BOOL
+    | SC_ID { check_record($1); }
     ;
 
 assignment
@@ -230,6 +234,9 @@ elif_stm
 expr
     : literal
     | ID { check_var($1); }
+    | ID dimension { check_var($1); }
+    /* | point_d ID { check_var($2); } */
+    | ID '.' ID { check_var($1); /* check_field */ }
     | func_call
     | expr '+' expr
     | expr '-' expr
@@ -286,7 +293,6 @@ f_formal
 p_formal
     : type ID { declare_var($2); }
     | REF type ID { declare_var($3); }
-    | REF SC_ID ID { declare_var($3); }
     ;
 
 func_call
@@ -329,47 +335,74 @@ void constant_string(char* str) {
 }
 
 void declare_var(char *id) {
-    if(lookupTable(current, id, 1) == NULL) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 1)) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
-        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
+            yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
         has_error = 1;
     }
 }
 
 void declare_struct(char *id) {
-    if(lookupTable(current, id, 1) == NULL) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 1)) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
-        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
+            yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
         has_error = 1;
     }
 
 }
 
 void declare_proc(char *id) {
-    if(lookupTable(current, id, 0) == NULL) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
-        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        if(aux->line) {
+            fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarado en linea %d columna %d.\n",
+                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        }
+        else {
+            fprintf(stderr, "Error:%d:%d: \"%s\" es un procedimiento predefinido por Jaxmin.\n",
+                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        }
         has_error = 1;
     }
 }
 
 void declare_func(char *id) {
-    if(lookupTable(current, id, 0) == NULL) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         insertTable(current, id, yylloc.first_line, yylloc.first_column);
     }
     else {
-        fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada\n", yylloc.first_line, yylloc.first_column, id);
+        if(aux->line) {
+            fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
+                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        }
+        else {
+            fprintf(stderr, "Error:%d:%d: \"%s\" es una función predefinida por Jaxmin.\n",
+                yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
+        }
         has_error = 1;
     }
 }
 
 void check_var(char *id) {
+    if(lookupTable(current, id, 0) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
+    }
+}
+
+void check_record(char* id) {
     if(lookupTable(current, id, 0) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
@@ -385,7 +418,7 @@ void check_func(char *id) {
 
 void check_proc(char *id) {
     if(lookupTable(current, id, 0) == NULL) {
-        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarado\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
 }
