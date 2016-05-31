@@ -247,8 +247,7 @@ void print_token(int token) {
             break;
         }
 		default : {
-            if(token > 127) // esto es necesario??
-                printf("Token: %s\n", yytext);
+            printf("Token: %s\n", yytext);
         }
     }
 	printf("Fila: %d\n"
