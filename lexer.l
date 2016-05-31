@@ -24,6 +24,7 @@ const char *error;
 
 
 ID          [[:lower:]][[:alnum:]_]*
+BAD_ID      [[:digit:]]+[[:alpha:]_][[:alnum:]_]*
 STRUCT_ID   [[:upper:]][[:alnum:]_]*
 NUMBER 		[[:digit:]]+
 FLOAT  		[[:digit:]]*\.[[:digit:]]+([eE][+-]?[[:digit:]]+)?
@@ -77,6 +78,13 @@ BAD_CHAR2    '(\\[^0atn][^\n]*|[^\\\n].+)'
 "predec"            return PREDEC;
 
 {ID} 				return ID;
+
+{BAD_ID}            {
+                        error_num++;
+                        fprintf(stderr, "Error:%d:%d:\"%s\" no es un identificador valido\n\n",
+                                yylineno, yylloc.first_column, yytext);
+                    }
+
 {STRUCT_ID}         return SC_ID;
 
 {NUMBER} 			{

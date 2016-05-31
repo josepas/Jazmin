@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
         	print_token(token);
         }
         if (error_num) {
-            printf("Se econtro %d errores.\n", error_num);
+            printf("Se encontraron %d errores.\n", error_num);
             has_error = 1;
         }
     }
