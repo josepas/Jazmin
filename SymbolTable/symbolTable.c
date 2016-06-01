@@ -74,7 +74,7 @@ void dumpTable(Symtable *printer) {
         aux = printer->table[i];
         while(aux!=NULL) {
             printf("%*s-%s %d:%d ", printer->level*3, "", aux->string, aux->line, aux->column);
-            dumpType(aux->type);
+            dumpType(aux->type); printf("\n");
             aux = aux->next;
         }
     }

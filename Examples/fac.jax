@@ -1,16 +1,15 @@
+
+func fact(int a, char b, float t) -> int {
+    write "hola"
+ 
+}
+
+proc pan(int a, char t) {
+    write "chaooo"
+}
+
 program {
-    int c
     int n
-    int fact = 1
 
-    write "Dame un numero\n"
-    read n
 
-    for c to n {
-        fact = fact * c
-    }
-    write "Factorial de "
-    write n
-    write " es:"
-    write fact
 }

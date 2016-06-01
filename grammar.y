@@ -270,7 +270,10 @@ expr
     ;
 
 subrout_def
-    : FUNC ID '(' f_formals ')' ARROW type { declare_func($2, $<list>4, $<type>7); } block { current = exitScope(current); }
+    : FUNC ID '(' f_formals ')' ARROW type 
+        { declare_func($2, $<list>4, $<type>7); } 
+    block 
+        { current = exitScope(current); }
     | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
     ;
 
@@ -284,22 +287,30 @@ fwd_dec
     ;
 
 f_formals
-    : /* lambda */ { current = enterScope(current); }
-    | { current = enterScope(current); } f_formal_list
+    : /* lambda */ 
+        { 
+            current = enterScope(current); 
+            $<list>$ = newArgList();
+        } 
+    | { current = enterScope(current); } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
-    : /* lambda */ { current = enterScope(current); }
-    | { current = enterScope(current); } p_formal_list
+    : /* lambda */ 
+        { 
+            current = enterScope(current); 
+            $<list>$ = newArgList();
+        }
+    | { current = enterScope(current); } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
-    : f_formal { $<list>$ = newArgList($<type>1); }
+    : f_formal { $<list>$ = add(newArgList(), $<type>1) ; }
     | f_formal_list ',' f_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
 p_formal_list
-    : p_formal { $<list>$ = newArgList($<type>1); }
+    : p_formal { $<list>$ = add(newArgList(), $<type>1); }
     | p_formal_list ',' p_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
@@ -308,8 +319,8 @@ f_formal
     ;
 
 p_formal
-    : type ID /*{ declare_var($2); }*/
-    | REF type ID /*{ declare_var($3); }*/
+    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1;  }
+    | REF type ID { declare_var($3, $<type>2); $<type>$ = $<type>2; }
     ;
 
 func_call
@@ -347,7 +358,7 @@ void yyerror (char const *s) {
 
 void constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
-//        insertTable(strings, str, yylloc.first_line, yylloc.first_column);
+       insertTable(strings, str, yylloc.first_line, yylloc.first_column, lookupTable(current, "hollow", 0)->type);
     }
 }
 
@@ -427,10 +438,11 @@ void declare_proc(char *id, ArgList *list) {
     }
 }
 
-void declare_func(char *id, ArgList *list, Typetree *range) {
+void declare_func(char *id, ArgList *l, Typetree *range) {
     Entry *aux;
+    Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-//        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {
         if(aux->line) {

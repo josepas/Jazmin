@@ -32,19 +32,80 @@ Typetree* createProc(ArgList *list) {
 
     new_type->u.proc.dom = list;
 
+
     return new_type;
+}
+
+Typetree* createFunc(ArgList *list, Typetree *range) {
+    Typetree *new_type = (Typetree*) memory(sizeof(Typetree));
+
+    new_type->kind = T_FUNC;
+    new_type->size = 1; //CAMBIARLO
+
+    new_type->u.fun.dom = list;
+    new_type->u.fun.range = range;
+
+    return new_type;
+}
+
+
+
+ArgList* newArgList() {
+
+    ArgList *newL;
+    newL = (ArgList*) memory( sizeof(ArgList) );
+
+    newL->f = NULL;
+    newL->l = NULL;
+
+    return newL;
+}
+
+ArgList* add(ArgList* l, Typetree* t) {
+    TypeNode *newN;
+    newN = (TypeNode*) memory( sizeof(TypeNode) );
+    newN->t = t;
+    newN->next = NULL;
+
+    if (l->f == NULL) { //vacia
+        l->f = newN;
+        l->l = newN;
+    } else {
+        l->l->next = newN;
+        l->l = newN;
+    }
+
+    return l;
+}
+ 
+void dumpArgList(ArgList* who) {
+
+    if (who == NULL) {
+        // aqui deberia ser assert
+        printf("Error creando la lista de formales\n");
+        return;
+    }
+    if (who->f == NULL) {
+        printf("Vacio");
+    }
+    TypeNode *printer = who->f;
+    while (printer != NULL) {
+        dumpType(printer->t);
+        printf(" X ");
+        printer = printer->next;
+    }
 }
 
 void dumpType(Typetree *type) {
     switch(type->kind) {
         case T_INT :
-            printf("int\n");
+            printf("int");
             break;
         case T_CHAR :
-            printf("char\n");
+            printf("char");
             break;
         case T_FLOAT :
-            printf("float\n");
+            printf("float");
             break;
         case T_POINTER :
             printf("pointer to ");
@@ -54,8 +115,19 @@ void dumpType(Typetree *type) {
             printf("array 0..%d of ", type->u.a.high);
             dumpType(type->u.a.t);
             break;
+        case T_FUNC :
+            printf("Function: ");
+            dumpArgList(type->u.fun.dom);
+            printf("-> ");
+            dumpType(type->u.fun.range);
+            break;
+        case T_PROC :
+            printf("Procedure: ");
+            dumpArgList(type->u.fun.dom);
+            // dumpType(type->u.fun.range); se le pondra hollow?
+            break;
         default :
-            printf("noooooo %d\n", type->kind);
+            printf("Sin definir %d\n", type->kind);
             break;
     }
 }
