@@ -296,8 +296,12 @@ f_formals
     ;
 
 p_formals
-    : /* lambda */ { current = enterScope(current); }
-    | { current = enterScope(current); } p_formal_list
+    : /* lambda */ 
+        { 
+            current = enterScope(current); 
+            $<list>$ = newArgList();
+        }
+    | { current = enterScope(current); } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
@@ -306,7 +310,7 @@ f_formal_list
     ;
 
 p_formal_list
-    : p_formal { $<list>$ = newArgList($<type>1); }
+    : p_formal { $<list>$ = add(newArgList(), $<type>1); }
     | p_formal_list ',' p_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
@@ -315,8 +319,8 @@ f_formal
     ;
 
 p_formal
-    : type ID /*{ declare_var($2); }*/
-    | REF type ID /*{ declare_var($3); }*/
+    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1;  }
+    | REF type ID { declare_var($3, $<type>2); $<type>$ = $<type>2; }
     ;
 
 func_call

@@ -4,6 +4,10 @@ func fact(int a, char b, float t) -> int {
  
 }
 
+proc pan(int a, char t) {
+    write "chaooo"
+}
+
 program {
     int n
 

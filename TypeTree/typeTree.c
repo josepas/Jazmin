@@ -116,10 +116,15 @@ void dumpType(Typetree *type) {
             dumpType(type->u.a.t);
             break;
         case T_FUNC :
-            printf("Funcion: ");
+            printf("Function: ");
             dumpArgList(type->u.fun.dom);
             printf("-> ");
             dumpType(type->u.fun.range);
+            break;
+        case T_PROC :
+            printf("Procedure: ");
+            dumpArgList(type->u.fun.dom);
+            // dumpType(type->u.fun.range); se le pondra hollow?
             break;
         default :
             printf("Sin definir %d\n", type->kind);
