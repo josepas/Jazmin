@@ -129,6 +129,12 @@ void dumpType(Typetree *type) {
         case T_FLOAT :
             printf("float");
             break;
+        case T_BOOL :
+            printf("bool");
+            break;
+        case T_HOLLOW :
+            printf("hollow");
+            break;
         case T_POINTER :
             printf("pointer to ");
             dumpType(type->u.p.t);
