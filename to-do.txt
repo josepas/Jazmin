@@ -3,6 +3,7 @@ Parser
 
 Tabla de simbolos
     debug
+    strings
 
 Main
 
