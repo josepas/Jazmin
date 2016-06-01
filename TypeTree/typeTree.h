@@ -6,8 +6,6 @@
 typedef enum {T_INT, T_FLOAT, T_BOOL, T_CHAR, T_HOLLOW,
                 T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_CONF, T_STRUCT, T_TYPE_ERROR} Kind;
 
-
-
 typedef struct _typeNode {
     struct _typetree *t;
     struct _typeNode *next;
@@ -38,6 +36,7 @@ typedef struct _typetree {
         } fun;
         struct {
             ArgList *dom; // aqui creo que deberian entrar las tuplas
+            // *range puede que convenga fucionar con func
         } proc;
         struct {
             struct _symtable *campos;
@@ -53,8 +52,9 @@ ArgList* add(ArgList*, struct _typetree*);
 
 
 Typetree* createType(Kind);
-Typetree *createArray(int, Typetree*);
+Typetree* createArray(int, Typetree*);
 Typetree* createProc(ArgList*);
+Typetree* createFunc(ArgList *list, Typetree *range);
 void dumpType(Typetree*);
 
 #endif

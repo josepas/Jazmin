@@ -1,16 +1,16 @@
-program {
-    int c
-    int n
-    int fact = 1
 
-    write "Dame un numero\n"
-    read n
-
-    for c to n {
-        fact = fact * c
+func fact(int n, char i, char j) -> int {
+    if n < 0 {
+        return 0
     }
-    write "Factorial de "
-    write n
-    write " es:"
-    write fact
+    if n == 1 {
+        return 1
+    }
+ 
+}
+
+program {
+    int n
+
+
 }

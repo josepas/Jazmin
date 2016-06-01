@@ -270,7 +270,10 @@ expr
     ;
 
 subrout_def
-    : FUNC ID '(' f_formals ')' ARROW type { declare_func($2, $<list>4, $<type>7); } block { current = exitScope(current); }
+    : FUNC ID '(' f_formals ')' ARROW type 
+        { declare_func($2, $<list>4, $<type>7); } 
+    block 
+        { current = exitScope(current); }
     | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
     ;
 
@@ -285,7 +288,7 @@ fwd_dec
 
 f_formals
     : /* lambda */ { current = enterScope(current); }
-    | { current = enterScope(current); } f_formal_list
+    | { current = enterScope(current); } f_formal_list { $<type>$ = $<type>2;}
     ;
 
 p_formals
@@ -427,10 +430,11 @@ void declare_proc(char *id, ArgList *list) {
     }
 }
 
-void declare_func(char *id, ArgList *list, Typetree *range) {
+void declare_func(char *id, ArgList *l, Typetree *range) {
     Entry *aux;
+    Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-//        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {
         if(aux->line) {
