@@ -24,6 +24,28 @@ Typetree* createArray(int n, Typetree *type) {
     return new_type;
 }
 
+Typetree* createStruct(char *name) {
+    Typetree *new_type = (Typetree*) memory(sizeof(Typetree));
+
+    new_type->kind = T_STRUCT;
+    new_type->size = 1; //CAMBIARLO
+
+    new_type->u.r.name = name;
+
+    return new_type;
+}
+
+Typetree* createConf(char *name) {
+    Typetree *new_type = (Typetree*) memory(sizeof(Typetree));
+
+    new_type->kind = T_CONF;
+    new_type->size = 1; //CAMBIARLO
+
+    new_type->u.r.name = name;
+
+    return new_type;
+}
+
 Typetree* createProc(ArgList *list) {
     Typetree *new_type = (Typetree*) memory(sizeof(Typetree));
 
@@ -77,7 +99,7 @@ ArgList* add(ArgList* l, Typetree* t) {
 
     return l;
 }
- 
+
 void dumpArgList(ArgList* who) {
 
     if (who == NULL) {
@@ -125,6 +147,12 @@ void dumpType(Typetree *type) {
             printf("Procedure: ");
             dumpArgList(type->u.fun.dom);
             // dumpType(type->u.fun.range); se le pondra hollow?
+            break;
+        case T_CONF :
+            printf("confederation %s", type->u.r.name);
+            break;
+        case T_STRUCT :
+            printf("struct %s", type->u.r.name);
             break;
         default :
             printf("Sin definir %d\n", type->kind);

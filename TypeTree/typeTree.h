@@ -4,7 +4,8 @@
 #include "../utils/utils.h"
 
 typedef enum {T_INT, T_FLOAT, T_BOOL, T_CHAR, T_HOLLOW,
-                T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_CONF, T_STRUCT, T_TYPE_ERROR} Kind;
+                T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_CONF, T_STRUCT,
+                T_TYPE, T_TYPE_ERROR} Kind;
 
 typedef struct _typeNode {
     struct _typetree *t;
@@ -39,7 +40,8 @@ typedef struct _typetree {
             // *range puede que convenga fucionar con func
         } proc;
         struct {
-            struct _symtable *campos;
+            char *name;
+            struct _symtable *fields;
         } r;
     } u;
 
@@ -53,6 +55,8 @@ ArgList* add(ArgList*, struct _typetree*);
 
 Typetree* createType(Kind);
 Typetree* createArray(int, Typetree*);
+Typetree* createStruct(char *name);
+Typetree* createConf(char *name);
 Typetree* createProc(ArgList*);
 Typetree* createFunc(ArgList *list, Typetree *range);
 void dumpType(Typetree*);

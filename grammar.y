@@ -22,12 +22,14 @@ void constant_string(char*);
 void declare_var(char*, Typetree*);
 void declare_ptr(char*, int, Typetree*);
 void declare_array(char*, Typetree*);
-void declare_struct(char*);
+void declare_record(char s_c, char*);
 void declare_proc(char*, ArgList*);
 void declare_func(char*, ArgList*, Typetree*);
 
+void set_record(char*, Symtable*);
+
 void check_var(char*);
-void check_record(char*);
+Typetree* check_record(char*);
 void check_func(char*);
 void check_proc(char*);
 
@@ -56,7 +58,7 @@ void check_proc(char*);
 
 %token <str> BOOL CHAR FLOAT INT HOLLOW
 
-%token CONFEDERATION STRUCT
+%token <c> CONFEDERATION STRUCT
 
 %token IF ELIF ELSE
 
@@ -161,7 +163,7 @@ declaration
     | type ID dimension { declare_array($2, first); }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); }
     /* pointer to array y vice versa */
-    | s_c SC_ID { declare_struct($2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { current = exitScope(current); }
+    | s_c SC_ID { declare_record($<c>1, $2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { set_record($2, current); current = exitScope(current); }
     | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
 
@@ -182,8 +184,8 @@ dcl_list
     ;
 
 s_c
-    : STRUCT
-    | CONFEDERATION
+    : STRUCT { $<c>$ = 's'; }
+    | CONFEDERATION { $<c>$ = 'c'; }
     ;
 
 point_d
@@ -207,7 +209,7 @@ type
     | CHAR      { $<type>$ = lookupTable(current, "char", 0)->type; }
     | FLOAT     { $<type>$ = lookupTable(current, "float", 0)->type; }
     | BOOL      { $<type>$ = lookupTable(current, "bool", 0)->type; }
-    | SC_ID     { check_record($1); }
+    | SC_ID     { $<type>$ = check_record($1); }
     ;
 
 assignment
@@ -270,9 +272,9 @@ expr
     ;
 
 subrout_def
-    : FUNC ID '(' f_formals ')' ARROW type 
-        { declare_func($2, $<list>4, $<type>7); } 
-    block 
+    : FUNC ID '(' f_formals ')' ARROW type
+        { declare_func($2, $<list>4, $<type>7); }
+    block
         { current = exitScope(current); }
     | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
     ;
@@ -287,18 +289,18 @@ fwd_dec
     ;
 
 f_formals
-    : /* lambda */ 
-        { 
-            current = enterScope(current); 
+    : /* lambda */
+        {
+            current = enterScope(current);
             $<list>$ = newArgList();
-        } 
+        }
     | { current = enterScope(current); } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
-    : /* lambda */ 
-        { 
-            current = enterScope(current); 
+    : /* lambda */
+        {
+            current = enterScope(current);
             $<list>$ = newArgList();
         }
     | { current = enterScope(current); } p_formal_list { $<list>$ = $<list>2;}
@@ -406,10 +408,17 @@ void declare_ptr(char *id, int i, Typetree *type) {
     }
 }
 
-void declare_struct(char *id) {
+void declare_record(char s_c, char *id) {
     Entry *aux;
+    Typetree *t;
+    if(s_c == 's') {
+        t = createStruct(id);
+    }
+    else {
+        t = createConf(id);
+    }
     if((aux = lookupTable(current, id, 1)) == NULL) {
-//        insertTable(current, id, yylloc.first_line, yylloc.first_column);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -457,6 +466,13 @@ void declare_func(char *id, ArgList *l, Typetree *range) {
     }
 }
 
+void set_record(char* id, Symtable* table) {
+    Entry *aux = lookupTable(current, id, 0);
+    Typetree *t = aux->type;
+    t->u.r.fields = table;
+}
+
+
 void check_var(char *id) {
     if(lookupTable(current, id, 0) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
@@ -464,11 +480,13 @@ void check_var(char *id) {
     }
 }
 
-void check_record(char* id) {
-    if(lookupTable(current, id, 0) == NULL) {
+Typetree* check_record(char* id) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
+    return aux->type;
 }
 
 void check_func(char *id) {
