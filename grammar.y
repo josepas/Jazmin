@@ -287,8 +287,12 @@ fwd_dec
     ;
 
 f_formals
-    : /* lambda */ { current = enterScope(current); }
-    | { current = enterScope(current); } f_formal_list { $<type>$ = $<type>2;}
+    : /* lambda */ 
+        { 
+            current = enterScope(current); 
+            $<list>$ = newArgList();
+        } 
+    | { current = enterScope(current); } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
@@ -297,7 +301,7 @@ p_formals
     ;
 
 f_formal_list
-    : f_formal { $<list>$ = newArgList($<type>1); }
+    : f_formal { $<list>$ = add(newArgList(), $<type>1) ; }
     | f_formal_list ',' f_formal { $<list>$ = add($<list>1, $<type>3); }
     ;
 
@@ -350,7 +354,7 @@ void yyerror (char const *s) {
 
 void constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
-//        insertTable(strings, str, yylloc.first_line, yylloc.first_column);
+       insertTable(strings, str, yylloc.first_line, yylloc.first_column, lookupTable(current, "hollow", 0)->type);
     }
 }
 

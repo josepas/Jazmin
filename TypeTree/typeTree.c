@@ -50,19 +50,13 @@ Typetree* createFunc(ArgList *list, Typetree *range) {
 
 
 
-ArgList* newArgList(Typetree* t) {
-
+ArgList* newArgList() {
 
     ArgList *newL;
     newL = (ArgList*) memory( sizeof(ArgList) );
 
-    TypeNode *newN;
-    newN = (TypeNode*) memory( sizeof(TypeNode));
-    newN->t = t;
-    newN->next = NULL;
-
-    newL->f = newN;
-    newL->l = newN;
+    newL->f = NULL;
+    newL->l = NULL;
 
     return newL;
 }
@@ -73,8 +67,13 @@ ArgList* add(ArgList* l, Typetree* t) {
     newN->t = t;
     newN->next = NULL;
 
-    l->l->next = newN;
-    l->l = newN;
+    if (l->f == NULL) { //vacia
+        l->f = newN;
+        l->l = newN;
+    } else {
+        l->l->next = newN;
+        l->l = newN;
+    }
 
     return l;
 }
@@ -82,12 +81,17 @@ ArgList* add(ArgList* l, Typetree* t) {
 void dumpArgList(ArgList* who) {
 
     if (who == NULL) {
+        // aqui deberia ser assert
         printf("Error creando la lista de formales\n");
+        return;
+    }
+    if (who->f == NULL) {
+        printf("Vacio");
     }
     TypeNode *printer = who->f;
     while (printer != NULL) {
         dumpType(printer->t);
-        printf(" x ");
+        printf(" X ");
         printer = printer->next;
     }
 }

@@ -1,11 +1,6 @@
 
-func fact(int n, char i, char j) -> int {
-    if n < 0 {
-        return 0
-    }
-    if n == 1 {
-        return 1
-    }
+func fact(int a, char b, float t) -> int {
+    write "hola"
  
 }
 

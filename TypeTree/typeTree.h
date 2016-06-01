@@ -47,7 +47,7 @@ typedef struct _typetree {
 
 
 
-ArgList* newArgList(struct _typetree*);
+ArgList* newArgList();
 ArgList* add(ArgList*, struct _typetree*);
 
 
