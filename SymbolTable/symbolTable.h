@@ -26,7 +26,9 @@ typedef struct _symtable {
 
 Symtable* createTable(Symtable*);
 Symtable* enterScope(Symtable*);
+Symtable* enterScopeR(Symtable*, Symtable*);
 Symtable* exitScope(Symtable*);
+
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
 void insertTable(Symtable*, char*, int, int, struct _typetree*);

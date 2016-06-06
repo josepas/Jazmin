@@ -44,7 +44,6 @@ Symtable* enterScope(Symtable *current) {
 	Symtable *nTable = createTable(current);
 
 	if (current == NULL) {
-		current = nTable;
 		nTable->level = 0;
 	} else if ( current->fchild == NULL ) {
 		nTable->level = current->level + 1;
@@ -57,6 +56,29 @@ Symtable* enterScope(Symtable *current) {
 	}
 
 	return nTable;
+}
+
+Symtable* enterScopeR(Symtable* current, Symtable* helper) {
+
+	Symtable *nTable;
+
+	if (helper == NULL) {
+		nTable = createTable(current);
+		return nTable;
+	} else {
+		nTable = createTable(helper);
+	}
+
+	if ( helper->fchild == NULL ) {
+		helper->fchild = nTable;
+		helper->lchild = nTable;
+	} else {
+		helper->lchild->next = nTable;
+		helper->lchild = nTable;
+	}
+	
+	return nTable;
+
 }
 
 

@@ -14,6 +14,7 @@ extern int yylex();
 
 Symtable* current = NULL;
 Symtable* strings = NULL;
+Symtable* helper = NULL;
 
 Typetree* first = NULL;
 
@@ -163,7 +164,19 @@ declaration
     | type ID dimension { declare_array($2, first); }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); }
     /* pointer to array y vice versa */
-    | s_c SC_ID { declare_record($<c>1, $2); current = enterScope(current); } '{' opt_nls dcl_list opt_nls '}' { set_record($2, current); current = exitScope(current); }
+    | s_c SC_ID 
+        { 
+            declare_record($<c>1, $2); 
+            helper = enterScopeR(current, helper); 
+        } 
+    '{' opt_nls dcl_list opt_nls '}' 
+        { 
+            set_record($2, helper); 
+            helper = exitScope(helper);
+            if (helper == current) {
+                helper = NULL;
+            }
+        }
     | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
 
@@ -448,9 +461,12 @@ void declare_proc(char *id, ArgList *list) {
 }
 
 void declare_func(char *id, ArgList *l, Typetree *range) {
+    printf("%s\n", id);
     Entry *aux;
     Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
+        printf("%s--%d\n", id, yylloc.first_line);
+
         insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {

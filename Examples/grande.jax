@@ -23,9 +23,7 @@ program {
     int i
     read i
     write "Toma su fibonacci: "
-    fib(i)
     write "Toma su factorial: "
-    fact(i)
 
     int n
     while n < 10 {
