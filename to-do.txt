@@ -1,5 +1,14 @@
+clase de semana 8
+
+    lo que dibujo amin en su cuarderno
+    agregar un campo kind a la TS (field, var, type..., func)
+    separar la tabla de los campos de un record del flujo
+        esto hace que tengamos que terminar el struct_current y seguir buscando por el strcut normal.
+    permitir apuntadores a estructuras
+
 Parser
     posicion de los jump (break, continue..)
+    acceso a los campos del struct
 
 Tabla de simbolos
     debug
@@ -92,6 +101,9 @@ en el parser
 
 
     imprimir todo bien bonito
+
+!
+
 
 
 
