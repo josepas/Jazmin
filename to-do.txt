@@ -2,8 +2,6 @@ clase de semana 8
 
     lo que dibujo amin en su cuarderno
     agregar un campo kind a la TS (field, var, type..., func)
-    separar la tabla de los campos de un record del flujo
-        esto hace que tengamos que terminar el struct_current y seguir buscando por el strcut normal.
     permitir apuntadores a estructuras
 
 Parser
@@ -85,24 +83,7 @@ libreria defensiva explota horrible si no funciona porque son progrmas de nosotr
     en general assert para todos con los king y que los apuntadores no sean nulos donde convenga
 
 
-en el parser
-    declare var y declare field ahora reciben el tipo
 
-    hay que extender el union con type y con entries para pasar cosas
-
-    agregar tipos a los no terminales para que tengan enteros como pinter dims dim y array
-
-    ID . ids
-
-
-    peos ricos de atributos heradados con pointer to pointer
-
-    cambios en las vainas de declaracion agregando los tipos
-
-
-    imprimir todo bien bonito
-
-!
 
 
 
