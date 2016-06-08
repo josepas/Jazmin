@@ -47,7 +47,7 @@ Typetree* check_type_bool_solo(Typetree*);
 Typetree* check_type_record(Typetree*);
 void check_type_if(Typetree*);
 void check_type_while(Typetree*);
-void check_type_assign(Typetree *t1, Typetree *t2); 
+void check_type_assign(char*, Typetree*); 
 
 %}
 %locations
@@ -201,8 +201,8 @@ declaration
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2, $<type>1); }
-    | type ID dimension '=' expr { declare_array($2, first); }
+    : type ID '=' expr { declare_var($2, $<type>1); { check_type_assign($2, $4); }}
+    | type ID dimension '=' expr { declare_array($2, first); { check_type_assign($2, $5); }}
     | declaration
     ;
 
@@ -246,11 +246,11 @@ type
     ;
 
 assignment
-    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign($<type>$, $4); }
-    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign($<type>$, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign($<type>$, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign($<type>$, $4); }
-    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign($<type>$, $4); }
+    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign($1, $4); }
+    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign($1, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign($1, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign($1, $4); }
+    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign($1, $4); }
     ;
 
 iteration
@@ -546,12 +546,9 @@ void declare_proc(char *id, ArgList *list) {
 }
 
 void declare_func(char *id, ArgList *l, Typetree *range) {
-    printf("%s\n", id);
     Entry *aux;
     Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        printf("%s--%d\n", id, yylloc.first_line);
-
         insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
     }
     else {
@@ -754,17 +751,20 @@ void check_type_while(Typetree* t) {
 }
 
 
-void check_type_assign(Typetree *t1, Typetree *t2) {
+void check_type_assign(char* id, Typetree *t2) {
+
+     Typetree* t1 = lookupTable(current, id, 0)->type;
+
     if (t2->kind == T_TYPE_ERROR) {
         fprintf(stderr, "Error: asignación invalida\n");
     } else {
         if (t1->kind != t2->kind) {
             // falta arreglar aqui
-            printf("Error: asignación: se espera un");
+            printf("Error: asignación: se espera un ");
             dumpType(t1);
-            printf("y se recibió un");
+            printf(" y se recibió un ");
             dumpType(t2);
-            printf("\n");
+            printf("\n");   
         }
     }
 }
