@@ -6,10 +6,14 @@
 #include "../utils/utils.h"
 #include "../TypeTree/typeTree.h"
 
+
+typedef enum {C_VAR, C_RECORD, C_SUB, C_CONSTANT, C_TYPE} Class;
+
 typedef struct _entry {
     char *string;
     int line;
     int column;
+    Class class;
     struct _typetree *type;
 
     struct _entry *next;
@@ -30,7 +34,7 @@ Symtable* exitScope(Symtable*);
 
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
-void insertTable(Symtable*, char*, int, int, struct _typetree*);
+void insertTable(Symtable*, char*, int, int, Class, struct _typetree*);
 Entry* lookupTable(Symtable*, char*, int);
 
 #endif

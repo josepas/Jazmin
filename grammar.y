@@ -281,7 +281,7 @@ elif_stm
 
 expr
     : literal   {$<type>$ = $<type>1;}
-    | ID        
+    | ID
         {
         if((temp = check_var($1)))
             $$ = temp->type;
@@ -297,7 +297,10 @@ expr
         if((temp = check_var($1)))
             $<type>$ = check_type_record(temp->type);
         }
-    '.' field_id { $$ = $<type>4; }
+    '.' field_id
+        {
+            $$ = $<type>4;
+        }
     | func_call { $$ = $1; }
     | expr '+' expr { $$ = check_type_arit($1, $3); }
     | expr '-' expr { $$ = check_type_arit($1, $3); }
@@ -350,13 +353,20 @@ expr
 field_id
     : ID
         {
-        if((temp = check_field($<type>-1, $1)))
-            $<type>$ = temp->type;
+            if((temp = check_field($<type>-1, $1))) {
+                $<type>$ = temp->type;
+            }
         }
     | field_id '.' ID
         {
-            if((temp = check_field($<type>1, $3)))
-                $<type>$ = check_type_record(temp->type);
+            if((temp = check_field($<type>1, $3))) {
+                if(temp->class == C_VAR) {
+                    $<type>$ = temp->type;
+                }
+                else {
+                    $<type>$ = check_type_record(temp->type);
+                }
+            }
         }
     ;
 
@@ -458,14 +468,14 @@ void yyerror (char const *s) {
 
 void constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
-       insertTable(strings, str, yylloc.first_line, yylloc.first_column, lookupTable(current, "hollow", 0)->type);
+       insertTable(strings, str, yylloc.first_line, yylloc.first_column, C_CONSTANT, lookupTable(current, "hollow", 0)->type);
     }
 }
 
 void declare_var(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -477,7 +487,7 @@ void declare_var(char *id, Typetree *type) {
 void declare_array(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -497,7 +507,7 @@ void declare_ptr(char *id, int i, Typetree *type) {
             temp = temp->u.p.t;
         }
         temp->u.p.t = type;
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, aux_type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, aux_type);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -516,7 +526,7 @@ void declare_record(char s_c, char *id) {
         t = createConf(id);
     }
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_RECORD, t);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -530,7 +540,7 @@ void declare_proc(char *id, ArgList *list) {
     Entry *aux;
     Typetree *t = createProc(list);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t);
     }
     else {
         if(aux->line) {
@@ -549,7 +559,7 @@ void declare_func(char *id, ArgList *l, Typetree *range) {
     Entry *aux;
     Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, t);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t);
     }
     else {
         if(aux->line) {
@@ -738,7 +748,7 @@ Typetree* check_type_bool_solo(Typetree* t) {
 
 void check_type_if(Typetree* t) {
     if(t->kind != T_BOOL) {
-        fprintf(stderr, "Error: expresión del if no booleana\n");
+        fprintf(stderr, "Error:%d:%d: expresión del if no booleana\n", yylloc.first_line, yylloc.first_column);
         has_error = 1;
     }
 }
