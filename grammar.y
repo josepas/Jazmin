@@ -18,6 +18,8 @@ Symtable* helper = NULL;
 
 Typetree* first = NULL;
 
+Entry *temp = NULL;
+
 void constant_string(char*);
 
 void declare_var(char*, Typetree*);
@@ -29,10 +31,17 @@ void declare_func(char*, ArgList*, Typetree*);
 
 void set_record(char*, Symtable*);
 
-void check_var(char*);
+Entry* check_var(char*);
 Typetree* check_record(char*);
-void check_func(char*);
-void check_proc(char*);
+Entry* check_func(char*);
+Entry* check_proc(char*);
+Typetree* check_type(Typetree*, Typetree*);
+Typetree* check_type_arit(Typetree*, Typetree*);
+Typetree* check_type_bool(Typetree*, Typetree*);
+Typetree* check_type_par(Typetree*);
+Typetree* check_type_arit_solo(Typetree*);
+Typetree* check_type_bool_solo(Typetree*);
+void check_type_if(Typetree*);
 
 %}
 %locations
@@ -78,6 +87,8 @@ void check_proc(char*);
 %token PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
 
 %token ARROW
+
+%type <type> expr func_call
 
 
 %right '=' PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
@@ -164,14 +175,14 @@ declaration
     | type ID dimension { declare_array($2, first); }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); }
     /* pointer to array y vice versa */
-    | s_c SC_ID 
-        { 
-            declare_record($<c>1, $2); 
-            helper = enterScopeR(current, helper); 
-        } 
-    '{' opt_nls dcl_list opt_nls '}' 
-        { 
-            set_record($2, helper); 
+    | s_c SC_ID
+        {
+            declare_record($<c>1, $2);
+            helper = enterScopeR(current, helper);
+        }
+    '{' opt_nls dcl_list opt_nls '}'
+        {
+            set_record($2, helper);
             helper = exitScope(helper);
             if (helper == current) {
                 helper = NULL;
@@ -248,40 +259,78 @@ for_args
     ;
 
 selection
-    : IF expr block elif_stm ELSE block
-    | IF expr block elif_stm
-    | IF expr block ELSE block
-    | IF expr block
+    : IF expr block elif_stm ELSE block { check_type_if($2); }
+    | IF expr block elif_stm { check_type_if($2); }
+    | IF expr block ELSE block { check_type_if($2); }
+    | IF expr block { check_type_if($2); }
     ;
 
 elif_stm
-    : ELIF expr block
-    | elif_stm ELIF expr block
+    : ELIF expr { check_type_if($2); } block
+    | elif_stm ELIF expr { check_type_if($3); } block
     ;
 
 expr
     : literal
-    | ID { check_var($1); }
-    | ID dimension { check_var($1); }
+    | ID
+        {
+        if((temp = check_var($1)))
+            $$ = temp->type;
+        }
+    | ID dimension
+        {
+            if((temp = check_var($1)))
+                $$ = temp->type;
+        }
     /* | point_d ID { check_var($2); } */
     | ID '.' ID { check_var($1); /* check_field */ }
-    | func_call
-    | expr '+' expr
-    | expr '-' expr
-    | expr '*' expr
-    | expr '/' expr
-    | expr '%' expr
-    | '-' expr      %prec UNARY
-    | '(' expr ')'
-    | '~' expr      %prec UNARY
-    | expr AND expr
-    | expr OR expr
+    | func_call { $$ = $1; }
+    | expr '+' expr { $$ = check_type_arit($1, $3); }
+    | expr '-' expr { $$ = check_type_arit($1, $3); }
+    | expr '*' expr { $$ = check_type_arit($1, $3); }
+    | expr '/' expr { $$ = check_type_arit($1, $3); }
+    | expr '%' expr { $$ = check_type_arit($1, $3); }
+    | '-' expr     { $$ = check_type_arit_solo($2); } %prec UNARY
+    | '(' expr ')' { $$ = check_type_par($2); }
+    | '~' expr     { $$ = check_type_bool_solo($2); }  %prec UNARY
+    | expr AND expr { $$ = check_type_bool($1, $3); }
+    | expr OR expr { $$ = check_type_bool($1, $3); }
     | expr LTOE expr
+        {
+            $$ = check_type_arit($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     | expr GTOE expr
+        {
+            $$ = check_type_arit($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     | expr EQUAL expr
+        {
+            $$ = check_type($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     | expr UNEQUAL expr
+        {
+            $$ = check_type($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     | expr '<' expr
+        {
+            $$ = check_type_arit($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     | expr '>' expr
+        {
+            $$ = check_type_arit($1, $3);
+            if($$->kind != T_TYPE_ERROR)
+                $$ = lookupTable(current, "bool", 0)->type;
+        }
     ;
 
 subrout_def
@@ -339,7 +388,13 @@ p_formal
     ;
 
 func_call
-    : ID { check_func($1); } '(' arguments ')'
+    : ID
+        {
+        if((temp = check_func($1)))
+            // Por ser mid-rule
+            $<type>$ = temp->type;
+        }
+    '(' arguments ')'
     ;
 
 proc_call
@@ -489,11 +544,13 @@ void set_record(char* id, Symtable* table) {
 }
 
 
-void check_var(char *id) {
-    if(lookupTable(current, id, 0) == NULL) {
+Entry* check_var(char *id) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
+    return aux;
 }
 
 Typetree* check_record(char* id) {
@@ -505,16 +562,147 @@ Typetree* check_record(char* id) {
     return aux->type;
 }
 
-void check_func(char *id) {
-    if(lookupTable(current, id, 0) == NULL) {
+Entry* check_func(char *id) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
+    return aux;
 }
 
-void check_proc(char *id) {
-    if(lookupTable(current, id, 0) == NULL) {
+Entry* check_proc(char *id) {
+    Entry *aux;
+    if((aux = lookupTable(current, id, 0)) == NULL) {
         fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarado\n", yylloc.first_line, yylloc.first_column, id);
+        has_error = 1;
+    }
+    return aux;
+}
+
+Typetree *check_type(Typetree *t1, Typetree *t2) {
+    Typetree *error;
+    if(t1->kind == T_TYPE_ERROR)
+        return t1;
+    if(t2->kind == T_TYPE_ERROR)
+        return t2;
+    if(t1->kind == t2->kind) {
+        if(t1->kind == T_CONF || t1->kind == T_STRUCT) {
+            if(strcmp(t1->u.r.name, t2->u.r.name) == 0)
+                return t1;
+            else {
+                error = createType(T_TYPE_ERROR);
+                has_error = 1;
+            }
+        }
+        else {
+            return t1;
+        }
+
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+Typetree *check_type_arit(Typetree *t1, Typetree *t2) {
+    Typetree *error;
+    if(t1->kind == T_TYPE_ERROR)
+        return t1;
+    if(t2->kind == T_TYPE_ERROR)
+        return t2;
+    if(t1->kind == t2->kind) {
+        if(t1->kind == T_INT || t1->kind == T_FLOAT)
+            return t1;
+        else {
+            error = createType(T_TYPE_ERROR);
+            has_error = 1;
+        }
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+Typetree *check_type_bool(Typetree *t1, Typetree *t2) {
+    Typetree *error;
+    if(t1->kind == T_TYPE_ERROR)
+        return t1;
+    if(t2->kind == T_TYPE_ERROR)
+        return t2;
+    if(t1->kind == t2->kind) {
+        if(t1->kind == T_BOOL)
+            return t1;
+        else {
+            error = createType(T_TYPE_ERROR);
+            has_error = 1;
+        }
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+Typetree* check_type_par(Typetree* t) {
+    Typetree *error;
+    if(t->kind == T_TYPE_ERROR)
+        return t;
+
+    if(t->kind == T_INT || t->kind == T_FLOAT || t->kind == T_BOOL) {
+        return t;
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+Typetree* check_type_arit_solo(Typetree* t) {
+    Typetree *error;
+    if(t->kind == T_TYPE_ERROR)
+        return t;
+
+    if(t->kind == T_INT || t->kind == T_FLOAT) {
+        return t;
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+Typetree* check_type_bool_solo(Typetree* t) {
+    Typetree *error;
+    if(t->kind == T_TYPE_ERROR)
+        return t;
+
+    if(t->kind == T_BOOL) {
+        return t;
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
+void check_type_if(Typetree* t) {
+    if(t->kind != T_BOOL) {
+        fprintf(stderr, "Error: if espera un tipo bool\n");
         has_error = 1;
     }
 }
