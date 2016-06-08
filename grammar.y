@@ -46,6 +46,8 @@ Typetree* check_type_arit_solo(Typetree*);
 Typetree* check_type_bool_solo(Typetree*);
 Typetree* check_type_record(Typetree*);
 void check_type_if(Typetree*);
+void check_type_while(Typetree*);
+void check_type_assign(Typetree *t1, Typetree *t2);
 
 %}
 %locations
@@ -244,15 +246,15 @@ type
     ;
 
 assignment
-    : ID { check_var($1); } '=' expr
-    | ID { check_var($1); } PLUS_ASSIGN expr
-    | ID { check_var($1); } MINUS_ASSIGN expr
-    | ID { check_var($1); } MULT_ASSIGN expr
-    | ID { check_var($1); } DIV_ASSIGN expr
+    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign($<type>$, $4); }
+    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign($<type>$, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign($<type>$, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign($<type>$, $4); }
+    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign($<type>$, $4); }
     ;
 
 iteration
-    : WHILE expr block
+    : WHILE expr block { check_type_while($2); }
     | FOR for_bot_args TO for_args block { current = exitScope(current); }
     | FOR for_bot_args TO for_args STEP NUMBER block { current = exitScope(current); }
     ;
@@ -278,7 +280,7 @@ elif_stm
     ;
 
 expr
-    : literal
+    : literal   {$<type>$ = $<type>1;}
     | ID
         {
         if((temp = check_var($1)))
@@ -427,7 +429,7 @@ func_call
         {
         if((temp = check_func($1)))
             // Por ser mid-rule
-            $<type>$ = temp->type;
+            $<type>$ = temp->type->u.fun.range;
         }
     '(' arguments ')'
     ;
@@ -446,13 +448,16 @@ args_list
     | args_list ',' expr
     ;
 
+
+
+
 literal
-	: NUMBER
-	| REAL
-	| CHARACTER
-	| JTRUE
-	| JFALSE
-	| JNULL
+	: NUMBER       { $<type>$ = lookupTable(current, "int", 0)->type; }
+	| REAL         { $<type>$ = lookupTable(current, "float", 0)->type; }
+	| CHARACTER    { $<type>$ = lookupTable(current, "char", 0)->type; }
+	| JTRUE        { $<type>$ = lookupTable(current, "bool", 0)->type; }
+	| JFALSE       { $<type>$ = lookupTable(current, "bool", 0)->type; }
+	| JNULL        { $<type>$ = lookupTable(current, "hollow", 0)->type; }
 	;
 %%
 
@@ -743,8 +748,31 @@ Typetree* check_type_bool_solo(Typetree* t) {
 
 void check_type_if(Typetree* t) {
     if(t->kind != T_BOOL) {
-        fprintf(stderr, "Error:%d:%d: if espera un tipo bool\n", yylloc.first_line, yylloc.first_column);
+        fprintf(stderr, "Error:%d:%d: expresión del if no booleana\n", yylloc.first_line, yylloc.first_column);
         has_error = 1;
+    }
+}
+
+void check_type_while(Typetree* t) {
+    if(t->kind != T_BOOL) {
+        fprintf(stderr, "Error: expresión del while no booleana\n");
+        has_error = 1;
+    }
+}
+
+
+void check_type_assign(Typetree *t1, Typetree *t2) {
+    if (t2->kind == T_TYPE_ERROR) {
+        fprintf(stderr, "Error: asignación invalida\n");
+    } else {
+        if (t1->kind != t2->kind) {
+            // falta arreglar aqui
+            printf("Error: asignación: se espera un");
+            dumpType(t1);
+            printf("y se recibió un");
+            dumpType(t2);
+            printf("\n");
+        }
     }
 }
 

@@ -6,8 +6,6 @@
 #include "../utils/utils.h"
 #include "../TypeTree/typeTree.h"
 
-// typedef enum {T_TYPE, T_VAR, T_FIELD, T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_RECORD,
-//                 T_TYPE, T_TYPE_ERROR, T_ANYTYPE} tsKind;
 
 typedef enum {C_VAR, C_RECORD, C_SUB, C_CONSTANT, C_TYPE} Class;
 
@@ -17,6 +15,7 @@ typedef struct _entry {
     int column;
     Class class;
     struct _typetree *type;
+
     struct _entry *next;
 } Entry;
 
