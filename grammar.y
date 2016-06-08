@@ -15,6 +15,7 @@ extern int yylex();
 Symtable* current = NULL;
 Symtable* strings = NULL;
 Symtable* helper = NULL;
+Symtable* save_current = NULL;
 
 Typetree* first = NULL;
 
@@ -32,15 +33,18 @@ void declare_func(char*, ArgList*, Typetree*);
 void set_record(char*, Symtable*);
 
 Entry* check_var(char*);
+Entry* check_field(Typetree*, char*);
 Typetree* check_record(char*);
 Entry* check_func(char*);
 Entry* check_proc(char*);
+
 Typetree* check_type(Typetree*, Typetree*);
 Typetree* check_type_arit(Typetree*, Typetree*);
 Typetree* check_type_bool(Typetree*, Typetree*);
 Typetree* check_type_par(Typetree*);
 Typetree* check_type_arit_solo(Typetree*);
 Typetree* check_type_bool_solo(Typetree*);
+Typetree* check_type_record(Typetree*);
 void check_type_if(Typetree*);
 
 %}
@@ -178,14 +182,17 @@ declaration
     | s_c SC_ID
         {
             declare_record($<c>1, $2);
-            helper = enterScopeR(current, helper);
+            save_current = current;
+            current = NULL;
+            //helper = enterScopeR(current, helper);
+            current = enterScopeR(save_current, current);
         }
     '{' opt_nls dcl_list opt_nls '}'
         {
-            set_record($2, helper);
-            helper = exitScope(helper);
-            if (helper == current) {
-                helper = NULL;
+            set_record($2, current);
+            current = exitScope(current);
+            if (current == save_current) {
+                save_current = NULL;
             }
         }
     | s_c SC_ID ID /*{ declare_var($3); }*/
@@ -283,7 +290,12 @@ expr
                 $$ = temp->type;
         }
     /* | point_d ID { check_var($2); } */
-    | ID '.' ID { check_var($1); /* check_field */ }
+    | ID
+        {
+        if((temp = check_var($1)))
+            $<type>$ = check_type_record(temp->type);
+        }
+    '.' field_id { $$ = $<type>4; }
     | func_call { $$ = $1; }
     | expr '+' expr { $$ = check_type_arit($1, $3); }
     | expr '-' expr { $$ = check_type_arit($1, $3); }
@@ -330,6 +342,19 @@ expr
             $$ = check_type_arit($1, $3);
             if($$->kind != T_TYPE_ERROR)
                 $$ = lookupTable(current, "bool", 0)->type;
+        }
+    ;
+
+field_id
+    : ID
+        {
+        if((temp = check_field($<type>-1, $1)))
+            $<type>$ = temp->type;
+        }
+    | field_id '.' ID
+        {
+            if((temp = check_field($<type>1, $3)))
+                $<type>$ = check_type_record(temp->type);
         }
     ;
 
@@ -553,6 +578,15 @@ Entry* check_var(char *id) {
     return aux;
 }
 
+Entry* check_field(Typetree *record, char *field) {
+    Entry *aux;
+    if((aux = lookupTable(record->u.r.fields, field, 1)) == NULL) {
+        fprintf(stderr, "Error:%d:%d: \"%s\" no es un campo de %s\n", yylloc.first_line, yylloc.first_column, field, record->u.r.name);
+        has_error = 1;
+    }
+    return aux;
+}
+
 Typetree* check_record(char* id) {
     Entry *aux;
     if((aux = lookupTable(current, id, 0)) == NULL) {
@@ -705,4 +739,19 @@ void check_type_if(Typetree* t) {
         fprintf(stderr, "Error: if espera un tipo bool\n");
         has_error = 1;
     }
+}
+
+Typetree* check_type_record(Typetree *t) {
+    Typetree *error;
+    if(t->kind == T_TYPE_ERROR)
+        return t;
+
+    if(t->kind == T_STRUCT || t->kind == T_CONF)
+        return t;
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
 }
