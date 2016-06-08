@@ -76,7 +76,7 @@ Symtable* enterScopeR(Symtable* current, Symtable* helper) {
 		helper->lchild->next = nTable;
 		helper->lchild = nTable;
 	}
-	
+
 	return nTable;
 
 }
@@ -140,7 +140,7 @@ void destroyTable(Symtable *who) {
 }
 
 
-void insertTable(Symtable *current, char *str, int line, int column, Typetree *type) {
+void insertTable(Symtable *current, char *str, int line, int column, Class class, Typetree *type) {
 
 	if(lookupTable(current, str, 1) == NULL) {
 	    Entry *newEntry;
@@ -151,6 +151,7 @@ void insertTable(Symtable *current, char *str, int line, int column, Typetree *t
 	    newEntry->string = strdup(str);
 	    newEntry->line = line;
 	    newEntry->column = column;
+        newEntry->class = class;
         newEntry->type = type;
 	    newEntry->next = current->table[h];
 	    current->table[h] = newEntry;

@@ -56,11 +56,11 @@ int main(int argc, char *argv[]) {
     strings = enterScope(strings);
     current = enterScope(current);
 
-    insertTable(current, "hollow", 0, 0, createType(T_HOLLOW));
-    insertTable(current, "int", 0, 0, createType(T_INT));
-    insertTable(current, "char", 0, 0, createType(T_CHAR));
-    insertTable(current, "float", 0, 0, createType(T_FLOAT));
-    insertTable(current, "bool", 0, 0, createType(T_BOOL));
+    insertTable(current, "hollow", 0, 0, C_TYPE, createType(T_HOLLOW));
+    insertTable(current, "int", 0, 0, C_TYPE, createType(T_INT));
+    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR));
+    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT));
+    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL));
     // insertTable(current, "itof", 0, 0);
     // insertTable(current, "ftoi", 0, 0);
     // insertTable(current, "born", 0, 0);
