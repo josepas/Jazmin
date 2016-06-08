@@ -7,9 +7,20 @@ func fib (int n) -> int {
     return fib(n-1) + fib(n-2)
 }
 
+struct Circulo {
+    int a
+    int b
+    int c
+}
+
 struct Triangulo {
     int a
+    Circulo c
 }
+
+
+
+
 
 program {
 
