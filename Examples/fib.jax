@@ -1,7 +1,7 @@
 int a
 
-func fib   (int i, int j, int k) -> int {
-    int l = i + j + k
+func fib   (int j) -> int {
+    write "blah"
 }
 
 int n
@@ -9,5 +9,16 @@ int n
 
 program {
     int j 
-    fib(j,j,j)
+
+    int a[2][2]
+
+
+    a[1][0] = 2
+
+    a[j + 2] = 1
+
+    j = 5+5+5
+
+
+    fib(0)
 }

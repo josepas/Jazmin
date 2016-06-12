@@ -256,6 +256,7 @@ assignment
     | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign($1, $4); }
     | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign($1, $4); }
     | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign($1, $4); }
+    | ID dimension '=' expr
     ;
 
 iteration
