@@ -20,6 +20,7 @@ Symtable* save_current = NULL;
 Typetree* first = NULL;
 
 Entry *temp = NULL;
+Entry *entry = NULL;
 
 void constant_string(char*);
 
@@ -28,8 +29,9 @@ void declare_ptr(char*, int, Typetree*);
 void declare_array(char*, Typetree*);
 void declare_record(char s_c, char*);
 void declare_proc(char*, ArgList*);
-void declare_func(char*, ArgList*, Typetree*);
+void declare_func(char*);
 
+void set_type_func(char*, ArgList*, Typetree*);
 void set_record(char*, Symtable*);
 
 Entry* check_var(char*);
@@ -45,9 +47,12 @@ Typetree* check_type_par(Typetree*);
 Typetree* check_type_arit_solo(Typetree*);
 Typetree* check_type_bool_solo(Typetree*);
 Typetree* check_type_record(Typetree*);
+
 void check_type_if(Typetree*);
 void check_type_while(Typetree*);
 void check_type_assign(char*, Typetree*); 
+
+void check_arguments(Typetree*, ArgList*);
 
 %}
 %locations
@@ -94,7 +99,7 @@ void check_type_assign(char*, Typetree*);
 
 %token ARROW
 
-%type <type> expr func_call
+%type <type> expr sub_call
 
 
 %right '=' PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
@@ -154,7 +159,7 @@ instruction
     | jump
     | io_inst
     | malloc
-    | proc_call
+    | sub_call
     ;
 
 malloc
@@ -301,7 +306,7 @@ expr
         {
             $$ = $<type>4;
         }
-    | func_call { $$ = $1; }
+    | sub_call { $$ = $1; }
     | expr '+' expr { $$ = check_type_arit($1, $3); }
     | expr '-' expr { $$ = check_type_arit($1, $3); }
     | expr '*' expr { $$ = check_type_arit($1, $3); }
@@ -371,17 +376,17 @@ field_id
     ;
 
 subrout_def
-    : FUNC ID '(' f_formals ')' ARROW type
-        { declare_func($2, $<list>4, $<type>7); }
+    : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type
+        { set_type_func($2, $<list>5, $<type>8); }
     block
         { current = exitScope(current); }
     | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
     ;
 
 fwd_dec
-    : PREDEC FUNC ID '(' f_formals ')' ARROW type
+    : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type
         {
-            declare_func($3, $<list>5, $<type>8);
+            //declare_func($3);
             current = exitScope(current);
         }
     | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current = exitScope(current); }
@@ -424,28 +429,34 @@ p_formal
     | REF type ID { declare_var($3, $<type>2); $<type>$ = $<type>2; }
     ;
 
-func_call
+sub_call
     : ID
         {
         if((temp = check_func($1)))
             // Por ser mid-rule
             $<type>$ = temp->type->u.fun.range;
         }
-    '(' arguments ')'
-    ;
-
-proc_call
-    : ID { check_proc($1); } '(' arguments ')'
+    '(' arguments ')' 
+        { 
+            check_arguments($<type>1, $<list>4); 
+            $<type>$ = $<type>1->u.fun.range;
+        }
     ;
 
 arguments
-    : /* lambda */
-    | args_list
+    : /* lambda */  { $<list>$ = newArgList(); }
+    | args_list     { $<list>$ = $<list>1; }
     ;
 
 args_list
-    : expr
+    : expr     
+        {
+            $<list>$ = add( newArgList(), $<type>1 );
+        }      
     | args_list ',' expr
+        {
+            $<list>$ = add($<list>1, $<type>3);
+        }
     ;
 
 
@@ -555,11 +566,10 @@ void declare_proc(char *id, ArgList *list) {
     }
 }
 
-void declare_func(char *id, ArgList *l, Typetree *range) {
+void declare_func(char *id) {
     Entry *aux;
-    Typetree *t = createFunc(l, range);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, NULL);
     }
     else {
         if(aux->line) {
@@ -574,6 +584,13 @@ void declare_func(char *id, ArgList *l, Typetree *range) {
     }
 }
 
+void set_type_func(char* id, ArgList *list, Typetree *range) {
+    Entry *aux = lookupTable(current,id,0);
+    aux->type = createFunc(list, range); 
+}
+
+
+
 void set_record(char* id, Symtable* table) {
     Entry *aux = lookupTable(current, id, 0);
     Typetree *t = aux->type;
@@ -584,7 +601,7 @@ void set_record(char* id, Symtable* table) {
 Entry* check_var(char *id) {
     Entry *aux;
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
+        fprintf(stderr, "Error:%d:%d: variable \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
     return aux;
@@ -620,7 +637,7 @@ Entry* check_func(char *id) {
 Entry* check_proc(char *id) {
     Entry *aux;
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        fprintf(stderr, "Error:%d:%d: \"%s\" no ha sido declarado\n", yylloc.first_line, yylloc.first_column, id);
+        fprintf(stderr, "Error:%d:%d: subrutina \"%s\" no ha sido declarada\n", yylloc.first_line, yylloc.first_column, id);
         has_error = 1;
     }
     return aux;
@@ -793,3 +810,29 @@ Typetree* check_type_record(Typetree *t) {
 
     return error;
 }
+
+void check_arguments(Typetree *t, ArgList *l2) {
+    
+    TypeNode *n1;
+    TypeNode *n2;
+
+    if ( t->kind == T_FUNC ) {
+        printf("ENTRE AQUIIII\n");
+        n1 = t->u.fun.dom->f;
+
+    }  else if (t->kind == T_PROC ) {
+        n1 = t->u.proc.dom->f;
+
+    } else {
+        fprintf(stderr, "FATAL: Fallo en el chequeo de tipos\n");
+    }
+
+    n2 = l2->f;
+
+    if ( !compareTypeNodes(n1,n2) ) {
+        fprintf(stderr, "Error: Tipos en la llamada de la funcion\n");
+    }
+
+
+}
+

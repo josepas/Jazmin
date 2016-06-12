@@ -1,10 +1,13 @@
+int a
+
+func fib   (int i, int j, int k) -> int {
+    int l = i + j + k
+}
+
+int n
+
+
 program {
-
-    int j
-    j = True /\ False
-
-    write "Dame un número: "
-    int i
-    read i
-    write "Toma su fibonacci: "
+    int j 
+    fib(j,j,j)
 }

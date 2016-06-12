@@ -96,8 +96,26 @@ ArgList* add(ArgList* l, Typetree* t) {
         l->l->next = newN;
         l->l = newN;
     }
-
+    
     return l;
+}
+
+int compareTypeNodes(TypeNode *n1, TypeNode *n2) {
+
+    //Llegue al final
+    if (n1 == NULL && n2 == NULL) {
+        return 1;
+    } 
+    //alguno es nulo
+    if (n1 == NULL || n2 == NULL) {
+        return 0;
+    } 
+    // son distintos
+    if (n1->t != n2->t) {
+        return 0;
+    }
+    
+    return compareTypeNodes(n1->next, n2->next);
 }
 
 void dumpArgList(ArgList* who) {

@@ -32,11 +32,11 @@ typedef struct _typetree {
             struct _typetree *t;
         } p;
         struct {
-            ArgList *dom; // aqui creo que deberian entrar las tuplas
+            ArgList *dom;
             struct _typetree *range;
         } fun;
         struct {
-            ArgList *dom; // aqui creo que deberian entrar las tuplas
+            ArgList *dom; 
             // *range puede que convenga fucionar con func
         } proc;
         struct {
@@ -51,7 +51,7 @@ typedef struct _typetree {
 
 ArgList* newArgList();
 ArgList* add(ArgList*, struct _typetree*);
-
+int compareTypeNodes(TypeNode*, TypeNode*);
 
 Typetree* createType(Kind);
 Typetree* createArray(int, Typetree*);
