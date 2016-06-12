@@ -52,7 +52,7 @@ void check_type_if(Typetree*);
 void check_type_while(Typetree*);
 void check_type_assign(char*, Typetree*); 
 
-void check_arguments(Typetree*, ArgList*);
+void check_arguments(char*, ArgList*);
 
 %}
 %locations
@@ -438,7 +438,7 @@ sub_call
         }
     '(' arguments ')' 
         { 
-            check_arguments($<type>1, $<list>4); 
+            check_arguments($1, $<list>4); 
             $<type>$ = $<type>1->u.fun.range;
         }
     ;
@@ -811,10 +811,12 @@ Typetree* check_type_record(Typetree *t) {
     return error;
 }
 
-void check_arguments(Typetree *t, ArgList *l2) {
+void check_arguments(char *id, ArgList *l2) {
     
     TypeNode *n1;
     TypeNode *n2;
+
+    Typetree *t = lookupTable(current, id, 0)->type;
 
     if ( t->kind == T_FUNC ) {
         printf("ENTRE AQUIIII\n");
