@@ -213,8 +213,8 @@ offset = pop(offstack);             current = exitScope(current);
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2, $<type>1); { check_type_assign( lookupTable(current, $2, 0)->type , $4); }}
-    | type ID dimension '=' expr { declare_array($2, first); { check_type_assign( lookupTable(current, $2, 0)->type, $5); }}
+    : type ID '=' expr { declare_var($2, $<type>1); check_type_assign( lookupTable(current, $2, 0)->type , $4); }
+    | type ID dimension '=' expr { declare_array($2, first); check_type_assign( lookupTable(current, $2, 0)->type, $5); }
     | declaration
     ;
 
@@ -502,6 +502,14 @@ void constant_string(char* str) {
 void declare_var(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
+        if(type->kind == T_STRUCT || type->kind == T_CONF) {
+            if(offset % 4 != 0) {
+                offset += 4 - (offset % 4);
+           }
+        }
+        else if(offset % type->size != 0)
+            offset += type->size - (offset % type->size);
+
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type, type->size, offset);
         offset += type->size;
     }
@@ -523,6 +531,7 @@ void declare_array(char *id, Typetree *type) {
         }
         size = size * temp->size;
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_ARRAY, type, size, offset);
+        offset += size;
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -542,7 +551,8 @@ void declare_ptr(char *id, int i, Typetree *type) {
             temp = temp->u.p.t;
         }
         temp->u.p.t = type;
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, aux_type, 4, offset);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, aux_type, aux_type->size, offset);
+        offset += aux_type->size;
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -621,7 +631,16 @@ void set_record(char* id, Symtable* table) {
     Entry *aux = lookupTable(current, id, 0);
     Typetree *t = aux->type;
     t->u.r.fields = table;
-    t->size = table->size;
+
+    if(t->kind == T_STRUCT) {
+        t->size = table->size;
+        if(t->size % 4 != 0)
+            t->size += 4 - (t->size % 4);
+    } else {
+        t->size = getMaxSize(table);
+        if(t->size % 4 != 0)
+            t->size += 4 - (t->size % 4);
+    }
 }
 
 Typetree* get_array_type(Typetree* t) {
