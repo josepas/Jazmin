@@ -11,13 +11,13 @@ lex.yy.c: lexer.l
 	flex $^
 
 symbolTable.o: SymbolTable/symbolTable.h SymbolTable/symbolTable.c
-	gcc -c SymbolTable/symbolTable.c -o symbolTable.o
+	gcc -g -c SymbolTable/symbolTable.c -o symbolTable.o
 
 typeTree.o: TypeTree/typeTree.h TypeTree/typeTree.c
-	gcc -c TypeTree/typeTree.c -o typeTree.o
+	gcc -g -c TypeTree/typeTree.c -o typeTree.o
 
 utils.o: utils/utils.h utils/utils.c
-	gcc -c utils/utils.c -o utils.o
+	gcc -g -c utils/utils.c -o utils.o
 
 clean:
 	rm -f lex.yy.c grammar.tab.c grammar.tab.h grammar.output
