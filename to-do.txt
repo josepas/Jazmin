@@ -3,7 +3,6 @@ clase de semana 8
 
 Parser
     posicion de los jump (break, continue..)
-    no tenemos a[1][0] = 2 y sus variaciones
     no tenemos a[ expr ]
     
 
@@ -13,10 +12,13 @@ Tabla de simbolos
 Main
 
 tipos
+    propagar type error en las init declarations
+    probar todo bien con calma
+    chequeo de los else if anidados
+    void cableados en la instruction list
+    CHEQUEAR EL STEP DEL FOR
     caso borde en el chequeo de structs
     Impresion de errores en las ramas
-    Chequeo del for
-    que todas las instrucciones devuelvan void cuando estan bien formadas 
 
 
 

@@ -22,6 +22,7 @@ Typetree* first = NULL;
 
 Entry *temp = NULL;
 Entry *entry = NULL;
+Typetree* HOLLOW_T;
 
 void constant_string(char*);
 
@@ -45,6 +46,7 @@ Typetree* check_record(char*);
 Entry* check_func(char*);
 Entry* check_proc(char*);
 
+
 Typetree* check_type(Typetree*, Typetree*);
 Typetree* check_type_arit(Typetree*, Typetree*);
 Typetree* check_type_bool(Typetree*, Typetree*);
@@ -54,11 +56,15 @@ Typetree* check_type_int(Typetree*);
 Typetree* check_type_bool_solo(Typetree*);
 Typetree* check_type_record(Typetree*);
 
-void check_type_if(Typetree*);
-void check_type_while(Typetree*);
-void check_type_assign(Typetree*, Typetree*);
+Typetree* check_type_if(Typetree*, Typetree*);
+Typetree* check_type_while(Typetree*, Typetree*);
+Typetree* check_for(Typetree*, Typetree*, Typetree*);
+Typetree* check_type_assign(Typetree*, Typetree*);
+Typetree* check_arguments(char*, ArgList*);
 
-void check_arguments(char*, ArgList*);
+Typetree* check_seq(Typetree*, Typetree*);
+Typetree* check_block(Typetree*);
+Typetree* check_program(Typetree*);
 
 %}
 %locations
@@ -123,7 +129,7 @@ void check_arguments(char*, ArgList*);
 
 jaxmin
     : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
+    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<type>$ = check_program($<type>4); }
     ;
 
 opt_nls
@@ -148,24 +154,35 @@ outer_def
     ;
 
 block
-    : { current = enterScope(current); push(offstack, offset); offset = 0; } '{' opt_nls ins_list opt_nls '}' { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+    :   { 
+            current = enterScope(current); 
+            push(offstack, offset); 
+            offset = 0; 
+        }
+     '{' opt_nls ins_list opt_nls '}' 
+        { 
+            current->size = offset; 
+            offset = pop(offstack); 
+            current = exitScope(current); 
+            $<type>$ = check_block($<type>4);
+        }
     ;
 
 ins_list
-    : instruction
-    | ins_list nls instruction
+    : instruction               { $<type>$ = HOLLOW_T; }  
+    | ins_list nls instruction  { $<type>$ = check_seq($<type>1, $<type>3); }
     ;
 
 instruction
     : init_dcl
-    | block
-    | selection
-    | iteration
-    | assignment
-    | jump
-    | io_inst
-    | malloc
-    | sub_call
+    | block           { $<type>$ = $<type>1; }
+    | selection       { $<type>$ = $<type>1; }
+    | iteration       { $<type>$ = $<type>1; }
+    | assignment      { $<type>$ = $<type>1; }
+    | jump            { $<type>$ = HOLLOW_T; }
+    | io_inst         { $<type>$ = HOLLOW_T; }
+    | malloc          { $<type>$ = HOLLOW_T; }
+    | sub_call        { $<type>$ = $<type>1; }
     ;
 
 malloc
@@ -213,7 +230,7 @@ offset = pop(offstack);             current = exitScope(current);
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2, $<type>1); { check_type_assign( lookupTable(current, $2, 0)->type , $4); }}
+    : type ID '=' expr { declare_var($2, $<type>1);  check_type_assign( lookupTable(current, $2, 0)->type , $4); }
     | type ID dimension '=' expr { declare_array($2, first); { check_type_assign( lookupTable(current, $2, 0)->type, $5); }}
     | declaration
     ;
@@ -258,11 +275,11 @@ type
     ;
 
 assignment
-    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    : ID { $<type>$ = check_var($1)->type; } '=' expr            { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
     | ID dimension
         {
             check_array_dims( lookupTable(current, $1, 0)->type, first );
@@ -274,29 +291,51 @@ assignment
     ;
 
 iteration
-    : WHILE expr block { check_type_while($2); }
-    | FOR for_bot_args TO for_args block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | FOR for_bot_args TO for_args STEP NUMBER block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+    : WHILE expr block { $<type>$ = check_type_while($2,$<type>3); }
+    | FOR for_bot_args TO for_args block 
+        { 
+            current->size = offset; 
+            offset = pop(offstack); 
+            current = exitScope(current);
+            $<type>$ = check_for($<type>2, $<type>4, $<type>5);
+        }
+    | FOR for_bot_args TO for_args STEP NUMBER block 
+        { 
+            current->size = offset; 
+            offset = pop(offstack); 
+            current = exitScope(current); 
+            $<type>$ = check_for($<type>2, $<type>4, $<type>7);
+        }
     ;
 
 for_bot_args
-    : { current = enterScope(current); push(offstack, offset); offset = 0; } for_args
+    :   { 
+            current = enterScope(current); 
+            push(offstack, offset); 
+            offset = 0; 
+        } 
+     for_args 
+        {
+            $<type>$ = $<type>2;
+        }
+    ;
 
 for_args
-    : expr
-    | init_dcl
+    : expr      {$<type>$ = $<type>1;}
+    | init_dcl  
+    
     ;
 
 selection
-    : IF expr block elif_stm ELSE block { check_type_if($2); }
-    | IF expr block elif_stm { check_type_if($2); }
-    | IF expr block ELSE block { check_type_if($2); }
-    | IF expr block { check_type_if($2); }
+    : IF expr block elif_stm ELSE block { $<type>$ = check_type_if($2,$<type>3); }
+    | IF expr block elif_stm { $<type>$ = check_type_if($2,$<type>3); }
+    | IF expr block ELSE block { $<type>$ = check_type_if($2,$<type>3); }
+    | IF expr block { $<type>$ = check_type_if($2,$<type>3); }
     ;
 
 elif_stm
-    : ELIF expr { check_type_if($2); } block
-    | elif_stm ELIF expr { check_type_if($3); } block
+    : ELIF expr block { check_type_if($2, $<type>3); }
+    | elif_stm ELIF expr  block { check_type_if($3,$<type>4); }
     ;
 
 expr
@@ -403,7 +442,8 @@ fwd_dec
         {
             //declare_func($3);
             current->size = offset;
-offset = pop(offstack);             current = exitScope(current);
+            offset = pop(offstack);
+            current = exitScope(current);
         }
     | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     ;
@@ -456,8 +496,7 @@ sub_call
         }
     '(' arguments ')'
         {
-            check_arguments($1, $<list>4);
-            $<type>$ = $<type>1->u.fun.range;
+            $<type>$ = check_arguments($1, $<list>4);
         }
     ;
 
@@ -833,25 +872,55 @@ Typetree* check_type_bool_solo(Typetree* t) {
     return error;
 }
 
-void check_type_if(Typetree* t) {
+Typetree* check_type_if(Typetree* t, Typetree *blockT) {
+
     if(t->kind != T_BOOL) {
         fprintf(stderr, "Error:%d:%d: expresión del if no booleana\n", yylloc.first_line, yylloc.first_column);
-        has_error = 1;
+        has_error = 1; // quitar luego
+        return createType(T_TYPE_ERROR);
     }
+    if (blockT->kind == T_TYPE_ERROR) {
+        return blockT;
+    }
+    return HOLLOW_T;
+
 }
 
-void check_type_while(Typetree* t) {
+Typetree* check_type_while(Typetree* t, Typetree *blockT) {
+
     if(t->kind != T_BOOL) {
         fprintf(stderr, "Error: expresión del while no booleana\n");
-        has_error = 1;
+        has_error = 1; //quitar luego
+        return createType(T_TYPE_ERROR);
     }
+    if (blockT->kind == T_TYPE_ERROR) {
+        return blockT;
+    }
+    return HOLLOW_T;
+}
+
+Typetree* check_for(Typetree *start, Typetree *end, Typetree *block) {
+
+    if  ( check_type_int(start)->kind == T_TYPE_ERROR) {
+        fprintf(stderr, "Error en valor inicial del for\n");
+        return createType(T_TYPE_ERROR);
+    }
+    if  ( check_type_int(end)->kind == T_TYPE_ERROR) {
+        fprintf(stderr, "Error en valor final del for\n");
+        return createType(T_TYPE_ERROR);
+    }
+    if (block->kind == T_TYPE_ERROR) {
+        return block;
+    }
+    return HOLLOW_T;
 }
 
 
-void check_type_assign(Typetree *t1, Typetree *t2) {
+Typetree* check_type_assign(Typetree *t1, Typetree *t2) {
 
     if (t2->kind == T_TYPE_ERROR) {
         fprintf(stderr, "Error: asignación invalida\n");
+        return t2;
     } else {
         if (t1->kind != t2->kind) {
             // falta arreglar aqui
@@ -860,9 +929,41 @@ void check_type_assign(Typetree *t1, Typetree *t2) {
             printf(" y se recibió un ");
             dumpType(t2);
             printf("\n");
+            return createType(T_TYPE_ERROR);
         }
     }
+    return HOLLOW_T;
 }
+ 
+Typetree* check_seq(Typetree *t1, Typetree *t2) {
+
+    if ( t1->kind == T_TYPE_ERROR ) {
+        return t1; 
+    }
+    if ( t2->kind == T_TYPE_ERROR ) {
+        return t2;
+    }
+    return HOLLOW_T;
+
+}
+
+Typetree* check_block(Typetree *t1) {
+
+    if (t1->kind == T_TYPE_ERROR ) {
+        return t1;
+    }
+    return HOLLOW_T;
+}
+
+Typetree* check_program(Typetree *blockT) {
+    if (blockT->kind == T_TYPE_ERROR) {
+        return blockT;
+    }
+    return HOLLOW_T;
+}
+
+
+
 
 Typetree* check_type_record(Typetree *t) {
     Typetree *error;
@@ -879,18 +980,22 @@ Typetree* check_type_record(Typetree *t) {
     return error;
 }
 
-void check_arguments(char *id, ArgList *l2) {
+Typetree* check_arguments(char *id, ArgList *l2) {
 
     TypeNode *n1;
     TypeNode *n2;
+
+    Typetree *subType;
 
     Typetree *t = lookupTable(current, id, 0)->type;
 
     if ( t->kind == T_FUNC ) {
         n1 = t->u.fun.dom->f;
+        subType = t->u.fun.range;
 
     }  else if (t->kind == T_PROC ) {
         n1 = t->u.proc.dom->f;
+        subType = HOLLOW_T;
 
     } else {
         fprintf(stderr, "FATAL: Fallo en el chequeo de tipos\n");
@@ -900,6 +1005,9 @@ void check_arguments(char *id, ArgList *l2) {
 
     if ( !compareTypeNodes(n1,n2) ) {
         fprintf(stderr, "Error: Tipos en la llamada de la funcion\n");
+        return createType(T_TYPE_ERROR);
+    } else {
+        return subType;
     }
 
 

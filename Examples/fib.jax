@@ -8,16 +8,11 @@ int n
 
 
 program {
-    int j 
 
-    int a[1][2][3]
+    int j
+    for j to 5 {
+        write "holaaa"
+    }
 
-
-    a[4][4][4][4] = 9
-
-
-    j = 5+5+5
-
-
-    fib(j)
+   fib(j)
 }
