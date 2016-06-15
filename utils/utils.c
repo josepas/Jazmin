@@ -8,3 +8,25 @@ void* memory(size_t type) {
     }
     return ptr;
 }
+
+Offsetstack* createStack() {
+    Offsetstack *new = (Offsetstack*) memory(sizeof(Offsetstack));
+    new->offset = 0;
+    new->prev = NULL;
+    return new;
+}
+
+void push(Offsetstack *offs, int offset) {
+    printf("pushing %d\n", offset);
+    Offsetstack *new = (Offsetstack*) memory(sizeof(Offsetstack));
+    new->offset = offs->offset;
+    new->prev = offs->prev;
+    offs->offset = offset;
+    offs->prev = new;
+}
+
+int pop(Offsetstack *offs) {
+    int offset = offs->offset;
+    offs = offs->prev;
+    return offset;
+}

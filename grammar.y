@@ -122,7 +122,7 @@ void check_arguments(char*, ArgList*);
 %%
 
 jaxmin
-    : opt_nls { current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; current = exitScope(current); }
+    : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     | opt_nls PROGRAM block opt_nls
     ;
 
@@ -148,7 +148,7 @@ outer_def
     ;
 
 block
-    : { current = enterScope(current); offset = 0; } '{' opt_nls ins_list opt_nls '}' { current->size = offset; current = exitScope(current); }
+    : { current = enterScope(current); push(offstack, offset); offset = 0; } '{' opt_nls ins_list opt_nls '}' { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     ;
 
 ins_list
@@ -194,8 +194,7 @@ declaration
     /* pointer to array y vice versa */
     | s_c SC_ID
         {
-            $<ival>$ = offset;
-            offset = 0;
+            push(offstack, offset); offset = 0;
             declare_record($<c>1, $2);
             save_current = current;
             current = NULL;
@@ -205,11 +204,10 @@ declaration
         {
             set_record($2, current);
             current->size = offset;
-            current = exitScope(current);
+offset = pop(offstack);             current = exitScope(current);
             if (current == save_current) {
                 save_current = NULL;
             }
-            offset = $<ival>3;
         }
     | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
@@ -277,12 +275,12 @@ assignment
 
 iteration
     : WHILE expr block { check_type_while($2); }
-    | FOR for_bot_args TO for_args block { current->size = offset; current = exitScope(current); }
-    | FOR for_bot_args TO for_args STEP NUMBER block { current->size = offset; current = exitScope(current); }
+    | FOR for_bot_args TO for_args block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+    | FOR for_bot_args TO for_args STEP NUMBER block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     ;
 
 for_bot_args
-    : { current = enterScope(current); offset = 0; } for_args
+    : { current = enterScope(current); push(offstack, offset); offset = 0; } for_args
 
 for_args
     : expr
@@ -396,8 +394,8 @@ subrout_def
     : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type
         { set_type_func($2, $<list>5, $<type>8); }
     block
-        { current->size = offset; current = exitScope(current); }
-    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current->size = offset; current = exitScope(current); }
+        { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     ;
 
 fwd_dec
@@ -405,29 +403,29 @@ fwd_dec
         {
             //declare_func($3);
             current->size = offset;
-            current = exitScope(current);
+offset = pop(offstack);             current = exitScope(current);
         }
-    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current->size = offset; current = exitScope(current); }
+    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current->size = offset; offset = pop(offstack); current = exitScope(current); }
     ;
 
 f_formals
     : /* lambda */
         {
             current = enterScope(current);
-            offset = 0;
+            push(offstack, offset); offset = 0;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); offset = 0; } f_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 0; } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
     : /* lambda */
         {
             current = enterScope(current);
-            offset = 0;
+            push(offstack, offset); offset = 0;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); offset = 0; } p_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 0; } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
