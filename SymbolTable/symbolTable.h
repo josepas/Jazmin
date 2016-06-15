@@ -40,4 +40,6 @@ void destroyTable(Symtable*);
 void insertTable(Symtable*, char*, int, int, Class, struct _typetree*, int, int);
 Entry* lookupTable(Symtable*, char*, int);
 
+int getMaxSize(Symtable*);
+
 #endif

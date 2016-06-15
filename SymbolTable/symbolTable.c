@@ -160,7 +160,7 @@ void insertTable(Symtable *current, char *str, int line, int column, Class class
 	    newEntry->next = current->table[h];
 
         current->table[h] = newEntry;
-        current->size += size;
+        current->size = offset+size;
 
 	}
 	else {
@@ -187,4 +187,19 @@ Entry* lookupTable(Symtable* current, char* key, int local) {
 	}
 
 	return aux;
+}
+
+int getMaxSize(Symtable* current) {
+    int i;
+    int max = 0;
+    Entry *aux;
+    for(i=0; i<HASH_SIZE; i++) {
+        aux = current->table[i];
+        while(aux!=NULL) {
+            if(max < aux->size)
+                max = aux->size;
+            aux = aux->next;
+        }
+    }
+    return max;
 }
