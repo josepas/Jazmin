@@ -17,7 +17,6 @@ Offsetstack* createStack() {
 }
 
 void push(Offsetstack *offs, int offset) {
-    printf("pushing %d\n", offset);
     Offsetstack *new = (Offsetstack*) memory(sizeof(Offsetstack));
     new->offset = offs->offset;
     new->prev = offs->prev;

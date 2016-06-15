@@ -123,7 +123,7 @@ void check_arguments(char*, ArgList*);
 
 jaxmin
     : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | opt_nls PROGRAM block opt_nls
+    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
     ;
 
 opt_nls
