@@ -7,7 +7,7 @@
 #include "../TypeTree/typeTree.h"
 
 
-typedef enum {C_VAR, C_RECORD, C_SUB, C_CONSTANT, C_TYPE} Class;
+typedef enum {C_VAR, C_ARRAY, C_RECORD, C_SUB, C_CONSTANT, C_TYPE} Class;
 
 typedef struct _entry {
     char *string;

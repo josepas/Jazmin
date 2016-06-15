@@ -14,7 +14,6 @@ extern int yylex();
 
 Symtable* current = NULL;
 Symtable* strings = NULL;
-Symtable* helper = NULL;
 Symtable* save_current = NULL;
 
 Typetree* first = NULL;
@@ -34,6 +33,10 @@ void declare_func(char*);
 void set_type_func(char*, ArgList*, Typetree*);
 void set_record(char*, Symtable*);
 
+Typetree* get_array_type(Typetree*);
+int count_array_dim(Typetree*);
+void check_array_dims(Typetree*, Typetree*);
+
 Entry* check_var(char*);
 Entry* check_field(Typetree*, char*);
 Typetree* check_record(char*);
@@ -45,12 +48,13 @@ Typetree* check_type_arit(Typetree*, Typetree*);
 Typetree* check_type_bool(Typetree*, Typetree*);
 Typetree* check_type_par(Typetree*);
 Typetree* check_type_arit_solo(Typetree*);
+Typetree* check_type_int(Typetree*);
 Typetree* check_type_bool_solo(Typetree*);
 Typetree* check_type_record(Typetree*);
 
 void check_type_if(Typetree*);
 void check_type_while(Typetree*);
-void check_type_assign(char*, Typetree*); 
+void check_type_assign(Typetree*, Typetree*); 
 
 void check_arguments(char*, ArgList*);
 
@@ -191,7 +195,6 @@ declaration
             declare_record($<c>1, $2);
             save_current = current;
             current = NULL;
-            //helper = enterScopeR(current, helper);
             current = enterScopeR(save_current, current);
         }
     '{' opt_nls dcl_list opt_nls '}'
@@ -206,8 +209,8 @@ declaration
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2, $<type>1); { check_type_assign($2, $4); }}
-    | type ID dimension '=' expr { declare_array($2, first); { check_type_assign($2, $5); }}
+    : type ID '=' expr { declare_var($2, $<type>1); { check_type_assign( lookupTable(current, $2, 0)->type , $4); }}
+    | type ID dimension '=' expr { declare_array($2, first); { check_type_assign( lookupTable(current, $2, 0)->type, $5); }}
     | declaration
     ;
 
@@ -232,7 +235,7 @@ point_d
     ;
 
 dimension
-    : '[' NUMBER ']' { first = createArray($2, $<type>-1); $<type>$ = first; }
+    : '[' NUMBER ']' { first = createArray($2, $<type>-1); $<type>$ = first;}
     | dimension '[' NUMBER ']'
         {
             Typetree *t = createArray($3, $<type>-1);
@@ -251,12 +254,19 @@ type
     ;
 
 assignment
-    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign($1, $4); }
-    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign($1, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign($1, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign($1, $4); }
-    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign($1, $4); }
-    | ID dimension '=' expr
+    : ID { $<type>$ = check_var($1)->type; } '=' expr            { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    | ID dimension 
+        { 
+            check_array_dims( lookupTable(current, $1, 0)->type, first );
+        } 
+     '=' expr
+        { 
+            check_type_assign( get_array_type( lookupTable(current, $1, 0)->type ), $5  );
+        }
     ;
 
 iteration
@@ -460,9 +470,6 @@ args_list
         }
     ;
 
-
-
-
 literal
 	: NUMBER       { $<type>$ = lookupTable(current, "int", 0)->type; }
 	| REAL         { $<type>$ = lookupTable(current, "float", 0)->type; }
@@ -499,7 +506,7 @@ void declare_var(char *id, Typetree *type) {
 void declare_array(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_ARRAY, type);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -596,6 +603,33 @@ void set_record(char* id, Symtable* table) {
     Entry *aux = lookupTable(current, id, 0);
     Typetree *t = aux->type;
     t->u.r.fields = table;
+}
+
+Typetree* get_array_type(Typetree* t) {
+    
+    if (t == NULL) {
+        fprintf(stderr, "Fallo miserable en el chequeo de tipos de arreglos\n");
+    }
+    if (t->kind != T_ARRAY) {
+        return t;
+    }
+    return get_array_type(t->u.a.t);
+}
+
+int count_array_dim(Typetree* t) {
+    if (t->kind != T_ARRAY) {
+        return 0;
+    }
+    return 1 + count_array_dim(t->u.a.t);
+}
+
+void check_array_dims(Typetree *a1, Typetree *a2) {
+    int d1 = count_array_dim(a1);
+    int d2 = count_array_dim(a2);
+
+    if (d1 != d2) {
+        fprintf(stderr, "Error:%d:%d: asignación de arreglo mal formada", yylloc.first_line, yylloc.first_column);
+    }
 }
 
 
@@ -748,6 +782,22 @@ Typetree* check_type_arit_solo(Typetree* t) {
     return error;
 }
 
+Typetree* check_type_int(Typetree* t) {
+    Typetree *error;
+    if(t->kind == T_TYPE_ERROR)
+        return t;
+
+    if(t->kind == T_INT) {
+        return t;
+    }
+    else {
+        error = createType(T_TYPE_ERROR);
+        has_error = 1;
+    }
+
+    return error;
+}
+
 Typetree* check_type_bool_solo(Typetree* t) {
     Typetree *error;
     if(t->kind == T_TYPE_ERROR)
@@ -779,9 +829,7 @@ void check_type_while(Typetree* t) {
 }
 
 
-void check_type_assign(char* id, Typetree *t2) {
-
-     Typetree* t1 = lookupTable(current, id, 0)->type;
+void check_type_assign(Typetree *t1, Typetree *t2) {
 
     if (t2->kind == T_TYPE_ERROR) {
         fprintf(stderr, "Error: asignación invalida\n");
@@ -820,7 +868,6 @@ void check_arguments(char *id, ArgList *l2) {
     Typetree *t = lookupTable(current, id, 0)->type;
 
     if ( t->kind == T_FUNC ) {
-        printf("ENTRE AQUIIII\n");
         n1 = t->u.fun.dom->f;
 
     }  else if (t->kind == T_PROC ) {

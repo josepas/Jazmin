@@ -176,7 +176,7 @@ void dumpType(Typetree *type) {
             printf("confederation %s", type->u.r.name);
             break;
         case T_STRUCT :
-            printf("struct %s", type->u.r.name);
+            printf("Struct %s", type->u.r.name);
             break;
         default :
             printf("Sin definir %d\n", type->kind);
