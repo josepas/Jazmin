@@ -4,7 +4,8 @@ func fib (int n) -> int {
     } elif (n == 0) \/ ( n == 1) {
          return 1
     }
-    return fib(n-1) + fib(n-2)
+    #return fib(n-1) + fib(n-2)
+    return 2
 }
 
 func fact(int n) -> int {
@@ -14,13 +15,14 @@ func fact(int n) -> int {
     if n == 1 {
         return 1
     }
-    return n * fact(n-1)
+    return fact(n-1)
 }
 
 
 program {
     write "Dame un número: "
     int i
+    bool x
     read i
     write "Toma su fibonacci: "
     write "Toma su factorial: "
@@ -28,14 +30,14 @@ program {
     int n
     while n < 10 {
         int j
-        for n to 10 {
+        for int n to 10 {
             int j,k,l
-            int j
+            int io
             n = 1
             write "el poder de greyskul"
 
         }
-
+        float f
         if (x) {
             write "chao"
         }
@@ -45,7 +47,7 @@ program {
         write "chao y otros placeres"
         write "chao"
     }
-
     int j
+
 
 }
