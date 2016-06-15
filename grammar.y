@@ -204,7 +204,8 @@ declaration
         {
             set_record($2, current);
             current->size = offset;
-offset = pop(offstack);             current = exitScope(current);
+            offset = pop(offstack);
+            current = exitScope(current);
             if (current == save_current) {
                 save_current = NULL;
             }
@@ -281,6 +282,7 @@ iteration
 
 for_bot_args
     : { current = enterScope(current); push(offstack, offset); offset = 0; } for_args
+    ;
 
 for_args
     : expr
@@ -507,8 +509,9 @@ void declare_var(char *id, Typetree *type) {
                 offset += 4 - (offset % 4);
            }
         }
-        else if(offset % type->size != 0)
+        else if(offset % type->size != 0) {
             offset += type->size - (offset % type->size);
+        }
 
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type, type->size, offset);
         offset += type->size;

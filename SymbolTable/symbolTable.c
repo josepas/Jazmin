@@ -160,7 +160,7 @@ void insertTable(Symtable *current, char *str, int line, int column, Class class
 	    newEntry->next = current->table[h];
 
         current->table[h] = newEntry;
-        current->size += size;
+        current->size = offset+size;
 
 	}
 	else {
