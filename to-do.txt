@@ -12,6 +12,7 @@ Tabla de simbolos
 Main
 
 tipos
+    chequeo de arreglos como expresiones
     propagar type error en las init declarations
     probar todo bien con calma
     chequeo de los else if anidados
@@ -19,72 +20,3 @@ tipos
     CHEQUEAR EL STEP DEL FOR
     caso borde en el chequeo de structs
     Impresion de errores en las ramas
-
-
-
-hacer arboles de tipos
-para la semana que viene tenemos que podeer crear y definiir tipos
-definiri quiere decir que usemos los arboles de tipo toodos del tipo apunta al mismo tipo
-
-cada tambla de simbolos tiene su arbol de tipos hacer uno global es mas complicado de lo que creemos
-
-libreria para modelar los tipos que este integrada con la tabla de simbolos crea circularidad
-
-si hay un error en la libreria de tipos no necesita verlo el usuario final debe explotar en pedazoa
-
-
-    primer problema que tengo que resolver
-    la circularidad
-    la tabla de simboles tiene types
-    ahora el entry teiene el tipo
-
-    distintos constructos imdef var field fun type
-
-    apuntador al grafo de tipos dentro del entry
-
-    set_kind y set_type
-
-    crear un utils.c con memoria y otras cositas que vayan aparenciendo
-
-    el archivo de typos tiene un grap
-
-    typedef
-        void error vool any char int float....
-
-    grafo de tipos
-        kend
-        size
-        union con todas las cosas
-            arreglo
-                low high contenido
-
-            apuntador
-                el apuntador al grago
-
-            dunvion
-                apuntador a dominio y rango
-
-
-        new basic
-        new arry
-        new pointer
-        new fun
-        new record // union y struct
-        free type
-        print type
-
-
-libreria defensiva explota horrible si no funciona porque son progrmas de nosotros
-
-    assert(que el kind entre los tipos)
-
-    asert(arreglos con los limites)
-
-    en general assert para todos con los king y que los apuntadores no sean nulos donde convenga
-
-
-
-
-
-
-
