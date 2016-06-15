@@ -23,7 +23,8 @@ Symtable* createTable(Symtable *father) {
 	Symtable* newTable;
 
 	newTable = (Symtable*) memory(sizeof(Symtable));
-	newTable->level = 0;
+    newTable->level = 0;
+	newTable->size = 0;
 	newTable->father = father;
 	newTable->fchild = NULL;
 	newTable->lchild = NULL;
@@ -88,7 +89,7 @@ Symtable* exitScope(Symtable *current) {
 
 
 void dumpTable(Symtable *printer) {
-	printf("%*sScope %d:\n", printer->level*3, "", printer->level);
+	printf("%*sScope %d:%d\n", printer->level*3, "", printer->level, printer->size);
 
     int i;
     Entry *aux;
@@ -96,7 +97,8 @@ void dumpTable(Symtable *printer) {
         aux = printer->table[i];
         while(aux!=NULL) {
             printf("%*s-%s %d:%d ", printer->level*3, "", aux->string, aux->line, aux->column);
-            dumpType(aux->type); printf("\n");
+            dumpType(aux->type);
+            printf(" %d  %d\n", aux->size, aux->offset);
             aux = aux->next;
         }
     }
@@ -140,7 +142,7 @@ void destroyTable(Symtable *who) {
 }
 
 
-void insertTable(Symtable *current, char *str, int line, int column, Class class, Typetree *type) {
+void insertTable(Symtable *current, char *str, int line, int column, Class class, Typetree *type, int size, int offset) {
 
 	if(lookupTable(current, str, 1) == NULL) {
 	    Entry *newEntry;
@@ -153,8 +155,13 @@ void insertTable(Symtable *current, char *str, int line, int column, Class class
 	    newEntry->column = column;
         newEntry->class = class;
         newEntry->type = type;
+        newEntry->size = size;
+        newEntry->offset = offset;
 	    newEntry->next = current->table[h];
-	    current->table[h] = newEntry;
+
+        current->table[h] = newEntry;
+        current->size += size;
+
 	}
 	else {
 		fprintf(stderr, "Error:%d:%d: Redeclaración %s\n", line, column, str);

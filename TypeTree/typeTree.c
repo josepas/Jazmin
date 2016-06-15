@@ -6,7 +6,27 @@ Typetree *createType(Kind kind) {
     Typetree *type = (Typetree*) memory(sizeof(Typetree));
 
     type->kind = kind;
-    type->size = 1; //CAMBIARLO
+
+    switch(kind) {
+        case T_HOLLOW :
+            type->size = 0;
+            break;
+        case T_INT :
+            type->size = 4;
+            break;
+        case T_CHAR :
+            type->size = 1;
+            break;
+        case T_FLOAT :
+            type->size = 8;
+            break;
+        case T_BOOL :
+            type->size = 1;
+            break;
+        case T_POINTER :
+            type->size = 4;
+            break;
+    }
 
     return type;
 }
@@ -96,7 +116,7 @@ ArgList* add(ArgList* l, Typetree* t) {
         l->l->next = newN;
         l->l = newN;
     }
-    
+
     return l;
 }
 
@@ -105,16 +125,16 @@ int compareTypeNodes(TypeNode *n1, TypeNode *n2) {
     //Llegue al final
     if (n1 == NULL && n2 == NULL) {
         return 1;
-    } 
+    }
     //alguno es nulo
     if (n1 == NULL || n2 == NULL) {
         return 0;
-    } 
+    }
     // son distintos
     if (n1->t != n2->t) {
         return 0;
     }
-    
+
     return compareTypeNodes(n1->next, n2->next);
 }
 

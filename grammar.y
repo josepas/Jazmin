@@ -8,6 +8,8 @@ extern int yylineno;
 extern char* yytext;
 
 int has_error = 0;
+int offset = 0;
+Offsetstack *offstack = NULL;
 
 void yyerror (char const *s);
 extern int yylex();
@@ -54,7 +56,7 @@ Typetree* check_type_record(Typetree*);
 
 void check_type_if(Typetree*);
 void check_type_while(Typetree*);
-void check_type_assign(Typetree*, Typetree*); 
+void check_type_assign(Typetree*, Typetree*);
 
 void check_arguments(char*, ArgList*);
 
@@ -120,7 +122,7 @@ void check_arguments(char*, ArgList*);
 %%
 
 jaxmin
-    : opt_nls { current = enterScope(current); } definitions nls PROGRAM block opt_nls { current = exitScope(current); }
+    : opt_nls { current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; current = exitScope(current); }
     | opt_nls PROGRAM block opt_nls
     ;
 
@@ -146,7 +148,7 @@ outer_def
     ;
 
 block
-    : { current = enterScope(current); } '{' opt_nls ins_list opt_nls '}' { current = exitScope(current); }
+    : { current = enterScope(current); offset = 0; } '{' opt_nls ins_list opt_nls '}' { current->size = offset; current = exitScope(current); }
     ;
 
 ins_list
@@ -192,6 +194,8 @@ declaration
     /* pointer to array y vice versa */
     | s_c SC_ID
         {
+            $<ival>$ = offset;
+            offset = 0;
             declare_record($<c>1, $2);
             save_current = current;
             current = NULL;
@@ -200,10 +204,12 @@ declaration
     '{' opt_nls dcl_list opt_nls '}'
         {
             set_record($2, current);
+            current->size = offset;
             current = exitScope(current);
             if (current == save_current) {
                 save_current = NULL;
             }
+            offset = $<ival>3;
         }
     | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
@@ -259,24 +265,24 @@ assignment
     | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
     | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
     | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID dimension 
-        { 
+    | ID dimension
+        {
             check_array_dims( lookupTable(current, $1, 0)->type, first );
-        } 
+        }
      '=' expr
-        { 
+        {
             check_type_assign( get_array_type( lookupTable(current, $1, 0)->type ), $5  );
         }
     ;
 
 iteration
     : WHILE expr block { check_type_while($2); }
-    | FOR for_bot_args TO for_args block { current = exitScope(current); }
-    | FOR for_bot_args TO for_args STEP NUMBER block { current = exitScope(current); }
+    | FOR for_bot_args TO for_args block { current->size = offset; current = exitScope(current); }
+    | FOR for_bot_args TO for_args STEP NUMBER block { current->size = offset; current = exitScope(current); }
     ;
 
 for_bot_args
-    : { current = enterScope(current); } for_args
+    : { current = enterScope(current); offset = 0; } for_args
 
 for_args
     : expr
@@ -390,35 +396,38 @@ subrout_def
     : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type
         { set_type_func($2, $<list>5, $<type>8); }
     block
-        { current = exitScope(current); }
-    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current = exitScope(current); }
+        { current->size = offset; current = exitScope(current); }
+    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current->size = offset; current = exitScope(current); }
     ;
 
 fwd_dec
     : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type
         {
             //declare_func($3);
+            current->size = offset;
             current = exitScope(current);
         }
-    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current = exitScope(current); }
+    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current->size = offset; current = exitScope(current); }
     ;
 
 f_formals
     : /* lambda */
         {
             current = enterScope(current);
+            offset = 0;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); } f_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); offset = 0; } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
     : /* lambda */
         {
             current = enterScope(current);
+            offset = 0;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); } p_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); offset = 0; } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
@@ -447,9 +456,9 @@ sub_call
             // Por ser mid-rule
             $<type>$ = temp->type->u.fun.range;
         }
-    '(' arguments ')' 
-        { 
-            check_arguments($1, $<list>4); 
+    '(' arguments ')'
+        {
+            check_arguments($1, $<list>4);
             $<type>$ = $<type>1->u.fun.range;
         }
     ;
@@ -460,10 +469,10 @@ arguments
     ;
 
 args_list
-    : expr     
+    : expr
         {
             $<list>$ = add( newArgList(), $<type>1 );
-        }      
+        }
     | args_list ',' expr
         {
             $<list>$ = add($<list>1, $<type>3);
@@ -487,14 +496,16 @@ void yyerror (char const *s) {
 
 void constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
-       insertTable(strings, str, yylloc.first_line, yylloc.first_column, C_CONSTANT, lookupTable(current, "hollow", 0)->type);
+        // offset de strings ?
+        insertTable(strings, str, yylloc.first_line, yylloc.first_column, C_CONSTANT, lookupTable(current, "hollow", 0)->type, 0, 0);
     }
 }
 
 void declare_var(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, type, type->size, offset);
+        offset += type->size;
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -506,7 +517,14 @@ void declare_var(char *id, Typetree *type) {
 void declare_array(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_ARRAY, type);
+        Typetree *temp = type;
+        int size = 1;
+        while(temp->kind == T_ARRAY) {
+            size = size * (temp->u.a.high - temp->u.a.low + 1);
+            temp = temp->u.a.t;
+        }
+        size = size * temp->size;
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_ARRAY, type, size, offset);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -526,7 +544,7 @@ void declare_ptr(char *id, int i, Typetree *type) {
             temp = temp->u.p.t;
         }
         temp->u.p.t = type;
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, aux_type);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_VAR, aux_type, 4, offset);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -545,7 +563,7 @@ void declare_record(char s_c, char *id) {
         t = createConf(id);
     }
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_RECORD, t);
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_RECORD, t, 0, offset);
     }
     else {
         fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
@@ -559,7 +577,8 @@ void declare_proc(char *id, ArgList *list) {
     Entry *aux;
     Typetree *t = createProc(list);
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t);
+        int size = 0; //cambiar
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t, size, offset);
     }
     else {
         if(aux->line) {
@@ -577,7 +596,8 @@ void declare_proc(char *id, ArgList *list) {
 void declare_func(char *id) {
     Entry *aux;
     if((aux = lookupTable(current, id, 0)) == NULL) {
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, NULL);
+        int size = 0; //cambiar
+        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, NULL, size, offset);
     }
     else {
         if(aux->line) {
@@ -594,7 +614,7 @@ void declare_func(char *id) {
 
 void set_type_func(char* id, ArgList *list, Typetree *range) {
     Entry *aux = lookupTable(current,id,0);
-    aux->type = createFunc(list, range); 
+    aux->type = createFunc(list, range);
 }
 
 
@@ -603,10 +623,11 @@ void set_record(char* id, Symtable* table) {
     Entry *aux = lookupTable(current, id, 0);
     Typetree *t = aux->type;
     t->u.r.fields = table;
+    t->size = table->size;
 }
 
 Typetree* get_array_type(Typetree* t) {
-    
+
     if (t == NULL) {
         fprintf(stderr, "Fallo miserable en el chequeo de tipos de arreglos\n");
     }
@@ -840,7 +861,7 @@ void check_type_assign(Typetree *t1, Typetree *t2) {
             dumpType(t1);
             printf(" y se recibió un ");
             dumpType(t2);
-            printf("\n");   
+            printf("\n");
         }
     }
 }
@@ -861,7 +882,7 @@ Typetree* check_type_record(Typetree *t) {
 }
 
 void check_arguments(char *id, ArgList *l2) {
-    
+
     TypeNode *n1;
     TypeNode *n2;
 

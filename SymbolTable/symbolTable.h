@@ -15,12 +15,15 @@ typedef struct _entry {
     int column;
     Class class;
     struct _typetree *type;
+    int size;
+    int offset;
 
     struct _entry *next;
 } Entry;
 
 typedef struct _symtable {
     int level;
+    int size;
     struct _symtable *father;
     struct _symtable *fchild, *lchild;
     struct _symtable *next;
@@ -34,7 +37,7 @@ Symtable* exitScope(Symtable*);
 
 void dumpTable(Symtable*);
 void destroyTable(Symtable*);
-void insertTable(Symtable*, char*, int, int, Class, struct _typetree*);
+void insertTable(Symtable*, char*, int, int, Class, struct _typetree*, int, int);
 Entry* lookupTable(Symtable*, char*, int);
 
 #endif
