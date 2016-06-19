@@ -98,7 +98,7 @@ void dumpTable(Symtable *printer) {
         while(aux!=NULL) {
             printf("%*s-%s %d:%d ", printer->level*3, "", aux->string, aux->line, aux->column);
             dumpType(aux->type);
-            printf(" %d  %d\n", aux->size, aux->offset);
+            printf(" size:%d  offset:%d\n", aux->size, aux->offset);
             aux = aux->next;
         }
     }

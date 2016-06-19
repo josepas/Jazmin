@@ -1,12 +1,18 @@
-func fib (int n) -> int {
+func fib (int n, float ff, bool r) -> int {
+    int a
+    char c
+    float tt
+    bool s
     if n < 0 {
         return 0
     } elif (n == 0) \/ ( n == 1) {
          return 1
     }
-    #return fib(n-1) + fib(n-2)
-    return 2
+    return 1 + fib(a,tt,s)
 }
+
+int a
+float c
 
 func fact(int n) -> int {
     if n < 0 {
@@ -15,14 +21,34 @@ func fact(int n) -> int {
     if n == 1 {
         return 1
     }
-    return fact(n-1)
+    return fact(2)
+}
+
+struct Foo {
+    struct Bar {
+        int b
+        bool c
+        int d
+    }
+    Bar bar
+    char cc[5]
+}
+
+confederation Union {
+    int i
+    float f
+    char c
 }
 
 
 program {
-    write "Dame un número: "
-    int i
     bool x
+    int i
+    Union blaj
+    Foo foo
+    Foo *ptrfoo
+    Foo arreglo[2][3]
+    write "Dame un número: "
     read i
     write "Toma su fibonacci: "
     write "Toma su factorial: "
@@ -32,7 +58,7 @@ program {
         int j
         for int n to 10 {
             int j,k,l
-            int io
+            float io
             n = 1
             write "el poder de greyskul"
 

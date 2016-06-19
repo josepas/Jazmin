@@ -1,0 +1,9 @@
+# Chequeo de las declaraciones en el for
+
+program {
+    
+    for int n = 0 to 10 {
+        write "hola"
+    }
+
+}

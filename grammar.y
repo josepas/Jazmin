@@ -169,19 +169,19 @@ block
     ;
 
 ins_list
-    : instruction               { $<type>$ = HOLLOW_T; }  
+    : instruction               { $<type>$ = HOLLOW_T; }  // revisar
     | ins_list nls instruction  { $<type>$ = check_seq($<type>1, $<type>3); }
     ;
 
 instruction
-    : init_dcl
+    : init_dcl        { $<type>$ = $<type>1; }  
     | block           { $<type>$ = $<type>1; }
     | selection       { $<type>$ = $<type>1; }
     | iteration       { $<type>$ = $<type>1; }
     | assignment      { $<type>$ = $<type>1; }
-    | jump            { $<type>$ = HOLLOW_T; }
-    | io_inst         { $<type>$ = HOLLOW_T; }
-    | malloc          { $<type>$ = HOLLOW_T; }
+    | jump            { $<type>$ = HOLLOW_T; } // falta
+    | io_inst         { $<type>$ = HOLLOW_T; } // falta
+    | malloc          { $<type>$ = HOLLOW_T; } // falta
     | sub_call        { $<type>$ = $<type>1; }
     ;
 
@@ -231,9 +231,17 @@ declaration
     ;
 
 init_dcl
-    : type ID '=' expr { declare_var($2, $<type>1); check_type_assign( lookupTable(current, $2, 0)->type , $4); }
-    | type ID dimension '=' expr { declare_array($2, first); check_type_assign( lookupTable(current, $2, 0)->type, $5); }
-    | declaration
+    : type ID '=' expr 
+        { 
+            declare_var($2, $<type>1);
+            $<type>$ =   check_type_assign( lookupTable(current, $2, 0)->type , $4);
+        }
+    | type ID dimension '=' expr 
+        { 
+            declare_array($2, first); 
+            $<type>$ = check_type_assign( lookupTable(current, $2, 0)->type, $5); 
+        }
+    | declaration {$<type>$ = HOLLOW_T;} // se puede cambiar esto luego
     ;
 
 id_list
@@ -275,7 +283,7 @@ type
     | SC_ID     { $<type>$ = check_record($1); }
     ;
 
-assignment
+assignment // refactorizar
     : ID { $<type>$ = check_var($1)->type; } '=' expr            { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
     | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
     | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
@@ -291,7 +299,7 @@ assignment
         }
     ;
 
-iteration
+iteration // permitiremos declaraciones solas en el for?
     : WHILE expr block { $<type>$ = check_type_while($2,$<type>3); }
     | FOR for_bot_args TO for_args block 
         { 
@@ -323,7 +331,7 @@ for_bot_args
 
 for_args
     : expr      {$<type>$ = $<type>1;}
-    | init_dcl  
+    | init_dcl  {$<type>$ = $<type>1;}  
     
     ;
 
@@ -953,7 +961,7 @@ Typetree* check_type_assign(Typetree *t1, Typetree *t2) {
             return createType(T_TYPE_ERROR);
         }
     }
-    return HOLLOW_T;
+    return t1;
 }
  
 Typetree* check_seq(Typetree *t1, Typetree *t2) {
