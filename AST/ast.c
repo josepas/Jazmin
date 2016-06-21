@@ -78,6 +78,71 @@ AST* newWhileNode(AST* expr, AST* block) {
     return node;
 }
 
+AST* newAssignNode(AST *var, char *op, AST *expr) {
+
+    AST* node = newAST();
+    node->tag = N_ASGN;
+    node->operation = op;
+
+    addASTChild(node, var);
+    addASTChild(node, expr);
+
+    return node;
+}
+
+
+AST* newVarNode(Entry *sym) {
+
+    AST* node = newAST();
+    node->tag = N_VAR;
+
+    node->u.sym = sym;
+
+    return node;
+}
+
+
+AST* newIntNode(int x) {
+
+    AST* node = newAST();
+    node->tag = N_INT;
+
+    node->u.i = x;
+
+    return node;
+}
+
+AST* newCharNode(char a) {
+
+    AST* node = newAST();
+    node->tag = N_CHAR;
+
+    node->u.a = a;
+
+    return node;
+
+}
+
+AST* newCharNode(char a) {
+
+    AST* node = newAST();
+    node->tag = N_CHAR;
+
+    node->u.a = a;
+
+    return node;
+
+}
+
+AST* newBoolNode(int b) {
+
+    AST* node = newAST();
+    node->tag = N_BOOL;
+
+    node->u.b = b;
+
+    return node;
+}
 
 
 
