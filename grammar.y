@@ -154,16 +154,16 @@ outer_def
     ;
 
 block
-    :   { 
-            current = enterScope(current); 
-            push(offstack, offset); 
-            offset = 0; 
+    :   {
+            current = enterScope(current);
+            push(offstack, offset);
+            offset = 0;
         }
-     '{' opt_nls ins_list opt_nls '}' 
-        { 
-            current->size = offset; 
-            offset = pop(offstack); 
-            current = exitScope(current); 
+     '{' opt_nls ins_list opt_nls '}'
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
             $<type>$ = check_block($<type>4);
         }
     ;
@@ -174,7 +174,7 @@ ins_list
     ;
 
 instruction
-    : init_dcl        { $<type>$ = $<type>1; }  
+    : init_dcl        { $<type>$ = $<type>1; }
     | block           { $<type>$ = $<type>1; }
     | selection       { $<type>$ = $<type>1; }
     | iteration       { $<type>$ = $<type>1; }
@@ -231,15 +231,15 @@ declaration
     ;
 
 init_dcl
-    : type ID '=' expr 
-        { 
+    : type ID '=' expr
+        {
             declare_var($2, $<type>1);
             $<type>$ =   check_type_assign( lookupTable(current, $2, 0)->type , $4);
         }
-    | type ID dimension '=' expr 
-        { 
-            declare_array($2, first); 
-            $<type>$ = check_type_assign( lookupTable(current, $2, 0)->type, $5); 
+    | type ID dimension '=' expr
+        {
+            declare_array($2, first);
+            $<type>$ = check_type_assign( lookupTable(current, $2, 0)->type, $5);
         }
     | declaration {$<type>$ = HOLLOW_T;} // se puede cambiar esto luego
     ;
@@ -297,33 +297,39 @@ assignment // refactorizar
         {
             check_type_assign( get_array_type( lookupTable(current, $1, 0)->type ), $5  );
         }
+    | ID
+        {
+        if((temp = check_var($1)))
+            $<type>$ = check_type_record(temp->type);
+        }
+    '.' field_id '=' expr { $<type>$ = check_type_assign( $<type>4, $6); }
     ;
 
 iteration // permitiremos declaraciones solas en el for?
     : WHILE expr block { $<type>$ = check_type_while($2,$<type>3); }
-    | FOR for_bot_args TO for_args block 
-        { 
-            current->size = offset; 
-            offset = pop(offstack); 
+    | FOR for_bot_args TO for_args block
+        {
+            current->size = offset;
+            offset = pop(offstack);
             current = exitScope(current);
             $<type>$ = check_for($<type>2, $<type>4, $<type>5);
         }
-    | FOR for_bot_args TO for_args STEP NUMBER block 
-        { 
-            current->size = offset; 
-            offset = pop(offstack); 
-            current = exitScope(current); 
+    | FOR for_bot_args TO for_args STEP NUMBER block
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
             $<type>$ = check_for($<type>2, $<type>4, $<type>7);
         }
     ;
 
 for_bot_args
-    :   { 
-            current = enterScope(current); 
-            push(offstack, offset); 
-            offset = 0; 
-        } 
-     for_args 
+    :   {
+            current = enterScope(current);
+            push(offstack, offset);
+            offset = 0;
+        }
+     for_args
         {
             $<type>$ = $<type>2;
         }
@@ -331,8 +337,8 @@ for_bot_args
 
 for_args
     : expr      {$<type>$ = $<type>1;}
-    | init_dcl  {$<type>$ = $<type>1;}  
-    
+    | init_dcl  {$<type>$ = $<type>1;}
+
     ;
 
 selection
@@ -963,11 +969,11 @@ Typetree* check_type_assign(Typetree *t1, Typetree *t2) {
     }
     return t1;
 }
- 
+
 Typetree* check_seq(Typetree *t1, Typetree *t2) {
 
     if ( t1->kind == T_TYPE_ERROR ) {
-        return t1; 
+        return t1;
     }
     if ( t2->kind == T_TYPE_ERROR ) {
         return t2;
