@@ -31,6 +31,36 @@ AST* addASTChild (AST *who, AST *nChild) {
     return who;
 }
 
+AST* newSeqNode() {
+
+    AST* node = newAST();
+    node->tag = N_SEQ;
+
+    return node;
+}
+ 
+
+AST* newWriteNode(Entry *string, AST *var) {
+
+    AST *node = newAST();
+    node->tag = N_WRITE;
+
+    if (string && var) {
+        fprintf(stderr, "Fatal: Error en la creacion del arbol\n");
+    }
+
+    // si no es con var (string)
+    if (var) {
+        node->u.sym = string;
+    }
+
+    // si no es con string (var)
+    if (string) {
+        addASTChild(node, var);
+    }
+
+    return node;
+}
 
 // lo creo sin hijos porque no se cuantas condiciones puede tener
 AST* newIfNode() {
@@ -78,6 +108,22 @@ AST* newWhileNode(AST* expr, AST* block) {
     return node;
 }
 
+AST* newForNode(AST *start, AST *end, AST *step, AST *block) {
+
+    AST *node = newAST();
+    node-tag = N_FOR;
+
+    addASTChild(node, start);
+    addASTChild(node, end);
+    if (!step) {
+        addASTChild(node, step);
+    }
+    addASTChild(node, block);
+
+    return node;
+}
+
+
 AST* newAssignNode(AST *var, char *op, AST *expr) {
 
     AST* node = newAST();
@@ -123,17 +169,6 @@ AST* newCharNode(char a) {
 
 }
 
-AST* newCharNode(char a) {
-
-    AST* node = newAST();
-    node->tag = N_CHAR;
-
-    node->u.a = a;
-
-    return node;
-
-}
-
 AST* newBoolNode(int b) {
 
     AST* node = newAST();
@@ -143,9 +178,6 @@ AST* newBoolNode(int b) {
 
     return node;
 }
-
-
-
 
 void destroyAST(AST* who) {
 
