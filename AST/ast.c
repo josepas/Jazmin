@@ -69,7 +69,7 @@ AST* newReadNode(Entry *string, AST *var) {
 
     addASTChild(node, var);
 
-    // Read sin string
+    // Read con string
     if (!string) {
         node->u.sym = string;
     }
@@ -207,6 +207,16 @@ AST* newIntNode(int x) {
     return node;
 }
 
+AST* newFloatNode(float f) {
+
+    AST* node = newAST();
+    node->tag = N_FLOAT;
+
+    node->u.f = f;
+
+    return node;
+}
+
 AST* newCharNode(char c) {
 
     AST* node = newAST();
@@ -249,28 +259,41 @@ void dumpIfChildren(AST* who, int level) {
 
 }
 
+void dumpSeqChildren(AST* who, int level) {
+    if (who == NULL) {
+        return;
+    }
+    dumpAST(who, level);
+    return dumpSeqChildren(who->next, level);
+}
 
 void dumpAST(AST* who, int level) {
 
     switch (who->tag) {
         case (N_IF) : {
             printf("IF:\n");
+
             dumpIfChildren(who->first, level);
             break;
         }
         case (N_WHILE) : {
             printf("WHILE:\n");
+
             printf("expr:\n");
             dumpAST(who->first, level + 1);
+
             printf("block:\n");
             dumpAST(who->last, level + 1);
             break;
         }
         case (N_BIN_OP) : {
             printf("BIN_EXPR:\n");
+
             printf("operator: %s.\n", who->operation);
+
             printf("1operand:\n");
             dumpAST(who->first, level + 1);
+
             printf("2operand:\n");
             dumpAST(who->last, level + 1);
             break;
@@ -286,6 +309,11 @@ void dumpAST(AST* who, int level) {
             printf("INT: %d\n", who->u.i);
             break;
         }
+        case (N_FLOAT) : {
+            printf("FLOAT: %f\n", who->u.f);
+            break;
+        }
+
         case (N_CHAR) : {
             printf("INT: %c\n", who->u.c);
             break;
@@ -295,32 +323,75 @@ void dumpAST(AST* who, int level) {
             if (who->u.b) {
                 printf("False\n");
             } else {
-                printf("True %d\n", who->u.b); // for debbuging
+                printf("True %d\n", who->u.b); // for debbuging debe ser 1
             }
             break;
         }
         case (N_VAR) : {
+            printf("VAR: %s ", who->u.sym->string);
+            dumpType(who->u.sym->type);
+            printf("\n");
             break;
         }
         case (N_ASGN) : {
+            printf("ASSIGN:\n");
+
+            printf("operator: %s\n", who->operation);
+
+            printf("l-value:\n");
+            dumpAST(who->first, level + 1);
+
+            printf("r-value:\n");
+            dumpAST(who->last, level + 1);
             break;
         }
         case (N_FOR) : {
+            printf("FOR:\n");
+
+            printf("start:\n");
+            dumpAST(who->first, level + 1);
+
+            printf("end:\n");
+            dumpAST(who->first->next, level + 1);
+
+            if (who->first->next->next != who->last) {
+                printf("step:\n");
+                dumpAST(who->first->next->next, level + 1);
+            }
+            printf("block:\n");
+            dumpAST(who->last, level + 1);
             break;
         }
         case (N_SEQ) : {
+            printf("SEQUENCE:\n");
+            dumpSeqChildren(who->first, level);
             break;
         }
         case (N_WRITE) : {
+            printf("WRITE:\n");
+            if (who->u.sym) {
+                dumpAST(who->first, level);
+            } else {
+                printf("string: %s\n", who->u.sym->string);
+            }
             break;
         }
         case (N_READ) : {
+            printf("READ:\n");
+            dumpAST(who->first, level);
+            if (!who->u.sym) {
+                printf("string: %s\n", who->u.sym->string);
+            }
             break;
         }
         case (N_BORN) : {
+            printf("BORN:\n");
+            dumpAST(who->first, level);
             break;
         }
         case (N_PUFF) : {
+            printf("PUFF:\n");
+            dumpAST(who->first, level);
             break;
         }
     }

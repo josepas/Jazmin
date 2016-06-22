@@ -4,7 +4,8 @@
 
 
 typedef enum {N_ERROR, N_IF, N_WHILE, N_BIN_OP, N_UN_OP,
-     N_INT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ, N_WRITE, N_READ, N_BORN, N_PUFF} NodeTag;
+     N_INT, N_FLOAT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ,
+     N_WRITE, N_READ, N_BORN, N_PUFF} NodeTag;
 
 typedef struct _ast {
     NodeTag tag;
@@ -47,6 +48,7 @@ AST* newReadNode(Entry*, AST*);
 
 AST* newVarNode(Entry*);
 AST* newIntNode(int);
+AST* newFloatNode(float);
 AST* newCharNode(char);
 AST* newBoolNode(int);
 
