@@ -26,7 +26,7 @@ Typetree* HOLLOW_T;
 
 AST *tree = NULL;
 
-void constant_string(char*);
+Entry* constant_string(char*);
 
 void declare_var(char*, Typetree*);
 void declare_ptr(char*, int, Typetree*);
@@ -261,10 +261,41 @@ malloc
     ;
 
 io_inst
-    : READ STRING { constant_string($2); } ',' ID { check_var($5); }
-	| READ ID { check_var($2); }
-    | WRITE STRING { constant_string($2); }
-	| WRITE ID { check_var($2); }
+    : READ STRING { temp = constant_string($2); } ',' ID 
+        { 
+            $<node>$ = newReadNode(
+                temp,
+                newVarNode( check_var($5) )    
+            );
+            $<node>$->type = HOLLOW_T;
+        }
+
+	| READ ID 
+        { 
+            $<node>$ = newReadNode(
+                NULL,  
+                newVarNode( check_var($2) )
+            ); 
+            $<node>$->type = HOLLOW_T;
+        }
+
+    | WRITE STRING { temp = constant_string($2); }
+        { 
+            $<node>$ = newWriteNode(
+                temp,
+                NULL
+            ); 
+            $<node>$->type = HOLLOW_T;
+        }
+
+	| WRITE ID 
+        { 
+            $<node>$ = newWriteNode(
+                NULL,
+                newVarNode( check_var($2) )
+            ); 
+            $<node>$->type = HOLLOW_T;
+        }
 	;
 
 jump
@@ -846,11 +877,12 @@ void yyerror (char const *s) {
     fprintf (stderr, "%s %d:%d en %s\n", s, yylineno, yylloc.first_column, yytext);
 }
 
-void constant_string(char* str) {
+Entry* constant_string(char* str) {
     if(lookupTable(strings, str, 1) == NULL) {
         // offset de strings ?
         insertTable(strings, str, yylloc.first_line, yylloc.first_column, C_CONSTANT, lookupTable(current, "hollow", 0)->type, 0, 0);
     }
+    return lookupTable(strings, str, 1);
 }
 
 void declare_var(char *id, Typetree *type) {

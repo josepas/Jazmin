@@ -5,15 +5,18 @@
 #include <ctype.h>
 #include "lex.yy.c"
 #include "SymbolTable/symbolTable.h"
+#include "AST/ast.h"
 
 
 extern Symtable* current;
 extern Symtable* strings;
 extern Typetree* HOLLOW_T;
 
+extern AST* tree;
+
 int main(int argc, char *argv[]) {
 
-	enum Stages {LEXER, PARSER, SYMBOLS} stage = PARSER;
+	enum Stages {LEXER, PARSER, SYMBOLS, TREE} stage = PARSER;
 
 	int c;
 	while ((c = getopt(argc, argv, "lps")) != -1) {
@@ -26,6 +29,9 @@ int main(int argc, char *argv[]) {
 				break;
             case 's':
                 stage = SYMBOLS;
+                break;
+            case 't':
+                stage = TREE;
                 break;
 			case '?':
 				break;
@@ -87,6 +93,16 @@ int main(int argc, char *argv[]) {
             dumpTable(current);
         }
     }
+
+    if (stage == TREE){
+        if ( yyparse() )
+            has_error = 1;
+        
+        if (has_error) {
+            dumpAST(tree, 1);
+        }
+    }
+
 
     if (has_error) {
         return(EXIT_FAILURE);
