@@ -205,9 +205,9 @@ jump
 	;
 
 declaration
-    : type id_list
-    | type ID dimension { declare_array($2, first); }
-    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); }
+    : type id_list { $<type>$ = $<type>1; }
+    | type ID dimension { declare_array($2, first); $<type>$ = first; }
+    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<type>$ = lookupTable(current, $3, 1)->type; }
     /* pointer to array y vice versa */
     | s_c SC_ID
         {
@@ -226,8 +226,8 @@ declaration
             if (current == save_current) {
                 save_current = NULL;
             }
+            $<type>$ = lookupTable(current, $2, 1)->type;
         }
-    | s_c SC_ID ID /*{ declare_var($3); }*/
     ;
 
 init_dcl
@@ -241,7 +241,7 @@ init_dcl
             declare_array($2, first);
             $<type>$ = check_type_assign( lookupTable(current, $2, 0)->type, $5);
         }
-    | declaration {$<type>$ = HOLLOW_T;} // se puede cambiar esto luego
+    | declaration {$<type>$ = $<type>1;} // se puede cambiar esto luego
     ;
 
 id_list

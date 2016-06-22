@@ -1,10 +1,10 @@
 #include "ast.h"
 
 AST* newAST() {
-    
+
     AST* new = memory(sizeof(AST));
 
-    new->tag = NULL;
+    new->tag = -1;
     new->operation = NULL;
     new->first = NULL;
     new->last = NULL;
@@ -15,13 +15,13 @@ AST* newAST() {
 
 
 AST* addASTChild (AST *who, AST *nChild) {
-    
+
     if (who == NULL) {
         fprintf(stderr, "Fatal: Creacion de arbol\n");
     }
     // No tenia ningun hijo
     if (who->first == NULL) {
-        who->fist = nChild;
+        who->first = nChild;
         who->last = nChild;
     } else {
         who->last->next = nChild;
@@ -38,7 +38,7 @@ AST* newSeqNode() {
 
     return node;
 }
- 
+
 
 AST* newWriteNode(Entry *string, AST *var) {
 
@@ -101,10 +101,16 @@ AST* newPuffNode(AST *var) {
 
 
 // lo creo sin hijos porque no se cuantas condiciones puede tener
-AST* newIfNode() {
-    
+AST* newIfNode(AST* expr, AST* block, AST* eblock) {
+
     AST* node = newAST();
     node->tag = N_IF;
+
+    addASTChild(node, expr);
+    addASTChild(node, block);
+    if (!eblock) {
+        addASTChild(node, eblock);
+    }
 
     return node;
 }
@@ -149,7 +155,7 @@ AST* newWhileNode(AST* expr, AST* block) {
 AST* newForNode(AST *start, AST *end, AST *step, AST *block) {
 
     AST *node = newAST();
-    node-tag = N_FOR;
+    node->tag = N_FOR;
 
     addASTChild(node, start);
     addASTChild(node, end);
@@ -196,12 +202,12 @@ AST* newIntNode(int x) {
     return node;
 }
 
-AST* newCharNode(char a) {
+AST* newCharNode(char c) {
 
     AST* node = newAST();
     node->tag = N_CHAR;
 
-    node->u.a = a;
+    node->u.c = c;
 
     return node;
 
@@ -218,29 +224,75 @@ AST* newBoolNode(int b) {
 }
 
 
+void dumpIfChildren(AST* who, int level) {
+    if (who == NULL) {
+        return;
+    }
+
+    if (who->next == NULL) {
+        printf("else:\n");
+        dumpAST(who, level + 1);
+    }
+
+    if (who->next != NULL) {
+        printf("expr:\n");
+        dumpAST(who, level + 1);
+        printf("block:\n");
+        dumpAST(who->next, level + 1);
+    }
+
+    return dumpIfChildren(who->next->next, level);
+
+}
+
 
 void dumpAST(AST* who, int level) {
 
     switch (who->tag) {
         case (N_IF) : {
+            printf("IF:\n");
+            dumpIfChildren(who->first, level);
             break;
         }
         case (N_WHILE) : {
+            printf("WHILE:\n");
+            printf("expr:\n");
+            dumpAST(who->first, level + 1);
+            printf("block:\n");
+            dumpAST(who->last, level + 1);
             break;
         }
         case (N_BIN_OP) : {
+            printf("BIN_EXPR:\n");
+            printf("operator: %s.\n", who->operation);
+            printf("1operand:\n");
+            dumpAST(who->first, level + 1);
+            printf("2operand:\n");
+            dumpAST(who->last, level + 1);
             break;
         }
         case (N_UN_OP) : {
+            printf("UN_EXPR:\n");
+            printf("operator: %s.\n", who->operation);
+            printf("operand:\n");
+            dumpAST(who->first, level + 1);
             break;
         }
         case (N_INT) : {
+            printf("INT: %d\n", who->u.i);
             break;
         }
         case (N_CHAR) : {
+            printf("INT: %c\n", who->u.c);
             break;
         }
         case (N_BOOL) : {
+            printf("BOOL:");
+            if (who->u.b) {
+                printf("False\n");
+            } else {
+                printf("True %d\n", who->u.b); // for debbuging
+            }
             break;
         }
         case (N_VAR) : {

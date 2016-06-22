@@ -9,6 +9,14 @@ void* memory(size_t type) {
     return ptr;
 }
 
+void printStack(Offsetstack *offs) {
+    while(offs != NULL) {
+        printf("%d -> ", offs->offset);
+        offs = offs->prev;
+    }
+    printf("\n");
+}
+
 Offsetstack* createStack() {
     Offsetstack *new = (Offsetstack*) memory(sizeof(Offsetstack));
     new->offset = 0;
@@ -26,6 +34,10 @@ void push(Offsetstack *offs, int offset) {
 
 int pop(Offsetstack *offs) {
     int offset = offs->offset;
-    offs = offs->prev;
+    // offs->prev NUNCA sera NULL
+    Offsetstack *temp = offs->prev;
+    offs->offset = offs->prev->offset;
+    offs->prev = offs->prev->prev;
+    free(temp);
     return offset;
 }
