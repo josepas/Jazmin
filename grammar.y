@@ -244,8 +244,8 @@ instruction
     | iteration       { $<node>$ = $<node>1; }
     | assignment      { $<node>$ = $<node>1; }
     | jump            { $<node>$ = $<node>1; }
-    | io_inst         //{ $<node>$ = HOLLOW_T; } // falta
-    | malloc          //{ $<node>$ = HOLLOW_T; } // falta
+    | io_inst         { $<node>$ = $<node>1; }
+    | malloc          { $<node>$ = $<node>1; }
     | sub_call        { $<node>$ = $<node>1; }
     ;
 
@@ -261,39 +261,39 @@ malloc
     ;
 
 io_inst
-    : READ STRING { temp = constant_string($2); } ',' ID 
-        { 
+    : READ STRING { temp = constant_string($2); } ',' ID
+        {
             $<node>$ = newReadNode(
                 temp,
-                newVarNode( check_var($5) )    
+                newVarNode( check_var($5) )
             );
             $<node>$->type = HOLLOW_T;
         }
 
-	| READ ID 
-        { 
+	| READ ID
+        {
             $<node>$ = newReadNode(
-                NULL,  
+                NULL,
                 newVarNode( check_var($2) )
-            ); 
+            );
             $<node>$->type = HOLLOW_T;
         }
 
     | WRITE STRING { temp = constant_string($2); }
-        { 
+        {
             $<node>$ = newWriteNode(
                 temp,
                 NULL
-            ); 
+            );
             $<node>$->type = HOLLOW_T;
         }
 
-	| WRITE ID 
-        { 
+	| WRITE ID
+        {
             $<node>$ = newWriteNode(
                 NULL,
                 newVarNode( check_var($2) )
-            ); 
+            );
             $<node>$->type = HOLLOW_T;
         }
 	;
@@ -310,12 +310,15 @@ declaration
     | type ID dimension
         {
             declare_array($2, first);
-            $<type>$ = first;
-            temp = lookupTable(current, $2, 1);
-            $<node>$ = set_node_type(
-                newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>1->kind)),
-                $<type>1
-                );
+            if($<type>1->kind == T_STRUCT || $<type>1->kind == T_CONF)
+                $<node>$ = NULL;
+            else {
+                temp = lookupTable(current, $2, 1);
+                $<node>$ = set_node_type(
+                    newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>1->kind)),
+                    $<type>1
+                    );
+            }
         }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<type>$ = lookupTable(current, $3, 1)->type; }
     /* pointer to array y vice versa */
