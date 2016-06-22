@@ -240,8 +240,14 @@ instruction
     ;
 
 malloc
-    : BORN '(' ID { check_var($3); } ')'
-    | PUFF '(' ID { check_var($3); } ')'
+    : BORN '(' ID { temp = check_var($3); } ')'  
+        {
+            $<node>$ = newBornNode( newVarNode(temp) );
+        }
+    | PUFF '(' ID { temp = check_var($3); } ')' 
+        {
+            $<node>$ = newPuffNode( newVarNode(temp) );
+        }
     ;
 
 io_inst
@@ -252,10 +258,10 @@ io_inst
 	;
 
 jump
-	: NEXT
-	| BREAK
-	| RETURN
-	| RETURN expr
+	: NEXT             { $<node>$ = newNextNode(); }
+	| BREAK            { $<node>$ = newBreakNode(); }
+	| RETURN           { $<node>$ = newReturnNode(NULL); }
+	| RETURN expr      { $<node>$ = newReturnNode($2); }
 	;
 
 declaration

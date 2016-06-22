@@ -49,11 +49,13 @@ AST* newForNode(AST*, AST*, AST*, AST*);
 
 AST* newBornNode(AST*);
 AST* newPuffNode(AST*);
+AST* newPuffNode(AST*);
+
 AST* newWriteNode(Entry*, AST*);
 AST* newReadNode(Entry*, AST*);
 
 AST* newReturnNode(AST*);
-AST* newContNode();
+AST* newNextNode();
 AST* newBreakNode();
 
 AST* newVarNode(Entry*);
