@@ -72,7 +72,7 @@ AST* newReadNode(Entry *string, AST *var) {
     addASTChild(node, var);
 
     // Read con string
-    if (string) {
+    if (!string) {
         node->u.sym = string;
     }
 
@@ -364,7 +364,7 @@ void dumpAST(AST* who, int level) {
             if (who->u.b) {
                 printf("True\n");
             } else {
-                printf("False %d\n", who->u.b); // for debbuging debe ser 1
+                printf("False %d\n", who->u.b);
             }
             break;
         }
