@@ -270,7 +270,10 @@ id_list
             declare_var($1, $<type>0);
             Entry *aux = lookupTable(current, $1, 1);
             $<node>$ = set_node_type(
-                newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind)),
+                addASTChild(
+                    newSeqNode(),
+                    newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind))
+                    ),
                 $<type>0
                 );
         }
