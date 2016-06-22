@@ -62,6 +62,44 @@ AST* newWriteNode(Entry *string, AST *var) {
     return node;
 }
 
+AST* newReadNode(Entry *string, AST *var) {
+
+    AST *node = newAST();
+    node->tag = N_READ;
+
+    addASTChild(node, var);
+    
+    // Read sin string
+    if (!string) {
+        node->u.sym = string;
+    }        
+
+    return node;
+}
+
+
+AST* newBornNode(AST *var) {
+
+    AST *node = newAST();
+    node->tag = N_BORN;
+
+    addASTChild(node, var);
+
+    return node;
+
+}
+
+AST* newPuffNode(AST *var) {
+
+    AST *node = newAST();
+    node->tag = N_PUFF;
+
+    addASTChild(node, var);
+
+    return node;
+}
+
+
 // lo creo sin hijos porque no se cuantas condiciones puede tener
 AST* newIfNode() {
     
@@ -178,6 +216,77 @@ AST* newBoolNode(int b) {
 
     return node;
 }
+
+
+
+void dumpAST(AST* who, int level) {
+
+    switch (who->tag) {
+        case (N_IF) : {
+            break;
+        }
+        case (N_WHILE) : {
+            break;
+        }
+        case (N_BIN_OP) : {
+            break;
+        }
+        case (N_UN_OP) : {
+            break;
+        }
+        case (N_INT) : {
+            break;
+        }
+        case (N_CHAR) : {
+            break;
+        }
+        case (N_BOOL) : {
+            break;
+        }
+        case (N_VAR) : {
+            break;
+        }
+        case (N_ASGN) : {
+            break;
+        }
+        case (N_FOR) : {
+            break;
+        }
+        case (N_SEQ) : {
+            break;
+        }
+        case (N_WRITE) : {
+            break;
+        }
+        case (N_READ) : {
+            break;
+        }
+        case (N_BORN) : {
+            break;
+        }
+        case (N_PUFF) : {
+            break;
+        }
+}
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void destroyAST(AST* who) {
 
