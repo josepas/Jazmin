@@ -112,6 +112,7 @@ AST* newIfNode(AST* expr, AST* block, AST* elifblock, AST* eblock) {
     addASTChild(node, block);
     if (elifblock) {
         addASTChild(node, elifblock->first);
+        node->last = elifblock->last;
         free(elifblock);
     }
     if (eblock) {
@@ -265,6 +266,7 @@ void dumpIfChildren(AST* who, int level) {
     if (who->next == NULL) {
         printf("%*selse:\n", level*3, " ");
         dumpAST(who, level + 1);
+        return;
     }
 
     if (who->next != NULL) {
@@ -391,7 +393,7 @@ void dumpAST(AST* who, int level) {
         }
         case (N_SEQ) : {
             printf("%*sSEQUENCE:\n", level*3, " ");
-            dumpSeqChildren(who->first, level);         
+            dumpSeqChildren(who->first, level);
 
             break;
         }
