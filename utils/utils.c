@@ -34,10 +34,11 @@ void push(Offsetstack *offs, int offset) {
 
 int pop(Offsetstack *offs) {
     int offset = offs->offset;
-    // offs->prev NUNCA sera NULL
-    Offsetstack *temp = offs->prev;
-    offs->offset = offs->prev->offset;
-    offs->prev = offs->prev->prev;
-    free(temp);
+    if(offs->prev != NULL) {
+        Offsetstack *temp = offs->prev;
+        offs->offset = offs->prev->offset;
+        offs->prev = offs->prev->prev;
+        free(temp);
+    }
     return offset;
 }

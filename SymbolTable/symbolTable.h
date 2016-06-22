@@ -17,6 +17,7 @@ typedef struct _entry {
     struct _typetree *type;
     int size;
     int offset;
+    struct _ast *ast;
 
     struct _entry *next;
 } Entry;
