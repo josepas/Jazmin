@@ -68,11 +68,11 @@ AST* newReadNode(Entry *string, AST *var) {
     node->tag = N_READ;
 
     addASTChild(node, var);
-    
+
     // Read sin string
     if (!string) {
         node->u.sym = string;
-    }        
+    }
 
     return node;
 }
@@ -101,13 +101,17 @@ AST* newPuffNode(AST *var) {
 
 
 // lo creo sin hijos porque no se cuantas condiciones puede tener
-AST* newIfNode(AST* expr, AST* block, AST* eblock) {
+AST* newIfNode(AST* expr, AST* block, AST* elifblock, AST* eblock) {
 
     AST* node = newAST();
     node->tag = N_IF;
 
     addASTChild(node, expr);
     addASTChild(node, block);
+    if (!elifblock) {
+        addASTChild(node, elifblock->first);
+        free(elifblock);
+    }
     if (!eblock) {
         addASTChild(node, eblock);
     }
@@ -187,6 +191,7 @@ AST* newVarNode(Entry *sym) {
     node->tag = N_VAR;
 
     node->u.sym = sym;
+    node->type = sym->type;
 
     return node;
 }
@@ -222,7 +227,6 @@ AST* newBoolNode(int b) {
 
     return node;
 }
-
 
 void dumpIfChildren(AST* who, int level) {
     if (who == NULL) {
@@ -319,25 +323,18 @@ void dumpAST(AST* who, int level) {
         case (N_PUFF) : {
             break;
         }
+    }
 }
 
 
+AST* newErrorNode(Typetree *error) {
+    AST* node = newAST();
+    node->tag = N_ERROR;
 
+    node->type = error;
 
+    return node;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void destroyAST(AST* who) {

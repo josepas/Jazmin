@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "TypeTree/typeTree.h"
 #include "SymbolTable/symbolTable.h"
+#include "AST/ast.h"
 #include "utils/utils.h"
 
 extern int yylineno;
@@ -21,7 +22,6 @@ Symtable* save_current = NULL;
 Typetree* first = NULL;
 
 Entry *temp = NULL;
-Entry *entry = NULL;
 Typetree* HOLLOW_T;
 
 void constant_string(char*);
@@ -66,6 +66,7 @@ Typetree* check_seq(Typetree*, Typetree*);
 Typetree* check_block(Typetree*);
 Typetree* check_program(Typetree*);
 
+AST* set_node_type(AST*, Typetree*);
 %}
 %locations
 %union {
@@ -75,6 +76,7 @@ Typetree* check_program(Typetree*);
 	char c;
     struct _typetree *type;
     struct _argList *list;
+    struct _ast *node;
 }
 
 
@@ -111,7 +113,7 @@ Typetree* check_program(Typetree*);
 
 %token ARROW
 
-%type <type> expr sub_call
+%type <node> expr sub_call
 
 
 %right '=' PLUS_ASSIGN MINUS_ASSIGN MULT_ASSIGN DIV_ASSIGN
@@ -129,7 +131,7 @@ Typetree* check_program(Typetree*);
 
 jaxmin
     : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<type>$ = check_program($<type>4); }
+    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<node>$ = set_node_type($<node>4, check_program($<node>4->type)); }
     ;
 
 opt_nls
@@ -164,25 +166,34 @@ block
             current->size = offset;
             offset = pop(offstack);
             current = exitScope(current);
-            $<type>$ = check_block($<type>4);
+            $<node>$ = set_node_type($<node>4, check_block($<node>4->type));
         }
     ;
 
 ins_list
-    : instruction               { $<type>$ = HOLLOW_T; }  // revisar
-    | ins_list nls instruction  { $<type>$ = check_seq($<type>1, $<type>3); }
+    : instruction
+        {
+            $<node>$ = newSeqNode();
+            addASTChild($<node>$, $<node>1);
+            $<node>$->type = $<node>1->type;
+        }
+    | ins_list nls instruction
+        {
+            $<node>$ = set_node_type($<node>1, check_seq($<node>1->type, $<node>3->type));
+            addASTChild($<node>$, $<node>3);
+        }
     ;
 
 instruction
-    : init_dcl        { $<type>$ = $<type>1; }
-    | block           { $<type>$ = $<type>1; }
-    | selection       { $<type>$ = $<type>1; }
-    | iteration       { $<type>$ = $<type>1; }
-    | assignment      { $<type>$ = $<type>1; }
-    | jump            { $<type>$ = HOLLOW_T; } // falta
-    | io_inst         { $<type>$ = HOLLOW_T; } // falta
-    | malloc          { $<type>$ = HOLLOW_T; } // falta
-    | sub_call        { $<type>$ = $<type>1; }
+    : init_dcl        { $<node>$ = $<node>1; }
+    | block           { $<node>$ = $<node>1; }
+    | selection       { $<node>$ = $<node>1; }
+    | iteration       { $<node>$ = $<node>1; }
+    | assignment      { $<node>$ = $<node>1; }
+    | jump            //{ $<node>$ = HOLLOW_T; } // falta
+    | io_inst         //{ $<node>$ = HOLLOW_T; } // falta
+    | malloc          //{ $<node>$ = HOLLOW_T; } // falta
+    | sub_call        { $<node>$ = $<node>1; }
     ;
 
 malloc
@@ -234,14 +245,16 @@ init_dcl
     : type ID '=' expr
         {
             declare_var($2, $<type>1);
-            $<type>$ =   check_type_assign( lookupTable(current, $2, 0)->type , $4);
+            Entry *aux = lookupTable(current, $2, 1);
+            $<node>$ = set_node_type(newVarNode(aux), check_type_assign(aux->type , $4->type));
         }
     | type ID dimension '=' expr
         {
             declare_array($2, first);
-            $<type>$ = check_type_assign( lookupTable(current, $2, 0)->type, $5);
+            Entry *aux = lookupTable(current, $2, 1);
+            $<node>$ = set_node_type(newVarNode(aux), check_type_assign(aux->type, $5->type));
         }
-    | declaration {$<type>$ = $<type>1;} // se puede cambiar esto luego
+    | declaration {$<node>$ = $<node>1;} // se puede cambiar esto luego
     ;
 
 id_list
@@ -284,42 +297,96 @@ type
     ;
 
 assignment // refactorizar
-    : ID { $<type>$ = check_var($1)->type; } '=' expr            { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } PLUS_ASSIGN expr    { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MINUS_ASSIGN expr   { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } MULT_ASSIGN expr    { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
-    | ID { $<type>$ = check_var($1)->type; } DIV_ASSIGN expr     { $<type>$ = check_type_assign( lookupTable(current, $1, 0)->type, $4); }
+    : ID { check_var($1); } '=' expr
+        {
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "=", $4),
+                check_type_assign(temp->type, $4->type)
+                );
+        }
+    | ID { check_var($1); } PLUS_ASSIGN expr
+        {
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "+=", $4),
+                check_type_assign(temp->type, $4->type)
+                );
+        }
+    | ID { check_var($1); } MINUS_ASSIGN expr
+        {
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "-=", $4),
+                check_type_assign(temp->type, $4->type)
+                );
+        }
+    | ID { check_var($1); } MULT_ASSIGN expr
+        {
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "*=", $4),
+                check_type_assign(temp->type, $4->type)
+                );
+        }
+    | ID { check_var($1); } DIV_ASSIGN expr
+        {
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "/=", $4),
+                check_type_assign(temp->type, $4->type)
+                );
+        }
     | ID dimension
         {
             check_array_dims( lookupTable(current, $1, 0)->type, first );
         }
      '=' expr
         {
-            check_type_assign( get_array_type( lookupTable(current, $1, 0)->type ), $5  );
+            temp = lookupTable(current, $1, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "=", $5),
+                check_type_assign(get_array_type(temp->type), $5->type)
+                );
         }
     | ID
         {
         if((temp = check_var($1)))
             $<type>$ = check_type_record(temp->type);
         }
-    '.' field_id '=' expr { $<type>$ = check_type_assign( $<type>4, $6); }
+    '.' field_id '=' expr
+        {
+            $<node>$ = set_node_type(
+                newAssignNode($<node>4, "=", $6),
+                check_type_assign($<node>4->type, $6->type)
+                );
+        }
     ;
 
 iteration // permitiremos declaraciones solas en el for?
-    : WHILE expr block { $<type>$ = check_type_while($2,$<type>3); }
+    : WHILE expr block
+        {
+            $<node>$ = set_node_type(
+                newWhileNode($2, $<node>3),
+                check_type_while($2->type, $<node>3->type));
+        }
     | FOR for_bot_args TO for_args block
         {
             current->size = offset;
             offset = pop(offstack);
             current = exitScope(current);
-            $<type>$ = check_for($<type>2, $<type>4, $<type>5);
+            $<node>$ = set_node_type(
+                newForNode($<node>2, $<node>4, NULL, $<node>5),
+                check_for($<node>2->type, $<node>4->type, $<node>5->type));
         }
     | FOR for_bot_args TO for_args STEP NUMBER block
         {
             current->size = offset;
             offset = pop(offstack);
             current = exitScope(current);
-            $<type>$ = check_for($<type>2, $<type>4, $<type>7);
+            $<node>$ = set_node_type(
+                newForNode($<node>2, $<node>4, newIntNode($6), $<node>7),
+                check_for($<node>2->type, $<node>4->type, $<node>7->type));
         }
     ;
 
@@ -331,96 +398,201 @@ for_bot_args
         }
      for_args
         {
-            $<type>$ = $<type>2;
+            $<node>$ = $<node>2;
         }
     ;
 
 for_args
-    : expr      {$<type>$ = $<type>1;}
-    | init_dcl  {$<type>$ = $<type>1;}
+    : expr      {$<node>$ = $<node>1;}
+    | init_dcl  {$<node>$ = $<node>1;}
 
     ;
 
 selection
-    : IF expr block elif_stm ELSE block { $<type>$ = check_type_if($2,$<type>3); }
-    | IF expr block elif_stm { $<type>$ = check_type_if($2,$<type>3); }
-    | IF expr block ELSE block { $<type>$ = check_type_if($2,$<type>3); }
-    | IF expr block { $<type>$ = check_type_if($2,$<type>3); }
+    : IF expr block elif_stm ELSE block
+        {
+            $<node>$ = set_node_type(
+                newIfNode($2, $<node>3, $<node>4, $<node>6),
+                check_type_if($2->type, $<node>3->type)
+                );
+        }
+    | IF expr block elif_stm
+        {
+            $<node>$ = set_node_type(
+                newIfNode($2, $<node>3, $<node>4, NULL),
+                check_type_if($2->type, $<node>3->type)
+                );
+        }
+    | IF expr block ELSE block
+        {
+            $<node>$ = set_node_type(
+                newIfNode($2, $<node>3, NULL, $<node>5),
+                check_type_if($2->type, $<node>3->type)
+                );
+        }
+    | IF expr block
+        {
+            $<node>$ = set_node_type(
+                newIfNode($2, $<node>3, NULL, NULL),
+                check_type_if($2->type, $<node>3->type)
+                );
+        }
     ;
 
 elif_stm
-    : ELIF expr block { check_type_if($2, $<type>3); }
-    | elif_stm ELIF expr  block { check_type_if($3,$<type>4); }
+    : ELIF expr block
+        {
+            $<node>$ = set_node_type(
+                newIfNode($2, $<node>3, NULL, NULL),
+                check_type_if($2->type, $<node>3->type)
+                );
+        }
+    | elif_stm ELIF expr block
+        {
+            $<node>$ = set_node_type(
+                $<node>1,
+                check_type_if($3->type, $<node>4->type)
+                );
+            addASTChild($<node>$, $3);
+            addASTChild($<node>$, $<node>4);
+        }
     ;
 
 expr
-    : literal   {$<type>$ = $<type>1;}
+    : literal   { $$ = $<node>1;}
     | ID
         {
         if((temp = check_var($1)))
-            $$ = temp->type;
+            $$ = newVarNode(temp);
         }
     | ID dimension
         {
             if((temp = check_var($1)))
-                $$ = temp->type;
+                $$ = newVarNode(temp);
         }
     /* | point_d ID { check_var($2); } */
     | ID
         {
-        if((temp = check_var($1)))
-            $<type>$ = check_type_record(temp->type);
+            if((temp = check_var($1)))
+                $<type>$ = check_type_record(temp->type);
         }
     '.' field_id
         {
-            $$ = $<type>4;
+            $$ = $<node>4;
         }
-    | sub_call { $$ = $1; }
-    | expr '+' expr { $$ = check_type_arit($1, $3); }
-    | expr '-' expr { $$ = check_type_arit($1, $3); }
-    | expr '*' expr { $$ = check_type_arit($1, $3); }
-    | expr '/' expr { $$ = check_type_arit($1, $3); }
-    | expr '%' expr { $$ = check_type_arit($1, $3); }
-    | '-' expr     { $$ = check_type_arit_solo($2); } %prec UNARY
-    | '(' expr ')' { $$ = check_type_par($2); }
-    | '~' expr     { $$ = check_type_bool_solo($2); }  %prec UNARY
-    | expr AND expr { $$ = check_type_bool($1, $3); }
-    | expr OR expr { $$ = check_type_bool($1, $3); }
+    | sub_call { $$ = $<node>1; }
+    | expr '+' expr
+        {
+            $$ = set_node_type(
+                newBinOp($1,"+",$3),
+                check_type_arit($1->type, $3->type)
+                );
+        }
+    | expr '-' expr
+        {
+            $$ = set_node_type(
+                newBinOp($1,"-",$3),
+                check_type_arit($1->type, $3->type)
+                );
+        }
+    | expr '*' expr
+        {
+            $$ = set_node_type(
+                newBinOp($1,"*",$3),
+                check_type_arit($1->type, $3->type)
+                );
+        }
+    | expr '/' expr
+        {
+            $$ = set_node_type(
+                newBinOp($1,"/",$3),
+                check_type_arit($1->type, $3->type)
+                );
+        }
+    | expr '%' expr
+        {
+            $$ = set_node_type(
+                newBinOp($1,"%",$3),
+                check_type_arit($1->type, $3->type)
+                );
+        }
+    | '-' expr
+        { $$ = set_node_type(
+            newUnaryOp("-", $2),
+            check_type_arit_solo($2->type)
+            );
+        } %prec UNARY
+    | '(' expr ')' { $$ = $2; }
+    | '~' expr
+        {
+            $$ = set_node_type(
+                newUnaryOp("~", $2),
+                check_type_bool_solo($2->type)
+                );
+        }  %prec UNARY
+    | expr AND expr
+        {
+            $$ = set_node_type(
+                newBinOp($1, "/\\", $3),
+                check_type_bool($1->type, $3->type)
+                );
+        }
+    | expr OR expr
+        {
+            $$ = set_node_type(
+                newBinOp($1, "\\/", $3),
+                check_type_bool($1->type, $3->type)
+                );
+        }
     | expr LTOE expr
         {
-            $$ = check_type_arit($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
+            $$ = set_node_type(
+                    newBinOp($1,"<=",$3),
+                    check_type_arit($1->type, $3->type)
+                );
+            if($$->tag != N_ERROR)
+                $$->type = lookupTable(current, "bool", 0)->type;
         }
     | expr GTOE expr
         {
-            $$ = check_type_arit($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
-        }
-    | expr EQUAL expr
-        {
-            $$ = check_type($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
-        }
-    | expr UNEQUAL expr
-        {
-            $$ = check_type($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
+            $$ = set_node_type(
+                    newBinOp($1,">=",$3),
+                    check_type_arit($1->type, $3->type)
+                );
+            if($$->tag != N_ERROR)
+                $$->type = lookupTable(current, "bool", 0)->type;
         }
     | expr '<' expr
         {
-            $$ = check_type_arit($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
+            $$ = set_node_type(
+                    newBinOp($1,"<",$3),
+                    check_type_arit($1->type, $3->type)
+                );
+            if($$->tag != N_ERROR)
+                $$->type = lookupTable(current, "bool", 0)->type;
         }
     | expr '>' expr
         {
-            $$ = check_type_arit($1, $3);
-            if($$->kind != T_TYPE_ERROR)
-                $$ = lookupTable(current, "bool", 0)->type;
+            $$ = set_node_type(
+                    newBinOp($1,">",$3),
+                    check_type_arit($1->type, $3->type)
+                );
+            if($$->tag != N_ERROR)
+                $$->type = lookupTable(current, "bool", 0)->type;
+        }
+    | expr EQUAL expr
+        {
+            $$ = set_node_type(
+                    newBinOp($1,">",$3),
+                    check_type($1->type, $3->type)
+                );
+        }
+    | expr UNEQUAL expr
+        {
+            $$ = set_node_type(
+                    newBinOp($1,">",$3),
+                    check_type($1->type, $3->type)
+                );
         }
     ;
 
@@ -428,17 +600,19 @@ field_id
     : ID
         {
             if((temp = check_field($<type>-1, $1))) {
-                $<type>$ = temp->type;
+                $<node>$ = newVarNode(temp);
             }
         }
     | field_id '.' ID
         {
-            if((temp = check_field($<type>1, $3))) {
+            if((temp = check_field($<node>1->type, $3))) {
                 if(temp->class == C_VAR) {
-                    $<type>$ = temp->type;
+                    $<node>$ = $<node>1;
+                    $<node>$->u.sym = temp;
+                    $<node>$->type = temp->type;
                 }
                 else {
-                    $<type>$ = check_type_record(temp->type);
+                    $<node>$ = set_node_type($<node>1, check_type_record(temp->type));
                 }
             }
         }
@@ -532,12 +706,12 @@ args_list
     ;
 
 literal
-	: NUMBER       { $<type>$ = lookupTable(current, "int", 0)->type; }
-	| REAL         { $<type>$ = lookupTable(current, "float", 0)->type; }
-	| CHARACTER    { $<type>$ = lookupTable(current, "char", 0)->type; }
-	| JTRUE        { $<type>$ = lookupTable(current, "bool", 0)->type; }
-	| JFALSE       { $<type>$ = lookupTable(current, "bool", 0)->type; }
-	| JNULL        { $<type>$ = lookupTable(current, "hollow", 0)->type; }
+	: NUMBER       { $<node>$ = newIntNode($1); }
+	| REAL         {  }
+	| CHARACTER    { }
+	| JTRUE        { }
+	| JFALSE       { }
+	| JNULL        { }
 	;
 %%
 
@@ -1045,6 +1219,17 @@ Typetree* check_arguments(char *id, ArgList *l2) {
         return subType;
     }
 
-
 }
 
+AST* set_node_type(AST* node, Typetree* type) {
+    if(type->kind == T_TYPE_ERROR) {
+        //destroy(node);
+        //return newErrorNode(type);
+        node->tag = N_ERROR;
+        node->type = type;
+        return node;
+    } else {
+        node->type = type;
+        return node;
+    }
+}
