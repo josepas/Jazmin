@@ -267,8 +267,6 @@ AST* newCharNode(char c) {
 }
 
 
-
-
 AST* newBoolNode(int b) {
 
     AST* node = newAST();
@@ -279,6 +277,7 @@ AST* newBoolNode(int b) {
 
     return node;
 }
+
 
 void dumpIfChildren(AST* who, int level) {
     if (who == NULL) {
@@ -502,4 +501,25 @@ AST* newBaseTypeNode(Kind kind) {
             break;
         }
     }
+}
+
+AST* newFuncNode(AST* block) {
+    AST* node = newAST();
+    node->tag = N_FUNC;
+
+    addASTChild(node, block);
+
+    return node;
+}
+
+AST* newProgramNode(AST* defb, AST* pblock) {
+    AST* node = newAST();
+    node->tag = N_PROGRAM;
+
+    if(defb != NULL)
+        addASTChild(node, defb);
+
+    addASTChild(node, pblock);
+
+    return node;
 }

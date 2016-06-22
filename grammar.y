@@ -24,6 +24,8 @@ Typetree* first = NULL;
 Entry *temp = NULL;
 Typetree* HOLLOW_T;
 
+AST *tree = NULL;
+
 void constant_string(char*);
 
 void declare_var(char*, Typetree*);
@@ -67,6 +69,7 @@ Typetree* check_block(Typetree*);
 Typetree* check_program(Typetree*);
 
 AST* set_node_type(AST*, Typetree*);
+void set_subrout_ast(char*, AST*);
 %}
 %locations
 %union {
@@ -130,8 +133,31 @@ AST* set_node_type(AST*, Typetree*);
 %%
 
 jaxmin
-    : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<node>$ = set_node_type($<node>4, check_program($<node>4->type)); dumpAST($<node>$,0);}
+    : opt_nls
+        {
+            offstack = createStack();
+            current = enterScope(current);
+        }
+    definitions nls PROGRAM block opt_nls
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
+            tree = set_node_type(
+                newProgramNode($<node>3, $<node>6),
+                //check_program($<node>4->type)
+                check_seq($<node>3->type, $<node>6->type)
+                );
+            //dumpAST(tree,1);
+        }
+    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
+        {
+            tree = set_node_type(
+                newProgramNode(NULL, $<node>4),
+                check_program($<node>4->type)
+                );
+            dumpAST(tree,1);
+        }
     ;
 
 opt_nls
@@ -146,13 +172,29 @@ nls
 
 definitions
 	: outer_def
+        {
+            $<node>$ = newSeqNode();
+            if($<node>1 != NULL) {
+                addASTChild($<node>$, $<node>1);
+                $<node>$->type = $<node>1->type;
+            }
+        }
     | definitions nls outer_def
+        {
+            if($<node>3 != NULL) {
+                $<node>$ = set_node_type(
+                    $<node>1,
+                    check_seq($<node>1->type, $<node>3->type)
+                    );
+                addASTChild($<node>$, $<node>3);
+            }
+        }
 	;
 
 outer_def
-    : init_dcl
-    | subrout_def
-    | fwd_dec
+    : init_dcl      { $<node>$ = $<node>1; }
+    | subrout_def   { $<node>$ = $<node>1; }
+    | fwd_dec       { $<node>$ = $<node>1; }
     ;
 
 block
@@ -224,7 +266,16 @@ jump
 
 declaration
     : type id_list { $<node>$ = $<node>2; }
-    | type ID dimension { declare_array($2, first); $<type>$ = first; }
+    | type ID dimension
+        {
+            declare_array($2, first);
+            $<type>$ = first;
+            temp = lookupTable(current, $2, 1);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>1->kind)),
+                $<type>1
+                );
+        }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<type>$ = lookupTable(current, $3, 1)->type; }
     /* pointer to array y vice versa */
     | s_c SC_ID
@@ -655,8 +706,21 @@ subrout_def
     : FUNC ID { declare_func($2); } '(' f_formals ')' ARROW type
         { set_type_func($2, $<list>5, $<type>8); }
     block
-        { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
+            set_subrout_ast($2, $<node>10);
+            $<node>$ = NULL;
+        }
+    | PROC ID '(' p_formals { declare_proc($2, $<list>4); } ')' block
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
+            set_subrout_ast($2, $<node>7);
+            $<node>$ = NULL;
+        }
     ;
 
 fwd_dec
@@ -666,8 +730,15 @@ fwd_dec
             current->size = offset;
             offset = pop(offstack);
             current = exitScope(current);
+            $<node>$ = NULL;
         }
-    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')' { current->size = offset; offset = pop(offstack); current = exitScope(current); }
+    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')'
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
+            $<node>$ = NULL;
+        }
     ;
 
 f_formals
@@ -1264,5 +1335,11 @@ AST* set_node_type(AST* node, Typetree* type) {
     } else {
         node->type = type;
         return node;
+    }
+}
+
+void set_subrout_ast(char *id, AST *block) {
+    if((temp = lookupTable(current, id, 0)) != NULL) {
+        temp->ast = newFuncNode(block);
     }
 }
