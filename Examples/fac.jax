@@ -1,7 +1,6 @@
 
 func fact(int a, char b, float t) -> int {
-    write "hola"
- 
+    int j
 }
 
 proc pan(int a, char t) {
@@ -10,6 +9,4 @@ proc pan(int a, char t) {
 
 program {
     int n
-
-
 }
