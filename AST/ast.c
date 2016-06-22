@@ -202,6 +202,16 @@ AST* newIntNode(int x) {
     return node;
 }
 
+AST* newFloatNode(float f) {
+
+    AST* node = newAST();
+    node->tag = N_FLOAT;
+
+    node->u.f = f;
+
+    return node;
+}
+
 AST* newCharNode(char c) {
 
     AST* node = newAST();
@@ -295,6 +305,11 @@ void dumpAST(AST* who, int level) {
             printf("INT: %d\n", who->u.i);
             break;
         }
+        case (N_FLOAT) : {
+            printf("FLOAT: %f\n", who->u.f);
+            break;
+        }
+
         case (N_CHAR) : {
             printf("INT: %c\n", who->u.c);
             break;
