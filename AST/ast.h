@@ -67,4 +67,6 @@ AST* newErrorNode(Typetree*);
 
 void destroyAST(AST*);
 
+AST* newBaseTypeNode(Kind);
+
 #endif

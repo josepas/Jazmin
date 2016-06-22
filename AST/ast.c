@@ -1,5 +1,7 @@
 #include "ast.h"
 
+extern Symtable *current;
+
 AST* newAST() {
 
     AST* new = memory(sizeof(AST));
@@ -70,7 +72,7 @@ AST* newReadNode(Entry *string, AST *var) {
     addASTChild(node, var);
 
     // Read con string
-    if (!string) {
+    if (string) {
         node->u.sym = string;
     }
 
@@ -108,11 +110,11 @@ AST* newIfNode(AST* expr, AST* block, AST* elifblock, AST* eblock) {
 
     addASTChild(node, expr);
     addASTChild(node, block);
-    if (!elifblock) {
+    if (elifblock) {
         addASTChild(node, elifblock->first);
         free(elifblock);
     }
-    if (!eblock) {
+    if (eblock) {
         addASTChild(node, eblock);
     }
 
@@ -163,7 +165,7 @@ AST* newForNode(AST *start, AST *end, AST *step, AST *block) {
 
     addASTChild(node, start);
     addASTChild(node, end);
-    if (!step) {
+    if (step) {
         addASTChild(node, step);
     }
     addASTChild(node, block);
@@ -231,6 +233,7 @@ AST* newIntNode(int x) {
     node->tag = N_INT;
 
     node->u.i = x;
+    node->type = lookupTable(current, "int", 0)->type;
 
     return node;
 }
@@ -241,6 +244,7 @@ AST* newFloatNode(float f) {
     node->tag = N_FLOAT;
 
     node->u.f = f;
+    node->type = lookupTable(current, "float", 0)->type;
 
     return node;
 }
@@ -251,6 +255,7 @@ AST* newCharNode(char c) {
     node->tag = N_CHAR;
 
     node->u.c = c;
+    node->type = lookupTable(current, "char", 0)->type;
 
     return node;
 
@@ -265,6 +270,7 @@ AST* newBoolNode(int b) {
     node->tag = N_BOOL;
 
     node->u.b = b;
+    node->type = lookupTable(current, "bool", 0)->type;
 
     return node;
 }
@@ -469,4 +475,25 @@ void destroyAST(AST* who) {
 
     // quizas haya que destruir mas cosas aqui en el futuro
     free(who);
+}
+
+AST* newBaseTypeNode(Kind kind) {
+    switch(kind) {
+        case T_INT: {
+            return newIntNode(0);
+            break;
+        }
+        case T_FLOAT: {
+            return newFloatNode(0.0);
+            break;
+        }
+        case T_CHAR: {
+            return newCharNode('\0');
+            break;
+        }
+        case T_BOOL: {
+            return newBoolNode(0);
+            break;
+        }
+    }
 }
