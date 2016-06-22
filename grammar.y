@@ -131,7 +131,7 @@ AST* set_node_type(AST*, Typetree*);
 
 jaxmin
     : opt_nls { offstack = createStack(); current = enterScope(current); } definitions nls PROGRAM block opt_nls { current->size = offset; offset = pop(offstack); current = exitScope(current); }
-    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<node>$ = set_node_type($<node>4, check_program($<node>4->type)); }
+    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls { $<node>$ = set_node_type($<node>4, check_program($<node>4->type)); dumpAST($<node>$,0);}
     ;
 
 opt_nls
@@ -176,6 +176,7 @@ ins_list
             $<node>$ = newSeqNode();
             addASTChild($<node>$, $<node>1);
             $<node>$->type = $<node>1->type;
+            //$<node>$ = set_node_type(addASTChild(newSeqNode(), $<node>1), $<node>1->type);
         }
     | ins_list nls instruction
         {
@@ -216,7 +217,7 @@ jump
 	;
 
 declaration
-    : type id_list { $<type>$ = $<type>1; }
+    : type id_list { $<node>$ = $<node>2; }
     | type ID dimension { declare_array($2, first); $<type>$ = first; }
     | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<type>$ = lookupTable(current, $3, 1)->type; }
     /* pointer to array y vice versa */
@@ -246,20 +247,43 @@ init_dcl
         {
             declare_var($2, $<type>1);
             Entry *aux = lookupTable(current, $2, 1);
-            $<node>$ = set_node_type(newVarNode(aux), check_type_assign(aux->type , $4->type));
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(aux), "=", $4),
+                check_type_assign(aux->type , $4->type)
+                );
         }
     | type ID dimension '=' expr
         {
             declare_array($2, first);
             Entry *aux = lookupTable(current, $2, 1);
-            $<node>$ = set_node_type(newVarNode(aux), check_type_assign(aux->type, $5->type));
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(aux), "=", $5),
+                check_type_assign(aux->type, $5->type)
+                );
         }
-    | declaration {$<node>$ = $<node>1;} // se puede cambiar esto luego
+    | declaration { $<node>$ = $<node>1;} // se puede cambiar esto luego
     ;
 
 id_list
-    : ID { declare_var($1, $<type>0); }
-    | id_list ',' ID { declare_var($3, $<type>0); }
+    : ID
+        {
+            declare_var($1, $<type>0);
+            Entry *aux = lookupTable(current, $1, 1);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind)),
+                $<type>0
+                );
+        }
+    | id_list ',' ID
+        {
+            declare_var($3, $<type>0);
+            Entry *aux = lookupTable(current, $3, 1);
+            $<node>$ = addASTChild(
+                $<node>1,
+                newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind))
+                );
+            set_node_type($<node>$->last, $<type>0);
+        }
     ;
 
 dcl_list
@@ -707,10 +731,10 @@ args_list
 
 literal
 	: NUMBER       { $<node>$ = newIntNode($1); }
-	| REAL         {  }
-	| CHARACTER    { }
-	| JTRUE        { }
-	| JFALSE       { }
+	| REAL         { $<node>$ = newFloatNode($1); }
+	| CHARACTER    { $<node>$ = newCharNode($1); }
+	| JTRUE        { $<node>$ = newBoolNode(1); }
+	| JFALSE       { $<node>$ = newBoolNode(0); }
 	| JNULL        { }
 	;
 %%
