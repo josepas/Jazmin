@@ -181,6 +181,19 @@ AST* newAssignNode(AST *var, char *op, AST *expr) {
 }
 
 
+AST* newReturnNode(AST *expr) {
+
+    AST *node = newAST();
+    node->tag = N_RETURN;
+
+    if (!expr) {
+        addASTChild(node, expr);
+    }
+
+    return node;
+}
+
+
 AST* newVarNode(Entry *sym) {
 
     AST* node = newAST();
@@ -240,14 +253,14 @@ void dumpIfChildren(AST* who, int level) {
     }
 
     if (who->next == NULL) {
-        printf("else:\n");
+        printf("%*selse:\n", level*3, " ");
         dumpAST(who, level + 1);
     }
 
     if (who->next != NULL) {
-        printf("expr:\n");
+        printf("%*sexpr:\n", level*3, " ");
         dumpAST(who, level + 1);
-        printf("block:\n");
+        printf("%*sblock:\n", level*3, " ");
         dumpAST(who->next, level + 1);
     }
 
@@ -267,55 +280,54 @@ void dumpAST(AST* who, int level) {
 
     switch (who->tag) {
         case (N_IF) : {
-            printf("IF:\n");
+            printf("%*sIF:\n", level*3, " ");
 
             dumpIfChildren(who->first, level);
             break;
         }
         case (N_WHILE) : {
-            printf("WHILE:\n");
-
-            printf("expr:\n");
+            printf("%*sWHILE:\n", level*3, " ");
+            printf("%*sexpr:\n", level*3, " ");
             dumpAST(who->first, level + 1);
 
-            printf("block:\n");
+            printf("%*sblock:\n", level*3, " ");
             dumpAST(who->last, level + 1);
             break;
         }
         case (N_BIN_OP) : {
-            printf("BIN_EXPR:\n");
+            printf("%*sBIN_EXPR:\n", level*3, " ");
 
-            printf("operator: %s.\n", who->operation);
+            printf("%*soperator: %s.\n", level*3, " ", who->operation);
 
-            printf("1operand:\n");
+            printf("%*s1operand:\n", level*3, " ");
             dumpAST(who->first, level + 1);
 
-            printf("2operand:\n");
+            printf("%*s2operand:\n", level*3, " ");
             dumpAST(who->last, level + 1);
             break;
         }
         case (N_UN_OP) : {
-            printf("UN_EXPR:\n");
-            printf("operator: %s.\n", who->operation);
-            printf("operand:\n");
+            printf("%*sUN_EXPR:\n", level*3, " ");
+            printf("%*soperator: %s.\n", level*3, " ", who->operation);
+            printf("%*soperand:\n", level*3, " ");
             dumpAST(who->first, level + 1);
             break;
         }
         case (N_INT) : {
-            printf("INT: %d\n", who->u.i);
+            printf("%*sINT: %d\n", level*3, " ", who->u.i);
             break;
         }
         case (N_FLOAT) : {
-            printf("FLOAT: %f\n", who->u.f);
+            printf("%*sFLOAT: %f\n", level*3, " ", who->u.f);
             break;
         }
 
         case (N_CHAR) : {
-            printf("INT: %c\n", who->u.c);
+            printf("%*sCHAR: %c\n", level*3, " ", who->u.c);
             break;
         }
         case (N_BOOL) : {
-            printf("BOOL:");
+            printf("%*sBOOL:", level*3, " ");
             if (who->u.b) {
                 printf("False\n");
             } else {
@@ -324,88 +336,83 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_VAR) : {
-            printf("VAR: %s ", who->u.sym->string);
+            printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
             dumpType(who->u.sym->type);
             printf("\n");
             break;
         }
+        case (N_RETURN) : {
+            printf("%*sRETURN:\n", level*3, " ");
+            printf("%*sexpr:\n", level*3, " ");
+            if (!who->first) {
+                dumpAST(who->first, level + 1);
+            }
+            break;
+        }
+
         case (N_ASGN) : {
-            printf("ASSIGN:\n");
+            printf("%*sASSIGN:\n", level*3, " ");
 
-            printf("operator: %s\n", who->operation);
+            printf("%*soperator: %s\n", level*3, " ", who->operation);
 
-            printf("l-value:\n");
+            printf("%*sl-value:\n", level*3, " ");
             dumpAST(who->first, level + 1);
 
-            printf("r-value:\n");
+            printf("%*sr-value:\n", level*3, " ");
             dumpAST(who->last, level + 1);
             break;
         }
         case (N_FOR) : {
-            printf("FOR:\n");
+            printf("%*sFOR:\n", level*3, " ");
 
-            printf("start:\n");
+            printf("%*sstart:\n", level*3, " ");
             dumpAST(who->first, level + 1);
 
-            printf("end:\n");
+            printf("%*send:\n", level*3, " ");
             dumpAST(who->first->next, level + 1);
             
             if (who->first->next->next != who->last) {
-                printf("step:\n");
+                printf("%*sstep:\n", level*3, " ");
                 dumpAST(who->first->next->next, level + 1);
             }
-            printf("block:\n");
+            printf("%*sblock:\n", level*3, " ");
             dumpAST(who->last, level + 1);
             break;
         }
         case (N_SEQ) : {
-            printf("SEQUENCE:\n");
+            printf("%*sSEQUENCE:\n", level*3, " ");
             dumpSeqChildren(who->first, level);         
             break;
         }
         case (N_WRITE) : {
-            printf("WRITE:\n");
+            printf("%*sWRITE:\n", level*3, " ");
             if (who->u.sym) {
                 dumpAST(who->first, level);
             } else {
-                printf("string: %s\n", who->u.sym->string);
+                printf("%*sstring: %s\n", level*3, " ", who->u.sym->string);
             }
             break;
         }
         case (N_READ) : {
-            printf("READ:\n");
+            printf("%*sREAD:\n", level*3, " ");
             dumpAST(who->first, level);
             if (!who->u.sym) {
-                printf("string: %s\n", who->u.sym->string);
+                printf("%*sstring: %s\n", level*3, " ", who->u.sym->string);
             }
             break;
         }
         case (N_BORN) : {
-            printf("BORN:\n");
+            printf("%*sBORN:\n", level*3, " ");
             dumpAST(who->first, level);
             break;
         }
         case (N_PUFF) : {
-            printf("PUFF:\n");
+            printf("%*sPUFF:\n", level*3, " ");
             dumpAST(who->first, level);
             break;
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void destroyAST(AST* who) {
 
