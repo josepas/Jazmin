@@ -453,6 +453,19 @@ void dumpAST(AST* who, int level) {
             printf("%*sBREAK:\n", level*3, " ");
             break;
         }
+        case (N_PROGRAM) : {
+            printf("%*sPROGRAM:\n", level*3, " ");
+            dumpSeqChildren(who->first, level);
+            break;
+        }
+        case (N_FUNC) : {
+            printf("%*sFUNCTION:\n", level*3, " ");
+            printf("%*s", level*3, " ");
+            dumpType(who->u.sym->type);
+            printf("\n");
+            dumpAST(who->first, level);
+            break;
+        }
     }
 }
 
@@ -503,9 +516,10 @@ AST* newBaseTypeNode(Kind kind) {
     }
 }
 
-AST* newFuncNode(AST* block) {
+AST* newFuncNode(Entry *entry, AST* block) {
     AST* node = newAST();
     node->tag = N_FUNC;
+    node->u.sym = entry;
 
     addASTChild(node, block);
 

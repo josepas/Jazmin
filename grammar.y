@@ -148,7 +148,7 @@ jaxmin
                 //check_program($<node>4->type)
                 check_seq($<node>3->type, $<node>6->type)
                 );
-            //dumpAST(tree,1);
+            dumpAST(tree,1);
         }
     | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
         {
@@ -177,7 +177,8 @@ definitions
             if($<node>1 != NULL) {
                 addASTChild($<node>$, $<node>1);
                 $<node>$->type = $<node>1->type;
-            }
+            } else
+                $<node>$->type = HOLLOW_T;
         }
     | definitions nls outer_def
         {
@@ -216,14 +217,23 @@ ins_list
     : instruction
         {
             $<node>$ = newSeqNode();
-            addASTChild($<node>$, $<node>1);
-            $<node>$->type = $<node>1->type;
+            if($<node>1 != NULL) {
+                addASTChild($<node>$, $<node>1);
+                $<node>$->type = $<node>1->type;
+            } else {
+                $<node>$->type = HOLLOW_T;
+            }
             //$<node>$ = set_node_type(addASTChild(newSeqNode(), $<node>1), $<node>1->type);
         }
     | ins_list nls instruction
         {
-            $<node>$ = set_node_type($<node>1, check_seq($<node>1->type, $<node>3->type));
-            addASTChild($<node>$, $<node>3);
+            if($<node>3 != NULL) {
+                $<node>$ = set_node_type(
+                    $<node>1,
+                    check_seq($<node>1->type, $<node>3->type)
+                    );
+                addASTChild($<node>$, $<node>3);
+            }
         }
     ;
 
@@ -233,18 +243,18 @@ instruction
     | selection       { $<node>$ = $<node>1; }
     | iteration       { $<node>$ = $<node>1; }
     | assignment      { $<node>$ = $<node>1; }
-    | jump            //{ $<node>$ = HOLLOW_T; } // falta
+    | jump            { $<node>$ = $<node>1; }
     | io_inst         //{ $<node>$ = HOLLOW_T; } // falta
     | malloc          //{ $<node>$ = HOLLOW_T; } // falta
     | sub_call        { $<node>$ = $<node>1; }
     ;
 
 malloc
-    : BORN '(' ID { temp = check_var($3); } ')'  
+    : BORN '(' ID { temp = check_var($3); } ')'
         {
             $<node>$ = newBornNode( newVarNode(temp) );
         }
-    | PUFF '(' ID { temp = check_var($3); } ')' 
+    | PUFF '(' ID { temp = check_var($3); } ')'
         {
             $<node>$ = newPuffNode( newVarNode(temp) );
         }
@@ -260,8 +270,8 @@ io_inst
 jump
 	: NEXT             { $<node>$ = newNextNode(); }
 	| BREAK            { $<node>$ = newBreakNode(); }
-	| RETURN           { $<node>$ = newReturnNode(NULL); }
-	| RETURN expr      { $<node>$ = newReturnNode($2); }
+	| RETURN           { $<node>$ = newReturnNode(NULL); $<node>$->type = HOLLOW_T; }
+	| RETURN expr      { $<node>$ = newReturnNode($2); $<node>$->type = $2->type; }
 	;
 
 declaration
@@ -295,7 +305,8 @@ declaration
             if (current == save_current) {
                 save_current = NULL;
             }
-            $<type>$ = lookupTable(current, $2, 1)->type;
+            //$<type>$ = lookupTable(current, $2, 1)->type;
+            $<node>$ = NULL;
         }
     ;
 
@@ -325,24 +336,32 @@ id_list
     : ID
         {
             declare_var($1, $<type>0);
-            Entry *aux = lookupTable(current, $1, 1);
-            $<node>$ = set_node_type(
+            temp = lookupTable(current, $1, 1);
+            if($<type>0->kind == T_STRUCT || $<type>0->kind == T_CONF)
+                $<node>$ = NULL;
+            else {
+                $<node>$ = set_node_type(
                 addASTChild(
                     newSeqNode(),
-                    newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind))
+                    newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>0->kind))
                     ),
                 $<type>0
                 );
+            }
         }
     | id_list ',' ID
         {
             declare_var($3, $<type>0);
-            Entry *aux = lookupTable(current, $3, 1);
-            $<node>$ = addASTChild(
-                $<node>1,
-                newAssignNode(newVarNode(aux), "=", newBaseTypeNode($<type>0->kind))
-                );
-            set_node_type($<node>$->last, $<type>0);
+            if($<type>0->kind == T_STRUCT || $<type>0->kind == T_CONF)
+                $<node>$ = NULL;
+            else {
+                temp = lookupTable(current, $3, 1);
+                $<node>$ = addASTChild(
+                    $<node>1,
+                    newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>0->kind))
+                    );
+                set_node_type($<node>$->last, $<type>0);
+            }
         }
     ;
 
@@ -789,7 +808,10 @@ sub_call
         }
     '(' arguments ')'
         {
-            $<type>$ = check_arguments($1, $<list>4);
+            $<node>$ = set_node_type(
+                lookupTable(current, $1, 0)->ast,
+                check_arguments($1, $<list>4)
+                );
         }
     ;
 
@@ -801,11 +823,11 @@ arguments
 args_list
     : expr
         {
-            $<list>$ = add( newArgList(), $<type>1 );
+            $<list>$ = add( newArgList(), $<node>1->type );
         }
     | args_list ',' expr
         {
-            $<list>$ = add($<list>1, $<type>3);
+            $<list>$ = add($<list>1, $<node>3->type);
         }
     ;
 
@@ -1340,6 +1362,6 @@ AST* set_node_type(AST* node, Typetree* type) {
 
 void set_subrout_ast(char *id, AST *block) {
     if((temp = lookupTable(current, id, 0)) != NULL) {
-        temp->ast = newFuncNode(block);
+        temp->ast = newFuncNode(temp, block);
     }
 }
