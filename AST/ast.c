@@ -357,9 +357,9 @@ void dumpAST(AST* who, int level) {
         case (N_BOOL) : {
             printf("%*sBOOL:", level*3, " ");
             if (who->u.b) {
-                printf("False\n");
+                printf("True\n");
             } else {
-                printf("True %d\n", who->u.b); // for debbuging debe ser 1
+                printf("False %d\n", who->u.b); // for debbuging debe ser 1
             }
             break;
         }
