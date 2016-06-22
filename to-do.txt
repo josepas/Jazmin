@@ -13,10 +13,6 @@ Main
 
 tipos
     chequeo de arreglos como expresiones
-    propagar type error en las init declarations
-    probar todo bien con calma
-    chequeo de los else if anidados
     void cableados en la instruction list
-    CHEQUEAR EL STEP DEL FOR
     caso borde en el chequeo de structs
     Impresion de errores en las ramas

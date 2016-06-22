@@ -53,6 +53,8 @@ AST* newWriteNode(Entry*, AST*);
 AST* newReadNode(Entry*, AST*);
 
 AST* newReturnNode(AST*);
+AST* newContNode();
+AST* newBreakNode();
 
 AST* newVarNode(Entry*);
 AST* newIntNode(int);
