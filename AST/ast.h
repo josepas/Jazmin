@@ -1,11 +1,18 @@
+#ifndef DEF_AST
+#define DEF_AST
+#include "../utils/utils.h"
+
+
 typedef enum {N_IF, N_WHILE, N_BIN_OP, N_UN_OP,
-     N_INT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ, N_WRITE, N_READ...} NodeTag;
+     N_INT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ, N_WRITE, N_READ} NodeTag;
 
 
 typedef struct _ast {
     NodeTag tag;
 
     char *operation;
+
+    Typetree *type;
 
     struct _ast *first;
     struct _ast *last;
@@ -43,15 +50,4 @@ AST* newBoolNode(int);
 
 void destroyAST(AST*);
 
-
-
-
-
-
-
-
-
-
-
-
-
+#endif

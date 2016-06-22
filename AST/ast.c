@@ -1,10 +1,10 @@
 #include "ast.h"
 
 AST* newAST() {
-    
+
     AST* new = memory(sizeof(AST));
 
-    new->tag = NULL;
+    new->tag = -1;
     new->operation = NULL;
     new->first = NULL;
     new->last = NULL;
@@ -15,13 +15,13 @@ AST* newAST() {
 
 
 AST* addASTChild (AST *who, AST *nChild) {
-    
+
     if (who == NULL) {
         fprintf(stderr, "Fatal: Creacion de arbol\n");
     }
     // No tenia ningun hijo
     if (who->first == NULL) {
-        who->fist = nChild;
+        who->first = nChild;
         who->last = nChild;
     } else {
         who->last->next = nChild;
@@ -38,7 +38,7 @@ AST* newSeqNode() {
 
     return node;
 }
- 
+
 
 AST* newWriteNode(Entry *string, AST *var) {
 
@@ -64,7 +64,7 @@ AST* newWriteNode(Entry *string, AST *var) {
 
 // lo creo sin hijos porque no se cuantas condiciones puede tener
 AST* newIfNode() {
-    
+
     AST* node = newAST();
     node->tag = N_IF;
 
@@ -111,7 +111,7 @@ AST* newWhileNode(AST* expr, AST* block) {
 AST* newForNode(AST *start, AST *end, AST *step, AST *block) {
 
     AST *node = newAST();
-    node-tag = N_FOR;
+    node->tag = N_FOR;
 
     addASTChild(node, start);
     addASTChild(node, end);
@@ -158,12 +158,12 @@ AST* newIntNode(int x) {
     return node;
 }
 
-AST* newCharNode(char a) {
+AST* newCharNode(char c) {
 
     AST* node = newAST();
     node->tag = N_CHAR;
 
-    node->u.a = a;
+    node->u.c = c;
 
     return node;
 
