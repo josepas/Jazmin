@@ -7,7 +7,7 @@
 typedef enum {N_ERROR, N_IF, N_WHILE, N_BIN_OP, N_UN_OP,
      N_INT, N_FLOAT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ, 
      N_WRITE, N_READ, N_BORN, N_PUFF,
-        N_RETURN, N_CONT, N_BREAK} NodeTag;
+        N_RETURN, N_NEXT, N_BREAK} NodeTag;
 
 
 typedef struct _ast {
@@ -49,11 +49,12 @@ AST* newForNode(AST*, AST*, AST*, AST*);
 
 AST* newBornNode(AST*);
 AST* newPuffNode(AST*); 
+
 AST* newWriteNode(Entry*, AST*);
 AST* newReadNode(Entry*, AST*);
 
 AST* newReturnNode(AST*);
-AST* newContNode();
+AST* newNextNode();
 AST* newBreakNode();
 
 AST* newVarNode(Entry*);

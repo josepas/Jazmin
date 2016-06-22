@@ -200,16 +200,20 @@ AST* newReturnNode(AST *expr) {
     return node;
 }
 
-AST* newContNode() {
+AST* newNextNode() {
 
     AST* node = newAST();
-    node->tag = N_CONT;
+    node->tag = N_NEXT;
+
+    return node;
 }
 
 AST* newBreakNode() {
 
     AST* node = newAST();
     node->tag = N_BREAK;
+
+    return node;
 }
 
 
@@ -442,8 +446,8 @@ void dumpAST(AST* who, int level) {
             dumpAST(who->first, level);
             break;
         }
-        case (N_CONT) : {
-            printf("%*sCONTINUE:\n", level*3, " ");
+        case (N_NEXT) : {
+            printf("%*sNEXT:\n", level*3, " ");
             break;
         }
         case (N_BREAK) : {
