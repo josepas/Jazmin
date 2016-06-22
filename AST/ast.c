@@ -197,6 +197,21 @@ AST* newReturnNode(AST *expr) {
     return node;
 }
 
+AST* newContNode() {
+
+    AST* node = newAST();
+    node->tag = N_CONT;
+}
+
+AST* newBreakNode() {
+
+    AST* node = newAST();
+    node->tag = N_BREAK;
+}
+
+
+
+
 
 AST* newVarNode(Entry *sym) {
 
@@ -240,6 +255,9 @@ AST* newCharNode(char c) {
     return node;
 
 }
+
+
+
 
 AST* newBoolNode(int b) {
 
@@ -414,6 +432,14 @@ void dumpAST(AST* who, int level) {
         case (N_PUFF) : {
             printf("%*sPUFF:\n", level*3, " ");
             dumpAST(who->first, level);
+            break;
+        }
+        case (N_CONT) : {
+            printf("%*sCONTINUE:\n", level*3, " ");
+            break;
+        }
+        case (N_BREAK) : {
+            printf("%*sBREAK:\n", level*3, " ");
             break;
         }
     }
