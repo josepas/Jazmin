@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 	enum Stages {LEXER, PARSER, SYMBOLS, TREE} stage = PARSER;
 
 	int c;
-	while ((c = getopt(argc, argv, "lps")) != -1) {
+	while ((c = getopt(argc, argv, "lpst")) != -1) {
 		switch (c) {
 			case 'l':
 				stage = LEXER;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     if (stage == TREE){
         if ( yyparse() )
             has_error = 1;
-        
+
         if (has_error) {
             dumpAST(tree, 1);
         }

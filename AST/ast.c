@@ -52,12 +52,12 @@ AST* newWriteNode(Entry *string, AST *var) {
     }
 
     // si no es con var (string)
-    if (var) {
+    if (var == NULL) {
         node->u.sym = string;
     }
 
     // si no es con string (var)
-    if (string) {
+    if (string == NULL) {
         addASTChild(node, var);
     }
 
@@ -193,7 +193,7 @@ AST* newReturnNode(AST *expr) {
     AST *node = newAST();
     node->tag = N_RETURN;
 
-    if (!expr) {
+    if (expr) {
         addASTChild(node, expr);
     }
 
@@ -377,7 +377,7 @@ void dumpAST(AST* who, int level) {
         case (N_RETURN) : {
             printf("%*sRETURN:\n", level*3, " ");
             printf("%*sexpr:\n", level*3, " ");
-            if (!who->first) {
+            if (who->first) {
                 dumpAST(who->first, level + 1);
             }
             break;
@@ -421,16 +421,16 @@ void dumpAST(AST* who, int level) {
         case (N_WRITE) : {
             printf("%*sWRITE:\n", level*3, " ");
             if (who->u.sym) {
-                dumpAST(who->first, level);
-            } else {
                 printf("%*sstring: %s\n", level*3, " ", who->u.sym->string);
+            } else {
+                dumpAST(who->first, level);
             }
             break;
         }
         case (N_READ) : {
             printf("%*sREAD:\n", level*3, " ");
             dumpAST(who->first, level);
-            if (!who->u.sym) {
+            if (who->u.sym) {
                 printf("%*sstring: %s\n", level*3, " ", who->u.sym->string);
             }
             break;
@@ -451,6 +451,19 @@ void dumpAST(AST* who, int level) {
         }
         case (N_BREAK) : {
             printf("%*sBREAK:\n", level*3, " ");
+            break;
+        }
+        case (N_PROGRAM) : {
+            printf("%*sPROGRAM:\n", level*3, " ");
+            dumpSeqChildren(who->first, level);
+            break;
+        }
+        case (N_FUNC) : {
+            printf("%*sFUNCTION:\n", level*3, " ");
+            printf("%*s", level*3, " ");
+            dumpType(who->u.sym->type);
+            printf("\n");
+            dumpAST(who->first, level);
             break;
         }
     }
@@ -503,9 +516,10 @@ AST* newBaseTypeNode(Kind kind) {
     }
 }
 
-AST* newFuncNode(AST* block) {
+AST* newFuncNode(Entry *entry, AST* block) {
     AST* node = newAST();
     node->tag = N_FUNC;
+    node->u.sym = entry;
 
     addASTChild(node, block);
 

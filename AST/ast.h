@@ -69,7 +69,7 @@ AST* newErrorNode(Typetree*);
 void destroyAST(AST*);
 
 AST* newBaseTypeNode(Kind);
-AST* newFuncNode(AST*);
+AST* newFuncNode(Entry*, AST*);
 AST* newProgramNode(AST*, AST*);
 
 #endif
