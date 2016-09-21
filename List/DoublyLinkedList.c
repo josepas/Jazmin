@@ -1,0 +1,131 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct _node {
+    void *data;
+
+    struct _node *prev;
+    struct _node *next;
+} Node;
+
+typedef struct _dlinkedlist {
+    
+    Node* first;
+    Node* last;
+
+} DLinkedList;
+
+
+DLinkedList* newDoublyLinkList() {
+    
+    DLinkedList* new = (DLinkedList*)malloc(sizeof(DLinkedList));
+
+    new->first = NULL;
+    new->last = NULL;
+
+    return new;
+}
+
+Node* newDLLNode(void* data, size_t size) {
+    
+    Node* new = (Node*)malloc(sizeof(Node));
+
+    new->data = malloc(size);
+    new->data = data;           // esto aqui estoy medio dudoso
+    new->prev = NULL;
+    new->next = NULL;
+
+    return new;
+}
+
+void add(DLinkedList* list, Node* who, int start) {
+
+    if (list == NULL) {
+        fprintf(stderr, "Error Fatal agregando a la lista de quads\n");
+    }
+
+    if (list->first == NULL) {
+        list->first = who;
+        list->last = who;
+    } else {
+        // Agregar al inicio
+        if (start) {
+            who->next = list->first;
+            list->first->prev = who;
+            list->first = who;
+        // Agregar al final
+        } else {
+            list->last->next = who;
+            who->prev = list->last;
+            list->last = who;
+        }
+    }
+
+}
+
+
+// Chuequear con calma
+void removeN(DLinkedList* list, Node* who) {
+    
+    if (list == NULL) {
+        fprintf(stderr, "Error Fatal eliminando a la lista de quads\n");
+        return;
+    }    
+
+    if (list->first == NULL) {
+        fprintf(stderr, "Error eliminando en lista de quads vacia\n");        
+        return;
+    }
+
+    // Un solo nodo
+    if (list->first == list->last) {
+        list->first = NULL;
+        list->last = NULL;
+        free(who);
+        return;
+    }
+
+    // Primero
+    if (who == list->first) {
+        list->first = list->first->next;
+    }
+
+    // Ultimo
+    if (who == list->last) {
+        list->last = list->last->prev;
+    } else {
+        who->prev->next = who->next;
+        who->next->prev = who->prev;
+    }
+
+    free(who);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int main(int argc, char const *argv[]) {
+    
+    return 0;
+}
