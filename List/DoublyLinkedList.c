@@ -2,6 +2,9 @@
 #include <stdlib.h>
 
 typedef struct _node {
+
+    int index;
+
     void *data;
 
     struct _node *prev;
@@ -26,16 +29,25 @@ DLinkedList* newDoublyLinkList() {
     return new;
 }
 
-Node* newDLLNode(void* data, size_t size) {
-    
-    Node* new = (Node*)malloc(sizeof(Node));
+Node* newDLLNode(void* data) {
 
-    new->data = malloc(size);
-    new->data = data;           // esto aqui estoy medio dudoso
+    Node* new = (Node*)malloc(sizeof(Node));
+    
+    new->index = -1;
+    new->data = data;    
     new->prev = NULL;
     new->next = NULL;
 
     return new;
+}
+
+void reIndex(DLinkedList* list, int start) {
+
+    for (Node* aux = list->first; aux->next != NULL; aux = aux->next) {
+        aux->index = start;
+        ++start;
+    }
+
 }
 
 void add(DLinkedList* list, Node* who, int start) {
@@ -53,8 +65,10 @@ void add(DLinkedList* list, Node* who, int start) {
             who->next = list->first;
             list->first->prev = who;
             list->first = who;
+            reIndex(list, who->next->index);            
         // Agregar al final
         } else {
+            who->index = list->last->index + 1;
             list->last->next = who;
             who->prev = list->last;
             list->last = who;
@@ -102,27 +116,23 @@ void removeN(DLinkedList* list, Node* who) {
 
 }
 
+void destroyHelper(Node* who) {
+    
+    if (who != NULL) 
+        return;
 
+    destroyHelper(who->next);
+    // Aqui quizas hay que mandar a liberar el quad
+    // pero creo que me tendrias que pasar la funcion 
+    // para liberarlo. (no muy claro)
+    free(who);
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void destroyDLList(DLinkedList* list) {
+    
+    destroyHelper(list->first);
+    free(list);
+}
 
 
 int main(int argc, char const *argv[]) {
