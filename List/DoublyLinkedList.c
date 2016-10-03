@@ -1,23 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct _node {
-
-    int index;
-
-    void *data;
-
-    struct _node *prev;
-    struct _node *next;
-} Node;
-
-typedef struct _dlinkedlist {
-    
-    Node* first;
-    Node* last;
-
-} DLinkedList;
-
+#include "DoublyLinkedList.h"
 
 DLinkedList* newDoublyLinkList() {
     
@@ -116,6 +97,7 @@ void removeN(DLinkedList* list, Node* who) {
 
 }
 
+
 void destroyHelper(Node* who) {
     
     if (who != NULL) 
@@ -135,7 +117,4 @@ void destroyDLList(DLinkedList* list) {
 }
 
 
-int main(int argc, char const *argv[]) {
-    
-    return 0;
-}
+
