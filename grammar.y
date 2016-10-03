@@ -148,7 +148,7 @@ jaxmin
                 //check_program($<node>4->type)
                 check_seq($<node>3->type, $<node>6->type)
                 );
-            dumpAST(tree,1);
+            //dumpAST(tree,1);
         }
     | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
         {
@@ -156,7 +156,7 @@ jaxmin
                 newProgramNode(NULL, $<node>4),
                 check_program($<node>4->type)
                 );
-            dumpAST(tree,1);
+            //dumpAST(tree,1);
         }
     ;
 
@@ -720,14 +720,14 @@ expr
     | expr EQUAL expr
         {
             $$ = set_node_type(
-                    newBinOp($1,">",$3),
+                    newBinOp($1,"==",$3),
                     check_type($1->type, $3->type)
                 );
         }
     | expr UNEQUAL expr
         {
             $$ = set_node_type(
-                    newBinOp($1,">",$3),
+                    newBinOp($1,"!=",$3),
                     check_type($1->type, $3->type)
                 );
         }

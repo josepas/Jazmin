@@ -6,6 +6,8 @@
 #include "lex.yy.c"
 #include "SymbolTable/symbolTable.h"
 #include "AST/ast.h"
+#include "utils/tac.h"
+#include "List/DoublyLinkedList.h"
 
 
 extern Symtable* current;
@@ -95,11 +97,19 @@ int main(int argc, char *argv[]) {
     }
 
     if (stage == TREE){
-        if ( yyparse() )
+        if ( yyparse() ) {
             has_error = 1;
-
-        if (has_error) {
+        }
+        if (has_error == 0) {
             dumpAST(tree, 1);
+
+            DLinkedList *list = newDoublyLinkList();
+            astToTac(tree, list);
+            Node* aux;
+            for (aux = list->first; aux != NULL; aux = aux->next) {
+                // printf("%d\n", ((Quad*)aux->data)->op);
+                imprimirTAC((Quad*)aux->data);
+            }
         }
     }
 
