@@ -25,7 +25,7 @@ typedef struct _dlinkedlist {
 
 DLinkedList* newDoublyLinkList();
 Node* newDLLNode(void*);
-void add(DLinkedList*, Node*, int);
+void addDLL(DLinkedList*, Node*, int);
 void removeN(DLinkedList* list, Node* who);
 void destroyDLList(DLinkedList*);
 

@@ -31,7 +31,7 @@ void reIndex(DLinkedList* list, int start) {
 
 }
 
-void add(DLinkedList* list, Node* who, int start) {
+void addDLL(DLinkedList* list, Node* who, int start) {
 
     if (list == NULL) {
         fprintf(stderr, "Error Fatal agregando a la lista de quads\n");
