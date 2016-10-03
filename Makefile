@@ -1,8 +1,8 @@
 LEX=flex
 CCFLAGS=-g -Wall
 
-jaxmin: main.c grammar.tab.c lex.yy.c symbolTable.o typeTree.o utils.o ast.o list.o
-	gcc $(CCFLAGS) main.c grammar.tab.c symbolTable.o  typeTree.o utils.o ast.o list.o -lbsd -lfl -o $@
+jaxmin: main.c grammar.tab.c lex.yy.c symbolTable.o typeTree.o utils.o ast.o list.o tac.o
+	gcc $(CCFLAGS) main.c grammar.tab.c symbolTable.o  typeTree.o utils.o ast.o list.o tac.o -lbsd -lfl -o $@
 
 grammar.tab.c grammar.tab.h: grammar.y
 	bison -d -v $^
@@ -25,6 +25,8 @@ list.o: List/DoublyLinkedList.h List/DoublyLinkedList.c
 ast.o: AST/ast.h AST/ast.c
 	gcc -g -c AST/ast.c -o ast.o
 
+tac.o: utils/tac.h utils/tac.c
+	gcc -g -c utils/tac.c -o tac.o
 
 clean:
 	rm -f lex.yy.c grammar.tab.c grammar.tab.h grammar.output
