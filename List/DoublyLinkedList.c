@@ -1,7 +1,7 @@
 #include "DoublyLinkedList.h"
 
 DLinkedList* newDoublyLinkList() {
-    
+
     DLinkedList* new = (DLinkedList*)malloc(sizeof(DLinkedList));
 
     new->first = NULL;
@@ -13,9 +13,9 @@ DLinkedList* newDoublyLinkList() {
 Node* newDLLNode(void* data) {
 
     Node* new = (Node*)malloc(sizeof(Node));
-    
+
     new->index = -1;
-    new->data = data;    
+    new->data = data;
     new->prev = NULL;
     new->next = NULL;
 
@@ -23,8 +23,8 @@ Node* newDLLNode(void* data) {
 }
 
 void reIndex(DLinkedList* list, int start) {
-
-    for (Node* aux = list->first; aux->next != NULL; aux = aux->next) {
+    Node *aux;
+    for (aux = list->first; aux->next != NULL; aux = aux->next) {
         aux->index = start;
         ++start;
     }
@@ -46,7 +46,7 @@ void addDLL(DLinkedList* list, Node* who, int start) {
             who->next = list->first;
             list->first->prev = who;
             list->first = who;
-            reIndex(list, who->next->index);            
+            reIndex(list, who->next->index);
         // Agregar al final
         } else {
             who->index = list->last->index + 1;
@@ -61,14 +61,14 @@ void addDLL(DLinkedList* list, Node* who, int start) {
 
 // Chuequear con calma
 void removeN(DLinkedList* list, Node* who) {
-    
+
     if (list == NULL) {
         fprintf(stderr, "Error Fatal eliminando a la lista de quads\n");
         return;
-    }    
+    }
 
     if (list->first == NULL) {
-        fprintf(stderr, "Error eliminando en lista de quads vacia\n");        
+        fprintf(stderr, "Error eliminando en lista de quads vacia\n");
         return;
     }
 
@@ -99,19 +99,19 @@ void removeN(DLinkedList* list, Node* who) {
 
 
 void destroyHelper(Node* who) {
-    
-    if (who != NULL) 
+
+    if (who != NULL)
         return;
 
     destroyHelper(who->next);
     // Aqui quizas hay que mandar a liberar el quad
-    // pero creo que me tendrias que pasar la funcion 
+    // pero creo que me tendrias que pasar la funcion
     // para liberarlo. (no muy claro)
     free(who);
 }
 
 void destroyDLList(DLinkedList* list) {
-    
+
     destroyHelper(list->first);
     free(list);
 }
