@@ -114,6 +114,12 @@ void imprimirTAC(Quad* q) {
             addrToString(q->result, r);
             printf("%s := %s %% %s\n", r, a1, a2);
             break;
+        case INT_UN_MINUS:
+        case FLOAT_UN_MINUS:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("%s := - %s\n", r, a1);
+            break;
         case GOTO:
             printf("goto %s\n", ((Entry*)q->result)->string);
             break;
@@ -154,6 +160,9 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             printf("%s := %s\n", r, a1);
             break;
+        case OP_REMOVE:
+            printf("OP_REMOVE addt:%d  i:%d\n", q->result->addt, q->result->u.i);
+            break;
         default:
             printf("MAAAAAL\n");
             break;
@@ -178,78 +187,92 @@ Addr* genTemp(/*struct _symtable* current, struct _typetree* type*/) {
     return t;
 }
 
-void astToTac(AST *ast_node, DLinkedList *list) {
-    Node *temp = NULL;
+Node* astToTac(AST *ast_node, DLinkedList *list) {
+    AST *ast_temp;
+    Node *temp, *first, *last;
     Addr *a1, *a2, *r = NULL;
-    // printf(":: %d\n", ast_node->tag);
     switch(ast_node->tag) {
         case N_PROGRAM:
             astToTac(ast_node->first, list);
-            // temp = newDLLNode(generateTAC(TAC_LABEL, OP_LABEL, NULL, NULL, NULL));
-            // addDLL(list, temp, 0);
             break;
         case N_SEQ:
-            ast_node = ast_node->first;
-            while(ast_node != NULL) {
-                astToTac(ast_node, list);
-                ast_node = ast_node->next;
+            ast_temp = ast_node->first;
+            while(ast_temp != NULL) {
+                astToTac(ast_temp, list);
+                ast_temp = ast_temp->next;
             }
+            // if(ast_node->next != NULL)
+            //     astToTac(ast_node->next, list);
+
             break;
         case N_ASGN:
-            printf("aquiiii11\n");
-            astToTac(ast_node->last, list);
+            last = astToTac(ast_node->last, list);
             r = (Addr*)malloc(sizeof(Addr));
             r->addt = VAR;
             r->u.e = ast_node->first->u.sym;
             temp = newDLLNode(
                 generateTAC(COPY, ASSIGN,
-                    ((Quad*)list->last->data)->result,
+                    ((Quad*)last->data)->result,
                     NULL,
                     r
                     )
                 );
             addDLL(list, temp, 0);
-            printf("aquiiii2222\n");
+            break;
+        case N_UN_OP:
+            first = astToTac(ast_node->first, list);
+
+            switch(ast_node->operation[0]) {
+                case '-':
+                    if(ast_node->first->type->kind == T_INT)
+                        temp = def_un_op(INT_UN_MINUS);
+                    else
+                        temp = def_un_op(FLOAT_UN_MINUS);
+                    break;
+                case '~':
+                    // JUMPING CODE (?)
+                    break;
+            }
+            addDLL(list, temp, 0);
+            return temp;
             break;
         case N_BIN_OP:
-            astToTac(ast_node->first, list);
-
-
-            astToTac(ast_node->last, list);
+            first = astToTac(ast_node->first, list);
+            last = astToTac(ast_node->last, list);
 
             switch(ast_node->operation[0]) {
                 case '+':
                     if(ast_node->first->type->kind == T_INT)
-                        temp = def_op(INT_PLUS);
+                        temp = def_bin_op(INT_PLUS);
                     else
-                        temp = def_op(FLOAT_PLUS);
+                        temp = def_bin_op(FLOAT_PLUS);
                     break;
                 case '-':
                     if(ast_node->first->type->kind == T_INT)
-                        temp = def_op(INT_MINUS);
+                        temp = def_bin_op(INT_MINUS);
                     else
-                        temp = def_op(FLOAT_MINUS);
+                        temp = def_bin_op(FLOAT_MINUS);
                     break;
                 case '*':
                     if(ast_node->first->type->kind == T_INT)
-                        temp = def_op(INT_MULT);
+                        temp = def_bin_op(INT_MULT);
                     else
-                        temp = def_op(FLOAT_MULT);
+                        temp = def_bin_op(FLOAT_MULT);
                     break;
                 case '/':
                     if(ast_node->operation[1] == '\\') {
                         // JUMPING CODE (?)
                     }
                     else if(ast_node->first->type->kind == T_INT)
-                        temp = def_op(INT_DIV);
+                        temp = def_bin_op(INT_DIV);
                     else
-                        temp = def_op(FLOAT_DIV);
+                        temp = def_bin_op(FLOAT_DIV);
                     break;
                 case '%':
                     if(ast_node->first->type->kind == T_INT)
-                        temp = def_op(INT_MOD);
+                        temp = def_bin_op(INT_MOD);
                     else
-                        temp = def_op(FLOAT_MOD);
+                        temp = def_bin_op(FLOAT_MOD);
                     break;
                 case '\\':
                     if(ast_node->operation[1] == '/') {
@@ -275,29 +298,9 @@ void astToTac(AST *ast_node, DLinkedList *list) {
                     break;
             }
 
-            Node *aux;
-            for(aux = list->first; aux!=NULL; aux = aux->next) {
-                printf("===> %d", ((Quad*)aux->data)->op);
-            }
-            printf("\n");
-
-            if(((Quad*)list->last->data)->op == OP_REMOVE) {
-                printf("entrooo 1\n");
-                // removeN(list, list->last);
-                removeN(list, list->last);
-            }
-            if(((Quad*)list->last->data)->op == OP_REMOVE) {
-                printf("entrooo 2\n");
-                // removeN(list, list->last);
-                removeN(list, list->last);
-            }
 
             addDLL(list, temp, 0);
-
-            for(aux = list->first; aux!=NULL; aux = aux->next) {
-                printf("...> %d", ((Quad*)aux->data)->op);
-            }
-            printf("\n");
+            return temp;
 
             break;
         case N_INT:
@@ -308,7 +311,47 @@ void astToTac(AST *ast_node, DLinkedList *list) {
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
                 );
-            addDLL(list, temp, 0);
+            return temp;
+            break;
+        case N_FLOAT:
+            r = (Addr*)malloc(sizeof(Addr));
+            r->addt = CONST_FLOAT;
+            r->u.f = ast_node->u.f;
+
+            temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                );
+            return temp;
+            break;
+        case N_CHAR:
+            r = (Addr*)malloc(sizeof(Addr));
+            r->addt = CONST_CHAR;
+            r->u.c = ast_node->u.c;
+
+            temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                );
+            return temp;
+            break;
+        case N_BOOL:
+            r = (Addr*)malloc(sizeof(Addr));
+            r->addt = CONST_BOOL;
+            r->u.b = ast_node->u.b;
+
+            temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                );
+            return temp;
+            break;
+        case N_VAR:
+            r = (Addr*)malloc(sizeof(Addr));
+            r->addt = VAR;
+            r->u.e = ast_node->u.sym;
+
+            temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                );
+            return temp;
             break;
     }
 }
