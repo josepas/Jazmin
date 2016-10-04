@@ -18,10 +18,10 @@ extern AST* tree;
 
 int main(int argc, char *argv[]) {
 
-	enum Stages {LEXER, PARSER, SYMBOLS, TREE} stage = PARSER;
+	enum Stages {LEXER, PARSER, SYMBOLS, TREE, TAC} stage = PARSER;
 
 	int c;
-	while ((c = getopt(argc, argv, "lpst")) != -1) {
+	while ((c = getopt(argc, argv, "lpsti")) != -1) {
 		switch (c) {
 			case 'l':
 				stage = LEXER;
@@ -34,6 +34,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 't':
                 stage = TREE;
+                break;
+            case 'i':
+                stage = TAC;
                 break;
 			case '?':
 				break;
@@ -101,8 +104,15 @@ int main(int argc, char *argv[]) {
             has_error = 1;
         }
         if (has_error == 0) {
-            dumpAST(tree, 1);
+            dumpAST(tree, 0);
+        }
+    }
 
+    if (stage == TAC){
+        if ( yyparse() ) {
+            has_error = 1;
+        }
+        if (has_error == 0) {
             DLinkedList *list = newDoublyLinkList();
             astToTac(tree, list);
             Node* aux;
