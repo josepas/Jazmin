@@ -114,14 +114,17 @@ int main(int argc, char *argv[]) {
         }
         if (has_error == 0) {
             DLinkedList *list = newDoublyLinkList();
-            astToTac(tree, list, NULL, NULL);
+            astToTac(tree, list, NULL, NULL, NULL);
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {
+                // printf("==> %d\n", ((Quad*)aux->data)->op);
                 imprimirTAC((Quad*)aux->data);
             }
         }
     }
 
+
+    if (has_error) {
         return(EXIT_FAILURE);
     }
     else {

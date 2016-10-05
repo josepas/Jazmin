@@ -14,7 +14,7 @@ typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP,
             PARAM, PROC_CALL, FUNC_CALL, TAC_RETURN, RETURN_VALUE,
             COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,
             COPY_TO_POINTED, TAC_READ, PRINT, TAC_COMMENT, TAC_LABEL,
-            TAC_REMOVE } TACType;
+            TAC_REMOVE, TAC_EXIT } TACType;
 
 typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,
             FLOAT_PLUS, FLOAT_MINUS, FLOAT_MULT, FLOAT_DIV, FLOAT_MOD, FLOAT_UN_MINUS,
@@ -22,7 +22,7 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,
             OP_EQUAL, OP_UNEQUAL, OP_LT, OP_LTOE, OP_GT, OP_GTOE,
             ASSIGN, ASSIGN_FROM_ARRAY, ASSIGN_TO_ARRAY,
             ASSIGN_FROM_PTR, ASSIGN_TO_PTR,
-            OP_LABEL, OP_COMMENT, OP_REMOVE } Operation;
+            OP_LABEL, OP_COMMENT, OP_REMOVE, OP_EXIT } Operation;
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
             LABEL, VAR, TEMP} AddrType;
@@ -61,6 +61,6 @@ Addr* genTemp(/*struct _symtable*, struct _typetree**/);
 
 Addr* genLabel();
 
-Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*);
+Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*);
 
 #endif
