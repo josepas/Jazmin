@@ -414,8 +414,7 @@ void dumpAST(AST* who, int level) {
         }
         case (N_SEQ) : {
             printf("%*sSEQUENCE:\n", level*3, " ");
-            dumpSeqChildren(who->first, level);
-
+            dumpSeqChildren(who->first, level+1);
             break;
         }
         case (N_WRITE) : {
@@ -455,7 +454,7 @@ void dumpAST(AST* who, int level) {
         }
         case (N_PROGRAM) : {
             printf("%*sPROGRAM:\n", level*3, " ");
-            dumpSeqChildren(who->first, level);
+            dumpSeqChildren(who->first, level+1);
             break;
         }
         case (N_FUNC) : {
