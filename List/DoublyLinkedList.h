@@ -1,4 +1,4 @@
-#ifndef DLINKEDLIST 
+#ifndef DLINKEDLIST
 #define DLINKEDLIST
 
 #include <stdio.h>
@@ -16,7 +16,7 @@ typedef struct _node {
 } Node;
 
 typedef struct _dlinkedlist {
-    
+
     Node* first;
     Node* last;
 
