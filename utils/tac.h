@@ -2,6 +2,7 @@
 #define DEF_TAC
 #define def_bin_op(X) newDLLNode(generateTAC(BIN_OP, X, ((Quad*)first->data)->result, ((Quad*)last->data)->result, genTemp()))
 #define def_un_op(X) newDLLNode(generateTAC(UNARY_OP, X, ((Quad*)first->data)->result, NULL, genTemp()))
+#define def_label(X) newDLLNode(generateTAC(TAC_LABEL, OP_LABEL, X, NULL, NULL))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -38,6 +39,8 @@ typedef struct _addr {
         Entry *e;
         // Temporales
         unsigned int t;
+        // Label
+        unsigned int l;
     } u;
 } Addr;
 
@@ -56,6 +59,8 @@ void imprimirTAC(Quad*);
 
 Addr* genTemp(/*struct _symtable*, struct _typetree**/);
 
-Node* astToTac(AST*, struct _dlinkedlist*);
+Addr* genLabel();
+
+Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*);
 
 #endif
