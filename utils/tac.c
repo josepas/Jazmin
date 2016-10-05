@@ -226,21 +226,13 @@ Addr* genLabel() {
 }
 
 Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next) {
-    AST *ast_temp;
     Node *temp, *first, *last;
-    Addr *a1, *a2, *r = NULL;
+    Addr *a1, *a2, *r, *label_temp= NULL;
     switch(ast_node->tag) {
         case N_PROGRAM:
             next = genLabel();
             astToTac(ast_node->first, list, NULL, NULL, next);
-            temp = newDLLNode(
-                generateTAC(TAC_LABEL, OP_LABEL,
-                    next,
-                    NULL,
-                    NULL
-                    )
-                );
-            addDLL(list, temp, 0);
+
             temp = newDLLNode(
                 generateTAC(TAC_EXIT, OP_EXIT,
                     NULL,
@@ -249,12 +241,28 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     )
                 );
             addDLL(list, temp, 0);
+
             break;
         case N_SEQ:
-            ast_temp = ast_node->first;
-            while(ast_temp != NULL) {
-                astToTac(ast_temp, list, NULL, NULL, next);
-                ast_temp = ast_temp->next;
+            ast_node = ast_node->first;
+            while(ast_node != NULL) {
+                if(ast_node->next != NULL)
+                    label_temp = genLabel();
+                else
+                    label_temp = next;
+
+                astToTac(ast_node, list, NULL, NULL, label_temp);
+
+                temp = newDLLNode(
+                    generateTAC(TAC_LABEL, OP_LABEL,
+                        label_temp,
+                        NULL,
+                        NULL
+                        )
+                    );
+                addDLL(list, temp, 0);
+
+                ast_node = ast_node->next;
             }
 
             break;
