@@ -9,11 +9,14 @@
 
 typedef enum {C_VAR, C_ARRAY, C_RECORD, C_SUB, C_CONSTANT, C_TYPE} Class;
 
+typedef enum {GLOBAL, LOCAL} Scope;
+
 typedef struct _entry {
     char *string;
     int line;
     int column;
     Class class;
+    Scope scope;
     struct _typetree *type;
     int size;
     int offset;
