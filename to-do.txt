@@ -4,7 +4,7 @@ clase de semana 8
 Parser
     posicion de los jump (break, continue..)
     no tenemos a[ expr ]
-    
+
 
 Tabla de simbolos
     debug
@@ -16,3 +16,8 @@ tipos
     void cableados en la instruction list
     caso borde en el chequeo de structs
     Impresion de errores en las ramas
+
+
+TO DO
+~ (2 == 3)
+chequeo tipo arreglos como r-value
