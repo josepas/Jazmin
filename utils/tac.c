@@ -210,13 +210,6 @@ void imprimirTAC(Quad* q) {
 static unsigned int t_num = 0;
 
 Addr* genTemp(/*struct _symtable* current, struct _typetree* type*/) {
-    // char nombre[5];
-    // sprintf(nombre, "t%d", t_num);
-    // unsigned long h = hash(nombre);
-    // Entry *e = (Entry*) memory(sizeof(Entry));
-    // e->string = strdup(nombre);
-    // e->next = current->table[h];
-    // current->table[h] = e;
 
     Addr *t = (Addr*) malloc(sizeof(Addr));
     t->addt = TEMP;
@@ -240,7 +233,12 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
     Addr *a1, *a2, *r, *label_temp= NULL;
     switch(ast_node->tag) {
         case N_PROGRAM:
-            astToTac(ast_node->first, list, NULL, NULL, next);
+            // astToTac(ast_node->first, list, NULL, NULL, next);
+            ast_node = ast_node->first;
+            while(ast_node != NULL) {
+                astToTac(ast_node, list, NULL, NULL, NULL);
+                ast_node = ast_node->next;
+            }
             break;
         case N_SEQ:
             ast_node = ast_node->first;
@@ -488,6 +486,20 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                                 generateTAC(TAC_FP, OP_FP, a1, NULL, genTemp())
                             );
                         addDLL(list, temp, 0);
+                        break;
+                }
+            }
+            else {
+                switch(ast_node->u.sym->class) {
+                    case C_VAR:
+                        r = (Addr*)malloc(sizeof(Addr));
+                        r->addt = VAR;
+                        r->u.e = ast_node->u.sym;
+                        temp = newDLLNode(
+                                generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                            );
+                        // addDLL(list, temp, 0);
+                        break;
                 }
             }
             return temp;
