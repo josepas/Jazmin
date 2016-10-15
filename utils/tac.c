@@ -25,6 +25,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case COPY_ADDRESS:
         case COPY_VALUE_POINTED:
         case COPY_TO_POINTED:
+        case TAC_FP:
             q->op = op;
             q->arg1 = arg1;
             q->result = result;
@@ -47,6 +48,10 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case TAC_EXIT:
             q->op = op;
             break;
+        default:
+            printf("ERROR!! NO EXISTE ESTE TAC\n");
+            break;
+
     }
 
     return q;
@@ -90,109 +95,114 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("%s := %s + %s\n", r, a1, a2);
+            printf("   %s := %s + %s\n", r, a1, a2);
             break;
         case INT_MINUS:
         case FLOAT_MINUS:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("%s := %s - %s\n", r, a1, a2);
+            printf("   %s := %s - %s\n", r, a1, a2);
             break;
         case INT_MULT:
         case FLOAT_MULT:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("%s := %s * %s\n", r, a1, a2);
+            printf("   %s := %s * %s\n", r, a1, a2);
             break;
         case INT_DIV:
         case FLOAT_DIV:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("%s := %s / %s\n", r, a1, a2);
+            printf("   %s := %s / %s\n", r, a1, a2);
             break;
         case INT_MOD:
         case FLOAT_MOD:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("%s := %s %% %s\n", r, a1, a2);
+            printf("   %s := %s %% %s\n", r, a1, a2);
             break;
         case INT_UN_MINUS:
         case FLOAT_UN_MINUS:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
-            printf("%s := - %s\n", r, a1);
+            printf("   %s := - %s\n", r, a1);
             break;
         case GOTO:
             addrToString(q->result, r);
-            printf("goto %s\n", r);
+            printf("   goto %s\n", r);
             break;
         case IF_GOTO:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
-            printf("if %s goto %s\n", a1, r);
+            printf("   if %s goto %s\n", a1, r);
             break;
         case IFN_GOTO:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
-            printf("if not %s goto %s\n", a1, r);
+            printf("   if not %s goto %s\n", a1, r);
             break;
         case OP_EQUAL:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s == %s goto %s \n", a1, a2, r);
+            printf("   if %s == %s goto %s \n", a1, a2, r);
             break;
         case OP_UNEQUAL:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s != %s goto %s \n", a1, a2, r);
+            printf("   if %s != %s goto %s \n", a1, a2, r);
             break;
         case OP_LT:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s < %s goto %s \n", a1, a2, r);
+            printf("   if %s < %s goto %s \n", a1, a2, r);
             break;
         case OP_LTOE:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s <= %s goto %s \n", a1, a2, r);
+            printf("   if %s <= %s goto %s \n", a1, a2, r);
             break;
         case OP_GT:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s > %s goto %s \n", a1, a2, r);
+            printf("   if %s > %s goto %s \n", a1, a2, r);
             break;
         case OP_GTOE:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("if %s >= %s goto %s \n", a1, a2, r);
+            printf("   if %s >= %s goto %s \n", a1, a2, r);
             break;
         case ASSIGN:
             addrToString(q->result, r);
             addrToString(q->arg1, a1);
-            printf("%s := %s\n", r, a1);
+            printf("   %s := %s\n", r, a1);
             break;
         case OP_LABEL:
             addrToString(q->arg1, a1);
-            printf("%s:  ", a1);
+            printf("%s:\n", a1);
             break;
         case OP_EXIT:
-            printf("exit\n");
+            printf("   exit\n");
             break;
         case OP_REMOVE:
             printf("OP_REMOVE addt:%d\n", q->result->addt);
             break;
+        case OP_FP:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := FP(%s)\n", r, a1);
+            break;
         default:
-            printf("MAAAAAL\n");
+            printf("Operacion inexistente \"%d\"\n", q->op);
             break;
     }
 }
@@ -230,115 +240,19 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
     Addr *a1, *a2, *r, *label_temp= NULL;
     switch(ast_node->tag) {
         case N_PROGRAM:
-            next = genLabel();
             astToTac(ast_node->first, list, NULL, NULL, next);
-
-            temp = newDLLNode(
-                generateTAC(TAC_EXIT, OP_EXIT,
-                    NULL,
-                    NULL,
-                    NULL
-                    )
-                );
-            addDLL(list, temp, 0);
-
             break;
         case N_SEQ:
             ast_node = ast_node->first;
             while(ast_node != NULL) {
-                if(ast_node->next != NULL)
-                    label_temp = genLabel();
-                else
-                    label_temp = next;
-
                 astToTac(ast_node, list, NULL, NULL, label_temp);
-
-                temp = newDLLNode(
-                    generateTAC(TAC_LABEL, OP_LABEL,
-                        label_temp,
-                        NULL,
-                        NULL
-                        )
-                    );
-                addDLL(list, temp, 0);
-
                 ast_node = ast_node->next;
             }
-
             break;
         case N_ASGN:
-            if(ast_node->last->type->kind == T_BOOL) {
-                true = genLabel();
-                false = genLabel();
-                astToTac(ast_node->last, list, true, false, next);
-                temp = newDLLNode(
-                    generateTAC(TAC_LABEL, OP_LABEL,
-                        true,
-                        NULL,
-                        NULL
-                        )
-                    );
-
-                addDLL(list, temp, 0);
-                a1 = (Addr*)malloc(sizeof(Addr));
-                a1->addt = CONST_BOOL;
-                a1->u.b = 1;
-                r = (Addr*)malloc(sizeof(Addr));
-                r->addt = VAR;
-                r->u.e = ast_node->first->u.sym;
-                temp = newDLLNode(
-                    generateTAC(COPY, ASSIGN,
-                        a1,
-                        NULL,
-                        r
-                        )
-                    );
-                addDLL(list, temp, 0);
-                temp = newDLLNode(
-                    generateTAC(JUMP, GOTO,
-                        NULL,
-                        NULL,
-                        next
-                        )
-                    );
-                addDLL(list, temp, 0);
-                temp = newDLLNode(
-                    generateTAC(TAC_LABEL, OP_LABEL,
-                        false,
-                        NULL,
-                        NULL
-                        )
-                    );
-                addDLL(list, temp, 0);
-                a1 = (Addr*)malloc(sizeof(Addr));
-                a1->addt = CONST_BOOL;
-                a1->u.b = 0;
-                temp = newDLLNode(
-                    generateTAC(COPY, ASSIGN,
-                        a1,
-                        NULL,
-                        r
-                        )
-                    );
-                addDLL(list, temp, 0);
-            }
-            else {
-                last = astToTac(ast_node->last, list, NULL, NULL, next);
-                r = (Addr*)malloc(sizeof(Addr));
-                r->addt = VAR;
-                r->u.e = ast_node->first->u.sym;
-                temp = newDLLNode(
-                    generateTAC(COPY, ASSIGN,
-                        ((Quad*)last->data)->result,
-                        NULL,
-                        r
-                        )
-                    );
-                addDLL(list, temp, 0);
-            }
+            last = astToTac(ast_node->last, list, NULL, NULL, next);
             break;
         case N_UN_OP:
-
             switch(ast_node->operation[0]) {
                 case '-':
                     first = astToTac(ast_node->first, list, NULL, NULL, next);
@@ -538,6 +452,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
                 );
+            // printf("==> %d\n", r->u.i);
             return temp;
             break;
         case N_FLOAT:
@@ -561,50 +476,20 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return temp;
             break;
         case N_BOOL:
-            // r = (Addr*)malloc(sizeof(Addr));
-            // r->addt = CONST_BOOL;
-            // r->u.b = ast_node->u.b;
-
-            // temp = newDLLNode(
-            //         generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
-            //     );
-            // return temp;
-            if(ast_node->u.b) {
-                temp = newDLLNode(
-                    generateTAC(JUMP, GOTO,
-                        NULL,
-                        NULL,
-                        true
-                        )
-                    );
-            }
-            else {
-                temp = newDLLNode(
-                    generateTAC(JUMP, GOTO,
-                        NULL,
-                        NULL,
-                        false
-                        )
-                    );
-            }
-            addDLL(list, temp, 0);
-            r = (Addr*)malloc(sizeof(Addr));
-            r->addt = CONST_BOOL;
-            r->u.b = ast_node->u.b;
-
-            temp = newDLLNode(
-                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
-                );
-            return temp;
             break;
         case N_VAR:
-            r = (Addr*)malloc(sizeof(Addr));
-            r->addt = VAR;
-            r->u.e = ast_node->u.sym;
-
-            temp = newDLLNode(
-                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
-                );
+            if(ast_node->u.sym->scope == LOCAL) {
+                switch(ast_node->u.sym->class) {
+                    case C_VAR:
+                        a1 = (Addr*)malloc(sizeof(Addr));
+                        a1->addt = CONST_INT;
+                        a1->u.i = ast_node->u.sym->offset;
+                        temp = newDLLNode(
+                                generateTAC(TAC_FP, OP_FP, a1, NULL, genTemp())
+                            );
+                        addDLL(list, temp, 0);
+                }
+            }
             return temp;
             break;
     }
