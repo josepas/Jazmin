@@ -328,7 +328,7 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_BIN_OP) : {
-            printf("%*sBIN_EXPR:\n", level*3, " ");
+            printf("%*sBIN_EXPR:\n", level++*3, " ");
 
             printf("%*soperator: %s.\n", level*3, " ", who->operation);
 
@@ -369,9 +369,20 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_VAR) : {
-            printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
-            dumpType(who->u.sym->type);
-            printf("\n");
+            if(who->u.sym->type->kind == T_ARRAY && who->first) {
+                printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
+                AST *temp = who->first;
+                while(temp != NULL) {
+                    printf("[%d]", temp->u.i);
+                    temp = temp->next;
+                }
+                printf("\n");
+            }
+            else {
+                printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
+                dumpType(who->u.sym->type);
+                printf("\n");
+            }
             break;
         }
         case (N_RETURN) : {
@@ -384,7 +395,7 @@ void dumpAST(AST* who, int level) {
         }
 
         case (N_ASGN) : {
-            printf("%*sASSIGN:\n", level*3, " ");
+            printf("%*sASSIGN:\n", level++*3, " ");
 
             printf("%*soperator: %s\n", level*3, " ", who->operation);
 
@@ -396,7 +407,7 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_FOR) : {
-            printf("%*sFOR:\n", level*3, " ");
+            printf("%*sFOR:\n", level++*3, " ");
 
             printf("%*sstart:\n", level*3, " ");
             dumpAST(who->first, level + 1);

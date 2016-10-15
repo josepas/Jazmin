@@ -424,6 +424,22 @@ dimension
         }
     ;
 
+dims_expr
+    : '[' expr ']'
+        {
+            $2->type = check_type_int($2->type);
+            $2->next = NULL;
+            $<node>$ = $2;
+        }
+    | dims_expr '[' expr ']'
+        {
+            $3->type = check_type_int($3->type);
+            $3->next = NULL;
+            $<node>1->next = $3;
+            $<node>$ = $<node>1;
+        }
+    ;
+
 type
     : HOLLOW    { $<type>$ = lookupTable(current, "hollow", 0)->type; }
     | INT       { $<type>$ = lookupTable(current, "int", 0)->type; }
@@ -474,7 +490,7 @@ assignment // refactorizar
                 check_type_assign(temp->type, $4->type)
                 );
         }
-    | ID dimension
+    | ID dims_expr
         {
             check_array_dims( lookupTable(current, $1, 0)->type, first );
         }
@@ -485,6 +501,7 @@ assignment // refactorizar
                 newAssignNode(newVarNode(temp), "=", $5),
                 check_type_assign(get_array_type(temp->type), $5->type)
                 );
+            $<node>$->first->first = $<node>2;
         }
     | ID
         {
@@ -602,10 +619,12 @@ expr
         if((temp = check_var($1)))
             $$ = newVarNode(temp);
         }
-    | ID dimension
+    | ID dims_expr
         {
-            if((temp = check_var($1)))
+            if((temp = check_var($1))) {
                 $$ = newVarNode(temp);
+                $$->first = $<node>2;
+            }
         }
     /* | point_d ID { check_var($2); } */
     | ID
@@ -1140,9 +1159,19 @@ Typetree *check_type_arit(Typetree *t1, Typetree *t2) {
         return t1;
     if(t2->kind == T_TYPE_ERROR)
         return t2;
-    if(t1->kind == t2->kind) {
-        if(t1->kind == T_INT || t1->kind == T_FLOAT)
-            return t1;
+
+    Typetree *temp1 = t1;
+    if(temp1->kind == T_ARRAY)
+        temp1 = get_array_type(temp1);
+
+    Typetree *temp2 = t2;
+    if(temp2->kind == T_ARRAY)
+        temp2 = get_array_type(temp2);
+
+
+    if(temp1->kind == temp2->kind) {
+        if(temp1->kind == T_INT || temp1->kind == T_FLOAT)
+            return temp1;
         else {
             error = createType(T_TYPE_ERROR);
             has_error = 1;
@@ -1292,13 +1321,16 @@ Typetree* check_type_assign(Typetree *t1, Typetree *t2) {
         fprintf(stderr, "Error: asignación invalida\n");
         return t2;
     } else {
-        if (t1->kind != t2->kind) {
+        Typetree *temp = t2;
+        if (temp->kind == T_ARRAY)
+            temp = get_array_type(t2);
+        if (t1->kind != temp->kind) {
             // falta arreglar aqui
-            printf("Error: asignación: se espera un ");
+            printf("Error: asignación: se espera un \"");
             dumpType(t1);
-            printf(" y se recibió un ");
-            dumpType(t2);
-            printf("\n");
+            printf("\" y se recibió un \"");
+            dumpType(temp);
+            printf("\"\n");
             return createType(T_TYPE_ERROR);
         }
     }
