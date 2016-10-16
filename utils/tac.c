@@ -1,5 +1,29 @@
 #include "tac.h"
 
+Addr* generateAddr(AddrType addt, void *value) {
+    Addr *address = (Addr*)malloc(sizeof(Addr));
+    address->addt = addt;
+    switch(addt) {
+        case CONST_INT:
+            address->u.i = *(int*)value;
+            break;
+        case CONST_FLOAT:
+            address->u.f = *(float*)value;
+            break;
+        case CONST_CHAR:
+            address->u.c = *(char*)value;
+            break;
+        case VAR:
+            address->u.e = (Entry*)value;
+            break;
+        default:
+            printf("Error en \"generateAddr\"\n");
+            exit(-1);
+            break;
+    }
+    return address;
+}
+
 Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *result) {
     Quad *q = (Quad*) memory(sizeof(Quad));
     switch(tac) {
@@ -193,13 +217,25 @@ void imprimirTAC(Quad* q) {
         case OP_EXIT:
             printf("   exit\n");
             break;
-        case OP_REMOVE:
-            printf("OP_REMOVE addt:%d\n", q->result->addt);
-            break;
         case OP_FP:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
             printf("   %s := FP(%s)\n", r, a1);
+            break;
+        case ASSIGN_FROM_ARRAY:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            addrToString(q->result, r);
+            printf("   %s := %s[%s]\n", r, a1, a2);
+            break;
+        case ASSIGN_TO_ARRAY:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            addrToString(q->result, r);
+            printf("   %s[%s] := %s\n", r, a1, a2);
+            break;
+        case OP_REMOVE:
+            printf("OP_REMOVE addt:%d\n", q->result->addt);
             break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
@@ -228,7 +264,11 @@ Addr* genLabel() {
     return l;
 }
 
+static LRValues lrvalue = NONE;
+
 Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next) {
+    AST *ast_aux;
+    Typetree *type_aux;
     Node *temp, *first, *last;
     Addr *a1, *a2, *r, *label_temp= NULL;
     switch(ast_node->tag) {
@@ -248,7 +288,28 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             }
             break;
         case N_ASGN:
+            lrvalue = R_VALUE;
             last = astToTac(ast_node->last, list, NULL, NULL, next);
+            lrvalue = L_VALUE;
+            first = astToTac(ast_node->first, list, NULL, NULL, NULL);
+            lrvalue = NONE;
+
+            switch(ast_node->first->type->kind) {
+                case T_ARRAY:
+                    if(ast_node->first->first != NULL) {
+                        r = generateAddr(VAR, ast_node->first->u.sym);
+                        temp = def_asgn_array(r);
+                        addDLL(list, temp, 0);
+                    }
+                    else {
+                        /* Inicializacion completa */
+                    }
+                    break;
+                default:    // Variable normal
+                    break;
+            }
+
+            return temp;
             break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
@@ -443,9 +504,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             break;
         case N_INT:
-            r = (Addr*)malloc(sizeof(Addr));
-            r->addt = CONST_INT;
-            r->u.i = ast_node->u.i;
+            r = generateAddr(CONST_INT, &(ast_node->u.i));
 
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
@@ -454,9 +513,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return temp;
             break;
         case N_FLOAT:
-            r = (Addr*)malloc(sizeof(Addr));
-            r->addt = CONST_FLOAT;
-            r->u.f = ast_node->u.f;
+            r = generateAddr(CONST_FLOAT, &(ast_node->u.f));
 
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
@@ -464,9 +521,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return temp;
             break;
         case N_CHAR:
-            r = (Addr*)malloc(sizeof(Addr));
-            r->addt = CONST_CHAR;
-            r->u.c = ast_node->u.c;
+            r = generateAddr(CONST_CHAR, &(ast_node->u.c));
 
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
@@ -477,11 +532,9 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_VAR:
             if(ast_node->u.sym->scope == LOCAL) {
-                switch(ast_node->u.sym->class) {
-                    case C_VAR:
-                        a1 = (Addr*)malloc(sizeof(Addr));
-                        a1->addt = CONST_INT;
-                        a1->u.i = ast_node->u.sym->offset;
+                switch(ast_node->type->kind) {
+                    default:    // Es variable normal
+                        a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
                         temp = newDLLNode(
                                 generateTAC(TAC_FP, OP_FP, a1, NULL, genTemp())
                             );
@@ -490,11 +543,53 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 }
             }
             else {
-                switch(ast_node->u.sym->class) {
-                    case C_VAR:
-                        r = (Addr*)malloc(sizeof(Addr));
-                        r->addt = VAR;
-                        r->u.e = ast_node->u.sym;
+                switch(ast_node->type->kind) {
+                    case T_ARRAY:
+                        ast_aux = ast_node->first;
+                        type_aux = ast_node->type->u.a.t;
+                        int dimensions = 0;
+                        Node *temp_aux;
+
+                        while(ast_aux) {
+                            temp_aux = temp;
+                            ++dimensions;
+
+                            first = astToTac(ast_aux, list, NULL, NULL, NULL);
+
+                            r = generateAddr(CONST_INT, &(type_aux->size));
+                            last = newDLLNode(
+                                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                                );
+
+                            temp = def_bin_op(INT_MULT);
+                            addDLL(list, temp, 0);
+
+                            if(dimensions > 1) {
+                                first = temp_aux;
+                                last = temp;
+                                temp = def_bin_op(INT_PLUS);
+                                addDLL(list, temp, 0);
+                            }
+
+                            ast_aux = ast_aux->next;
+                            if(type_aux->kind == T_ARRAY)
+                                type_aux = type_aux->u.a.t;
+                        }
+
+                        if(lrvalue == R_VALUE) {
+                            a1 = generateAddr(VAR, ast_node->u.sym);
+                            temp = newDLLNode(
+                                    generateTAC(COPY_FROM_INDEX, ASSIGN_FROM_ARRAY, a1, ((Quad*)temp->data)->result, genTemp())
+                                );
+                            addDLL(list, temp, 0);
+                        }
+                        else if(lrvalue == L_VALUE) {
+
+                        }
+
+                        break;
+                    default:    // Es variable normal
+                        r = generateAddr(VAR, ast_node->u.sym);
                         temp = newDLLNode(
                                 generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
                             );
