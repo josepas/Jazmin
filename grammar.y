@@ -70,6 +70,8 @@ Typetree* check_program(Typetree*);
 
 AST* set_node_type(AST*, Typetree*);
 void set_subrout_ast(char*, AST*);
+
+void set_last_dims_expr(AST*, AST*);
 %}
 %locations
 %union {
@@ -434,8 +436,7 @@ dims_expr
     | dims_expr '[' expr ']'
         {
             $3->type = check_type_int($3->type);
-            $3->next = NULL;
-            $<node>1->next = $3;
+            set_last_dims_expr($<node>1, $3);
             $<node>$ = $<node>1;
         }
     ;
@@ -929,16 +930,24 @@ void declare_var(char *id, Typetree *type) {
     }
 }
 
+int get_and_set_array_size(Typetree *type) {
+    if(type->kind == T_ARRAY)
+        type->size = get_and_set_array_size(type->u.a.t) * (type->u.a.high - type->u.a.low + 1);
+
+    return type->size;
+}
+
 void declare_array(char *id, Typetree *type) {
     Entry *aux;
     if((aux = lookupTable(current, id, 1)) == NULL) {
-        Typetree *temp = type;
+        //Typetree *temp = type;
         int size = 1;
-        while(temp->kind == T_ARRAY) {
+        /*while(temp->kind == T_ARRAY) {
             size = size * (temp->u.a.high - temp->u.a.low + 1);
             temp = temp->u.a.t;
         }
-        size = size * temp->size;
+        */
+        size = get_and_set_array_size(type);
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_ARRAY, type, size, offset);
         offset += size;
     }
@@ -1431,4 +1440,13 @@ void set_subrout_ast(char *id, AST *block) {
     if((temp = lookupTable(current, id, 0)) != NULL) {
         temp->ast = newFuncNode(temp, block);
     }
+}
+
+void set_last_dims_expr(AST* node, AST* new_node) {
+    while(node->next != NULL)
+        node = node->next;
+
+    new_node->next = NULL;
+    node->next = new_node;
+
 }
