@@ -22,4 +22,5 @@ TO DO
 ~ (2 == 3)
 replantear como saber si global o no
 peos con apuntadores segfault
-limites arreglos
+limites arreglos y size del tipo n-dimensional
+inicializacion completa del arreglo
