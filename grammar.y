@@ -743,6 +743,8 @@ expr
                     newBinOp($1,"==",$3),
                     check_type($1->type, $3->type)
                 );
+            if($$->tag != N_ERROR && $$->type->kind != T_BOOL)
+                $$->type = lookupTable(current, "bool", 0)->type;
         }
     | expr UNEQUAL expr
         {
@@ -750,6 +752,8 @@ expr
                     newBinOp($1,"!=",$3),
                     check_type($1->type, $3->type)
                 );
+            if($$->tag != N_ERROR && $$->type->kind != T_BOOL)
+                $$->type = lookupTable(current, "bool", 0)->type;
         }
     ;
 
