@@ -8,6 +8,7 @@
 #define def_asgn(X,Y) newDLLNode(generateTAC(X, Y, ((Quad*)last->data)->result, NULL, ((Quad*)first->data)->result))
 #define def_exit() newDLLNode(generateTAC(TAC_EXIT, OP_EXIT, NULL, NULL, NULL))
 #define def_goto(X) newDLLNode(generateTAC(JUMP, GOTO, NULL, NULL, X))
+#define def_comment() newDLLNode(generateTAC(TAC_COMMENT, OP_COMMENT, NULL, NULL, NULL))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
