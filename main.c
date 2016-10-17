@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
         }
         if (has_error == 0) {
             DLinkedList *list = newDoublyLinkList();
-            astToTac(tree, list, NULL, NULL, NULL);
+            astToTac(tree, list, NULL, NULL, NULL, N);
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {
                 // printf("==> %d\n", ((Quad*)aux->data)->op);

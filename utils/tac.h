@@ -6,6 +6,8 @@
 #define def_asgn_array(X) newDLLNode(generateTAC(COPY_TO_INDEX, ASSIGN_TO_ARRAY, ((Quad*)first->data)->result, ((Quad*)last->data)->result, X))
 #define def_asgn_fp(X) newDLLNode(generateTAC(TAC_FP, OP_TO_FP, ((Quad*)last->data)->result, NULL, X))
 #define def_asgn(X,Y) newDLLNode(generateTAC(X, Y, ((Quad*)last->data)->result, NULL, ((Quad*)first->data)->result))
+#define def_exit() newDLLNode(generateTAC(TAC_EXIT, OP_EXIT, NULL, NULL, NULL))
+#define def_goto(X) newDLLNode(generateTAC(JUMP, GOTO, NULL, NULL, X))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -32,6 +34,8 @@ typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
             LABEL, VAR, TEMP} AddrType;
 
 typedef enum {L_VALUE, R_VALUE, NONE} LRValues;
+
+typedef enum {E, B, N} Context;
 
 typedef struct _addr {
     AddrType addt;
@@ -69,6 +73,6 @@ Addr* genTemp(/*struct _symtable*, struct _typetree**/);
 
 Addr* genLabel();
 
-Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*);
+Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*, Context);
 
 #endif
