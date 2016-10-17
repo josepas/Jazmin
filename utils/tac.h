@@ -4,6 +4,8 @@
 #define def_un_op(X) newDLLNode(generateTAC(UNARY_OP, X, ((Quad*)first->data)->result, NULL, genTemp()))
 #define def_label(X) newDLLNode(generateTAC(TAC_LABEL, OP_LABEL, X, NULL, NULL))
 #define def_asgn_array(X) newDLLNode(generateTAC(COPY_TO_INDEX, ASSIGN_TO_ARRAY, ((Quad*)first->data)->result, ((Quad*)last->data)->result, X))
+#define def_asgn_fp(X) newDLLNode(generateTAC(TAC_FP, OP_TO_FP, ((Quad*)last->data)->result, NULL, X))
+#define def_asgn(X,Y) newDLLNode(generateTAC(X, Y, ((Quad*)last->data)->result, NULL, ((Quad*)first->data)->result))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -23,7 +25,8 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             OP_EQUAL, OP_UNEQUAL, OP_LT, OP_LTOE, OP_GT, OP_GTOE,   //15..20
             ASSIGN, ASSIGN_FROM_ARRAY, ASSIGN_TO_ARRAY, //21..23
             ASSIGN_FROM_PTR, ASSIGN_TO_PTR, //24..25
-            OP_LABEL, OP_COMMENT, OP_REMOVE, OP_EXIT , OP_FP} Operation;    //26..30
+            OP_LABEL, OP_COMMENT, OP_REMOVE, OP_EXIT,   //26..29
+            OP_FROM_FP, OP_TO_FP} Operation;    //30..31
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
             LABEL, VAR, TEMP} AddrType;

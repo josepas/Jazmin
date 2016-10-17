@@ -217,10 +217,15 @@ void imprimirTAC(Quad* q) {
         case OP_EXIT:
             printf("   exit\n");
             break;
-        case OP_FP:
+        case OP_FROM_FP:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
             printf("   %s := FP(%s)\n", r, a1);
+            break;
+        case OP_TO_FP:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   FP(%s) := %s\n", r, a1);
             break;
         case ASSIGN_FROM_ARRAY:
             addrToString(q->arg1, a1);
@@ -306,6 +311,11 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     }
                     break;
                 default:    // Variable normal
+                    if(((Quad*)first->data)->op == OP_FROM_FP)
+                        temp = def_asgn(TAC_FP, OP_TO_FP);
+                    else
+                        temp = def_asgn(COPY, ASSIGN);
+                    addDLL(list, temp, 0);
                     break;
             }
 
@@ -536,7 +546,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     default:    // Es variable normal
                         a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
                         temp = newDLLNode(
-                                generateTAC(TAC_FP, OP_FP, a1, NULL, genTemp())
+                                generateTAC(TAC_FP, OP_FROM_FP, a1, NULL, genTemp())
                             );
                         addDLL(list, temp, 0);
                         break;
