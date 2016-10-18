@@ -53,6 +53,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case COPY_VALUE_POINTED:
         case COPY_TO_POINTED:
         case TAC_FP:
+        case TAC_GP:
             q->op = op;
             q->arg1 = arg1;
             q->result = result;
@@ -233,6 +234,16 @@ void imprimirTAC(Quad* q) {
             addrToString(q->result, r);
             printf("   FP(%s) := %s\n", r, a1);
             break;
+        case OP_FROM_GP:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := GP(%s)\n", r, a1);
+            break;
+        case OP_TO_GP:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   GP(%s) := %s\n", r, a1);
+            break;
         case ASSIGN_FROM_ARRAY:
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
@@ -367,6 +378,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 default:    // Variable normal
                     if(((Quad*)first->data)->op == OP_FROM_FP)
                         temp = def_asgn(TAC_FP, OP_TO_FP);
+                    else if(((Quad*)first->data)->op == OP_FROM_GP)
+                        temp = def_asgn(TAC_FP, OP_TO_GP);
                     else
                         temp = def_asgn(COPY, ASSIGN);
                     addDLL(list, temp, 0);
@@ -728,12 +741,20 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         }
 
                         break;
+                    // case T_STRUCT:
+                    // case T_CONF:
+                        //break;
                     default:    // Es variable normal
-                        r = generateAddr(VAR, ast_node->u.sym);
+                        // r = generateAddr(VAR, ast_node->u.sym);
+                        // temp = newDLLNode(
+                        //         generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                        //     );
+                        a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
                         temp = newDLLNode(
-                                generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                                generateTAC(TAC_GP, OP_FROM_GP, a1, NULL, genTemp())
                             );
-                        // addDLL(list, temp, 0);
+                        addDLL(list, temp, 0);
+
                         break;
                 }
             }
