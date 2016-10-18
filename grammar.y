@@ -152,7 +152,7 @@ jaxmin
                 );
             //dumpAST(tree,1);
         }
-    | opt_nls { offstack = createStack(); } PROGRAM block opt_nls
+    | opt_nls { printf("debug"); offstack = createStack(); } PROGRAM block opt_nls
         {
             tree = set_node_type(
                 newProgramNode(NULL, $<node>4),
@@ -322,7 +322,7 @@ declaration
                     );
             }
         }
-    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<type>$ = lookupTable(current, $3, 1)->type; }
+    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<node>$ = newPtrNode( lookupTable(current, $3, 1) ); }
     /* pointer to array y vice versa */
     | s_c SC_ID
         {

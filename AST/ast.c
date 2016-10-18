@@ -217,7 +217,14 @@ AST* newBreakNode() {
 }
 
 
+AST* newPtrNode(Entry* e) {
+   
+    AST* node = newAST();
+    node->tag = N_PTR;
 
+    node->type = e->type;
+    return node;
+}
 
 
 AST* newVarNode(Entry *sym) {
