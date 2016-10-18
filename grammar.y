@@ -152,7 +152,7 @@ jaxmin
                 );
             //dumpAST(tree,1);
         }
-    | opt_nls { printf("debug"); offstack = createStack(); } PROGRAM block opt_nls
+    | opt_nls {offstack = createStack(); } PROGRAM block opt_nls
         {
             tree = set_node_type(
                 newProgramNode(NULL, $<node>4),
@@ -1075,6 +1075,20 @@ Typetree* get_array_type(Typetree* t) {
     }
     return get_array_type(t->u.a.t);
 }
+
+Typetree* get_pointer_type(Typetree* t) {
+
+    if (t == NULL) {
+        fprintf(stderr, "Fallo miserable en el chequeo de arreglos\n");
+    }
+
+    if (t->kind != T_POINTER) {
+        return t;
+    }
+    return get_pointer_type(t->u.p.t);
+}
+
+
 
 int count_array_dim(Typetree* t) {
     if (t->kind != T_ARRAY) {
