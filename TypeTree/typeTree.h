@@ -3,9 +3,9 @@
 #include "../SymbolTable/symbolTable.h"
 #include "../utils/utils.h"
 
-typedef enum {T_INT, T_FLOAT, T_BOOL, T_CHAR, T_HOLLOW,
-                T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_CONF, T_STRUCT,
-                T_TYPE, T_TYPE_ERROR} Kind;
+typedef enum {T_INT, T_FLOAT, T_BOOL, T_CHAR, T_HOLLOW, //0..4
+                T_FUNC, T_PROC, T_POINTER, T_ARRAY, T_CONF, T_STRUCT,   //5..10
+                T_TYPE, T_TYPE_ERROR} Kind; //11..12
 
 typedef struct _typeNode {
     struct _typetree *t;
@@ -36,7 +36,7 @@ typedef struct _typetree {
             struct _typetree *range;
         } fun;
         struct {
-            ArgList *dom; 
+            ArgList *dom;
             // *range puede que convenga fucionar con func
         } proc;
         struct {
