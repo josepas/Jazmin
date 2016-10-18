@@ -157,8 +157,16 @@ jaxmin
                 );
             //dumpAST(tree,1);
         }
-    | opt_nls {offstack = createStack(); } PROGRAM block opt_nls
+    | opt_nls
         {
+            offstack = createStack();
+            current = enterScope(current);
+        }
+    PROGRAM block opt_nls
+        {
+            current->size = offset;
+            offset = pop(offstack);
+            current = exitScope(current);
             tree = set_node_type(
                 newProgramNode(NULL, $<node>4),
                 check_program($<node>4)

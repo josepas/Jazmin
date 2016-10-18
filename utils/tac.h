@@ -66,6 +66,8 @@ Addr* genereateAddr(AddrType, void*);
 
 Quad* generateTAC(TACType, Operation, Addr* , Addr*, Addr*);
 
+Node* generateNodeVar(struct _dlinkedlist*, AST*, Scope);
+
 void addrToString(Addr*, char*);
 
 void imprimirTAC(Quad*);

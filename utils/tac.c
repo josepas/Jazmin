@@ -684,81 +684,111 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return temp;
             break;
         case N_VAR:
-            if(ast_node->u.sym->scope == LOCAL) {
-                switch(ast_node->type->kind) {
-                    default:    // Es variable normal
-                        a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
-                        temp = newDLLNode(
-                                generateTAC(TAC_FP, OP_FROM_FP, a1, NULL, genTemp())
-                            );
-                        addDLL(list, temp, 0);
-                        break;
-                }
-            }
-            else {
-                switch(ast_node->type->kind) {
-                    case T_ARRAY:
-                        ast_aux = ast_node->first;
-                        type_aux = ast_node->type->u.a.t;
-                        int dimensions = 0;
-                        Node *temp_aux;
-
-                        while(ast_aux) {
-                            temp_aux = temp;
-                            ++dimensions;
-
-                            first = astToTac(ast_aux, list, NULL, NULL, NULL, context);
-
-                            r = generateAddr(CONST_INT, &(type_aux->size));
-                            last = newDLLNode(
-                                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
-                                );
-
-                            temp = def_bin_op(INT_MULT);
-                            addDLL(list, temp, 0);
-
-                            if(dimensions > 1) {
-                                first = temp_aux;
-                                last = temp;
-                                temp = def_bin_op(INT_PLUS);
-                                addDLL(list, temp, 0);
-                            }
-
-                            ast_aux = ast_aux->next;
-                            if(type_aux->kind == T_ARRAY)
-                                type_aux = type_aux->u.a.t;
-                        }
-
-                        if(lrvalue == R_VALUE) {
-                            a1 = generateAddr(VAR, ast_node->u.sym);
-                            temp = newDLLNode(
-                                    generateTAC(COPY_FROM_INDEX, ASSIGN_FROM_ARRAY, a1, ((Quad*)temp->data)->result, genTemp())
-                                );
-                            addDLL(list, temp, 0);
-                        }
-                        else if(lrvalue == L_VALUE) {
-
-                        }
-
-                        break;
-                    // case T_STRUCT:
-                    // case T_CONF:
-                        //break;
-                    default:    // Es variable normal
-                        // r = generateAddr(VAR, ast_node->u.sym);
-                        // temp = newDLLNode(
-                        //         generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
-                        //     );
-                        a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
-                        temp = newDLLNode(
-                                generateTAC(TAC_GP, OP_FROM_GP, a1, NULL, genTemp())
-                            );
-                        addDLL(list, temp, 0);
-
-                        break;
-                }
-            }
-            return temp;
+            return generateNodeVar(list, ast_node, ast_node->u.sym->scope);
             break;
     }
+}
+
+Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope) {
+    AST *ast_aux;
+    Node *first, *last, *temp;
+    Typetree *type_aux;
+    Addr *a1, *a2, *r;
+    Context context;
+    switch(ast_node->type->kind) {
+        case T_ARRAY:
+            ast_aux = ast_node->first;
+            type_aux = ast_node->type->u.a.t;
+            int dimensions = 0;
+            Node *temp_aux;
+
+            while(ast_aux) {
+                temp_aux = temp;
+                ++dimensions;
+
+                first = astToTac(ast_aux, list, NULL, NULL, NULL, context);
+
+                r = generateAddr(CONST_INT, &(type_aux->size));
+                last = newDLLNode(
+                        generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                    );
+
+                temp = def_bin_op(INT_MULT);
+                addDLL(list, temp, 0);
+
+                if(dimensions > 1) {
+                    // Esto es para poder usar el macro
+                    first = temp_aux;
+                    last = temp;
+                    temp = def_bin_op(INT_PLUS);
+                    addDLL(list, temp, 0);
+                }
+
+                ast_aux = ast_aux->next;
+                if(type_aux->kind == T_ARRAY)
+                    type_aux = type_aux->u.a.t;
+            }
+
+            if(lrvalue == R_VALUE) {
+                a1 = generateAddr(VAR, ast_node->u.sym);
+                temp = newDLLNode(
+                        generateTAC(COPY_FROM_INDEX, ASSIGN_FROM_ARRAY, a1, ((Quad*)temp->data)->result, genTemp())
+                    );
+                addDLL(list, temp, 0);
+            }
+            else if(lrvalue == L_VALUE) {
+
+            }
+            break;
+        case T_STRUCT:
+        case T_CONF:
+            first = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, generateAddr(CONST_INT, &(ast_node->u.sym->offset)))
+                );
+            last = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, generateAddr(CONST_INT, &(ast_node->first->u.sym->offset)))
+                );
+            temp = def_bin_op(INT_PLUS);
+            addDLL(list, temp, 0);
+
+            ast_node = ast_node->first->first;
+
+            while(ast_node) {
+                first = last;
+                last = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, generateAddr(CONST_INT, &(ast_node->u.sym->offset)))
+                );
+                temp = def_bin_op(INT_PLUS);
+                addDLL(list, temp, 0);
+
+                ast_node = ast_node->first;
+            }
+            if(scope == GLOBAL) {
+                temp = newDLLNode(
+                        generateTAC(TAC_GP, OP_FROM_GP, ((Quad*)temp->data)->result, NULL, genTemp())
+                    );
+            }
+            else {
+                temp = newDLLNode(
+                        generateTAC(TAC_FP, OP_FROM_FP, ((Quad*)temp->data)->result, NULL, genTemp())
+                    );
+            }
+            addDLL(list, temp, 0);
+            break;
+        default:    // Es variable normal
+            a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
+            if(scope == GLOBAL) {
+                temp = newDLLNode(
+                        generateTAC(TAC_GP, OP_FROM_GP, a1, NULL, genTemp())
+                    );
+            }
+            else {
+                temp = newDLLNode(
+                        generateTAC(TAC_FP, OP_FROM_FP, a1, NULL, genTemp())
+                    );
+            }
+            addDLL(list, temp, 0);
+            break;
+    }
+    return temp;
 }
