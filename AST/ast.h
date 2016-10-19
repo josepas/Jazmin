@@ -71,7 +71,7 @@ void destroyAST(AST*);
 
 AST* newBaseTypeNode(Kind);
 AST* newFuncNode(Entry*, AST*);
-AST* newFunCallNode();
+AST* newFunCallNode(Entry*);
 AST* newProgramNode(AST*, AST*);
 
 #endif

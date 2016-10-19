@@ -495,7 +495,7 @@ void dumpAST(AST* who, int level) {
         case (N_FCALL) : {
             printf("%*sFUN-CALL:\n", level*3, " ");
             printf("%*s", level*3, " ");
-            dumpType(who->type);
+            dumpType(who->u.sym->type);
             printf("\n");
             dumpAST(who->first, level);
             break;
@@ -560,9 +560,10 @@ AST* newFuncNode(Entry *entry, AST* block) {
     return node;
 }
 
-AST* newFunCallNode() {
+AST* newFunCallNode(Entry *entry) {
     AST* node = newAST();
     node->tag = N_FCALL;
+    node->u.sym = entry;
 
     return node;
 }

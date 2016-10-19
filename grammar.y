@@ -895,14 +895,14 @@ sub_call
     ;
 
 arguments
-    : /* lambda */  { $<node>$ = newFunCallNode(); }
+    : /* lambda */  { $<node>$ = newFunCallNode(lookupTable(current, $<str>-1, 0)); }
     | args_list     { $<node>$ = $<node>1; }
     ;
 
 args_list
     : expr
         {
-            $<node>$ = addASTChild( newFunCallNode(), $<node>1);
+            $<node>$ = addASTChild( newFunCallNode(lookupTable(current, $<str>-2, 0)), $<node>1);
         }
     | args_list ',' expr
         {
