@@ -290,6 +290,7 @@ Addr* genLabel() {
 }
 
 static LRValues lrvalue = NONE;
+static Operation op;
 static int true_value = 1;
 static int false_value = 0;
 
@@ -321,15 +322,25 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
         case N_SEQ:
             ast_node = ast_node->first;
             while(ast_node != NULL) {
-                addDLL(list, def_comment(), 0);
-                astToTac(ast_node, list, next, next, next, context);
-                ast_node = ast_node->next;
+                // addDLL(list, def_comment(), 0);
+                // Etiqueta proxima instruccion
+                if(ast_node->next)
+                    next = genLabel();
+
+                temp = astToTac(ast_node, list, NULL, NULL, next, context);
+
+                // Pegamos etiqueta
+                if(ast_node = ast_node->next)
+                    addDLL(list, def_label(next), 0);
             }
+            return temp;
             break;
         case N_ASGN:
             lrvalue = R_VALUE;
-            new_true = genLabel();
-            new_false = genLabel();
+            if(ast_node->last->type->kind == T_BOOL) {
+                new_true = genLabel();
+                new_false = genLabel();
+            }
             last = astToTac(ast_node->last, list, new_true, new_false, next, context);
 
             if(ast_node->last->type->kind == T_BOOL) {
@@ -376,9 +387,9 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     }
                     break;
                 default:    // Variable normal
-                    if(((Quad*)first->data)->op == OP_FROM_FP)
+                    if(ast_node->first->u.sym->scope == LOCAL)
                         temp = def_asgn(TAC_FP, OP_TO_FP);
-                    else if(((Quad*)first->data)->op == OP_FROM_GP)
+                    else if(ast_node->first->u.sym->scope == GLOBAL)
                         temp = def_asgn(TAC_FP, OP_TO_GP);
                     else
                         temp = def_asgn(COPY, ASSIGN);
@@ -387,6 +398,100 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             }
 
             return temp;
+            break;
+        case N_IF:
+            ast_node = ast_node->first;
+
+            while(ast_node && ast_node->next) {
+                // Creacion de etiquetas
+                new_true = genLabel();
+                new_false = next;
+                if(ast_node->next->next != NULL)
+                    new_false = genLabel();
+
+                astToTac(ast_node, list, new_true, new_false, NULL, B);
+
+                addDLL(list, def_label(new_true), 0);
+
+                astToTac(ast_node->next, list, NULL, NULL, next, context);
+
+                if(ast_node->next->next) {
+                    addDLL(list, def_goto(next), 0);
+                    addDLL(list, def_label(new_false), 0);
+                }
+
+                ast_node = ast_node->next->next;
+            }
+
+            // Tengo else ??
+            if(ast_node && ast_node->next == NULL) {
+                astToTac(ast_node, list, NULL, NULL, next, context);
+            }
+
+            break;
+
+        case N_WHILE:
+            label_temp = genLabel();
+            new_true = genLabel();
+
+            addDLL(list, def_label(label_temp), 0);
+
+            astToTac(ast_node->first, list, new_true, next, NULL, context);
+
+            addDLL(list, def_label(new_true), 0);
+
+            astToTac(ast_node->first->next, list, NULL, NULL, label_temp, context);
+
+            addDLL(list, def_goto(label_temp), 0);
+
+            break;
+        case N_FOR:
+            op = OP_LT;
+            ast_aux = ast_node->first->next->next;
+            if(ast_aux->tag == N_INT)
+                op = ast_aux->u.i < 0 ? OP_GT : OP_LT;
+
+
+            lrvalue = R_VALUE;
+            first = astToTac(ast_node->first, list, NULL, NULL, NULL, context);
+
+            lrvalue = R_VALUE;
+            last = astToTac(ast_node->first->next, list, NULL, NULL, NULL, context);
+
+            label_temp = genLabel();
+            addDLL(list, def_label(label_temp), 0);
+
+            new_true = genLabel();
+
+            temp = newDLLNode(
+                        generateTAC(IF_RELOP_JUMP, op,
+                            ((Quad*)first->data)->result,
+                            ((Quad*)last->data)->result,
+                            new_true
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            addDLL(list, def_goto(next), 0);
+
+            addDLL(list, def_label(new_true), 0);
+
+            astToTac(ast_node->first->next->next, list, NULL, NULL, NULL, context);
+
+            Addr *a2 = (Addr*)malloc(sizeof(Addr));
+            a2->addt = CONST_INT;
+            a2->u.i = ast_aux->tag == N_INT ? ast_aux->u.i : 1;
+            temp = newDLLNode(
+                        generateTAC(BIN_OP, INT_PLUS,
+                            ((Quad*)first->data)->result,
+                            a2,
+                            ((Quad*)first->data)->result
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            addDLL(list, def_goto(label_temp), 0);
+
             break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
@@ -459,7 +564,6 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 case '\\':
                     if(ast_node->operation[1] == '/') {
                         new_false = genLabel();
-                        printf("--->L%d\n", new_false->u.l);
                         astToTac(ast_node->first, list, true, new_false, next, B);
                         temp = def_label(new_false);
                         addDLL(list, temp, 0);
@@ -649,7 +753,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
                 );
-            // printf("==> %d\n", r->u.i);
+            // printf("aquii\n");
             return temp;
             break;
         case N_FLOAT:
@@ -778,16 +882,31 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope) {
         default:    // Es variable normal
             a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
             if(scope == GLOBAL) {
-                temp = newDLLNode(
-                        generateTAC(TAC_GP, OP_FROM_GP, a1, NULL, genTemp())
-                    );
+                if(lrvalue == R_VALUE) {
+                    temp = newDLLNode(
+                            generateTAC(TAC_GP, OP_FROM_GP, a1, NULL, genTemp())
+                        );
+                    addDLL(list, temp, 0);
+                }
+                else {
+                    temp = newDLLNode(
+                            generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, a1)
+                        );
+                }
             }
             else {
-                temp = newDLLNode(
-                        generateTAC(TAC_FP, OP_FROM_FP, a1, NULL, genTemp())
-                    );
+                if(lrvalue == R_VALUE) {
+                    temp = newDLLNode(
+                            generateTAC(TAC_FP, OP_FROM_FP, a1, NULL, genTemp())
+                        );
+                    addDLL(list, temp, 0);
+                }
+                else {
+                    temp = newDLLNode(
+                            generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, a1)
+                        );
+                }
             }
-            addDLL(list, temp, 0);
             break;
     }
     return temp;
