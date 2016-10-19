@@ -321,15 +321,25 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
         case N_SEQ:
             ast_node = ast_node->first;
             while(ast_node != NULL) {
-                addDLL(list, def_comment(), 0);
-                astToTac(ast_node, list, next, next, next, context);
-                ast_node = ast_node->next;
+                // addDLL(list, def_comment(), 0);
+                // Etiqueta proxima instruccion
+                if(ast_node->next)
+                    next = genLabel();
+
+                astToTac(ast_node, list, NULL, NULL, next, context);
+
+                // Pegamos etiqueta
+                if(ast_node = ast_node->next)
+                    addDLL(list, def_label(next), 0);
             }
+            return NULL;
             break;
         case N_ASGN:
             lrvalue = R_VALUE;
-            new_true = genLabel();
-            new_false = genLabel();
+            if(ast_node->last->type->kind == T_BOOL) {
+                new_true = genLabel();
+                new_false = genLabel();
+            }
             last = astToTac(ast_node->last, list, new_true, new_false, next, context);
 
             if(ast_node->last->type->kind == T_BOOL) {
@@ -387,6 +397,36 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             }
 
             return temp;
+            break;
+        case N_IF:
+            ast_node = ast_node->first;
+
+            while(ast_node && ast_node->next) {
+                // Creacion de etiquetas
+                new_true = genLabel();
+                new_false = next;
+                if(ast_node->next->next != NULL)
+                    new_false = genLabel();
+
+                astToTac(ast_node, list, new_true, new_false, NULL, B);
+
+                addDLL(list, def_label(new_true), 0);
+
+                astToTac(ast_node->next, list, NULL, NULL, next, context);
+
+                if(ast_node->next->next) {
+                    addDLL(list, def_goto(next), 0);
+                    addDLL(list, def_label(new_false), 0);
+                }
+
+                ast_node = ast_node->next->next;
+            }
+
+            // Tengo else ??
+            if(ast_node && ast_node->next == NULL) {
+                astToTac(ast_node, list, NULL, NULL, next, context);
+            }
+
             break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
