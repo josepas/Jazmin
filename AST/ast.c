@@ -492,6 +492,14 @@ void dumpAST(AST* who, int level) {
             dumpAST(who->first, level);
             break;
         }
+        case (N_FCALL) : {
+            printf("%*sFUN-CALL:\n", level*3, " ");
+            printf("%*s", level*3, " ");
+            dumpType(who->type);
+            printf("\n");
+            dumpAST(who->first, level);
+            break;
+        }
     }
 }
 

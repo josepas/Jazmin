@@ -888,8 +888,7 @@ sub_call
     '(' arguments ')'
         {
             
-            $<node>$ = set_node_type( $<node>1, lookupTable(current, $1, 0)->type);
-                //lookupTable(current, $1, 0)->ast,
+            $<node>$ = set_node_type( $<node>4, lookupTable(current, $1, 0)->type);
                 //check_arguments($1, $<list>4)
                 //);
         }
