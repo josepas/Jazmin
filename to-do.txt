@@ -20,7 +20,5 @@ tipos
 
 TO DO
 ~ (2 == 3)
-replantear como saber si global o no            // meterla siempre puede ser
-
-
 inicializacion completa del arreglo
+se imprime etiqueta innecesario en == !=
