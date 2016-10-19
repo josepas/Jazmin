@@ -1,4 +1,3 @@
-#define HASH_SIZE 17
 #include "symbolTable.h"
 
 
@@ -99,6 +98,13 @@ void dumpTable(Symtable *printer) {
             printf("%*s-%s %d:%d ", printer->level*3, "", aux->string, aux->line, aux->column);
             dumpType(aux->type);
             printf(" size:%d  offset:%d\n", aux->size, aux->offset);
+
+            // if(aux->class == C_RECORD) {
+            //     printf("STRUCTURA!!\n");
+            //     dumpTable(aux->type->u.r.fields);
+            //     printf("FIN --- STRUCTURA!!\n");
+            // }
+
             aux = aux->next;
         }
     }

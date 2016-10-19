@@ -1,5 +1,6 @@
 #ifndef SYMBTABLE
 #define SYMBTABLE
+#define HASH_SIZE 17
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
