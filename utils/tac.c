@@ -428,6 +428,24 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             }
 
             break;
+
+        case N_WHILE:
+            label_temp = genLabel();
+            new_true = genLabel();
+
+            addDLL(list, def_label(label_temp), 0);
+
+            astToTac(ast_node->first, list, new_true, next, NULL, context);
+
+            addDLL(list, def_label(new_true), 0);
+
+            astToTac(ast_node->first->next, list, NULL, NULL, label_temp, context);
+
+            addDLL(list, def_goto(label_temp), 0);
+
+            break;
+        case N_FOR:
+            break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
                 case '-':
