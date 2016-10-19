@@ -18,3 +18,13 @@ inicializacion completa del arreglo
 se imprime etiqueta innecesario en == !=
 for solo puede recibir variables ya declaradas y numeros (literales) positivos como step
 chequeo de argumentos en funcall
+size de la tabla de simbolos de funciones
+insertar funciones predefinidas
+
+apuntadores
+pasaje por referencia
+procedimientos (?)
+
+DUDAS:
+cambio registro activacion
+funciones puras
