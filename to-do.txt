@@ -22,3 +22,4 @@ TO DO
 ~ (2 == 3)
 inicializacion completa del arreglo
 se imprime etiqueta innecesario en == !=
+for solo puede recibir variables ya declaradas y numeros (literales) positivos como step
