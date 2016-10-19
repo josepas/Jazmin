@@ -3,11 +3,6 @@ clase de semana 8
 
 Parser
     posicion de los jump (break, continue..)
-    no tenemos a[ expr ]
-
-
-Tabla de simbolos
-    debug
 
 Main
 
@@ -19,7 +14,7 @@ tipos
 
 
 TO DO
-~ (2 == 3)
 inicializacion completa del arreglo
 se imprime etiqueta innecesario en == !=
 for solo puede recibir variables ya declaradas y numeros (literales) positivos como step
+chequeo de argumentos en funcall
