@@ -9,6 +9,7 @@
 #define def_exit() newDLLNode(generateTAC(TAC_EXIT, OP_EXIT, NULL, NULL, NULL))
 #define def_goto(X) newDLLNode(generateTAC(JUMP, GOTO, NULL, NULL, X))
 #define def_comment() newDLLNode(generateTAC(TAC_COMMENT, OP_COMMENT, NULL, NULL, NULL))
+#define def_logue(X, Y) newDLLNode(generateTAC(PRO_EPI_LOGUE, X, Y, NULL, NULL))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -17,10 +18,11 @@
 #include "utils.h"
 
 typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP,
-            PARAM, PROC_CALL, TAC_FUNC_CALL, TAC_RETURN, RETURN_VALUE,
+            PARAM, PROC_CALL, TAC_FUNC_CALL, TAC_RETURN, TAC_RETURN_VALUE,
             COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,
             COPY_TO_POINTED, TAC_READ, PRINT, TAC_COMMENT, TAC_LABEL,
-            TAC_REMOVE, TAC_EXIT , TAC_FP, TAC_GP} TACType;
+            TAC_REMOVE, TAC_EXIT , TAC_FP, TAC_GP,
+            PRO_EPI_LOGUE} TACType;
 
 typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    //0..5
             FLOAT_PLUS, FLOAT_MINUS, FLOAT_MULT, FLOAT_DIV, FLOAT_MOD, FLOAT_UN_MINUS, //6..11
@@ -30,7 +32,9 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             ASSIGN_FROM_PTR, ASSIGN_TO_PTR, //24..25
             OP_LABEL, OP_COMMENT, OP_REMOVE, OP_EXIT,   //26..29
             OP_FROM_FP, OP_TO_FP, OP_FROM_GP, OP_TO_GP,
-            OP_PARAM, OP_FUNC_CALL } Operation;
+            OP_PARAM, OP_FUNC_CALL, OP_FUNC_DEF,
+            OP_RETURN, OP_RETURN_VALUE,
+            PROLOGUE, EPILOGUE} Operation;
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
             LABEL, VAR, TEMP, SUBROUTINE} AddrType;

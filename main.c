@@ -114,6 +114,22 @@ int main(int argc, char *argv[]) {
         }
         if (has_error == 0) {
             DLinkedList *list = newDoublyLinkList();
+            // Subrutinas
+            Entry *aux_entry;
+            int i;
+            for(i=0; i<HASH_SIZE; i++) {
+                aux_entry = current->fchild->table[i];
+                while(aux_entry!=NULL) {
+                    if(aux_entry->class != C_SUB) {
+                        aux_entry = aux_entry->next;
+                        continue;
+                    }
+
+                    astToTac(aux_entry->ast, list, NULL, NULL, NULL, N);
+
+                    aux_entry = aux_entry->next;
+                }
+            }
             astToTac(tree, list, NULL, NULL, NULL, N);
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {

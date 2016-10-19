@@ -19,6 +19,9 @@ Addr* generateAddr(AddrType addt, void *value) {
         case VAR:
             address->u.e = (Entry*)value;
             break;
+        case SUBROUTINE:
+            address->u.f_name = (char*)value;
+            break;
         default:
             printf("Error en \"generateAddr\"\n");
             exit(-1);
@@ -65,9 +68,10 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->op = op;
             q->result = result;
             break;
-        case RETURN_VALUE:
+        case TAC_RETURN_VALUE:
         case PRINT:
         case TAC_LABEL:
+        case PRO_EPI_LOGUE:
             q->op = op;
             q->arg1 = arg1;
             break;
@@ -77,7 +81,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->op = op;
             break;
         default:
-            printf("ERROR!! NO EXISTE ESTE TAC\n");
+            printf("ERROR!! NO EXISTE ESTE TAC: %d\n", tac);
             break;
 
     }
@@ -269,6 +273,21 @@ void imprimirTAC(Quad* q) {
             addrToString(q->result, r);
             printf("   %s := callf %s %s\n", r, a1, a2);
             break;
+        case OP_RETURN_VALUE:
+            addrToString(q->arg1, a1);
+            printf("   return %s\n", a1);
+            break;
+        case EPILOGUE:
+            addrToString(q->arg1, a1);
+            printf("   epilogue %s\n", a1);
+            break;
+        case PROLOGUE:
+            addrToString(q->arg1, a1);
+            printf("   prologue %s\n", a1);
+            break;
+        case OP_RETURN:
+            printf("   return\n");
+            break;
         case OP_COMMENT:
             printf("\n### Instruccion\n");
             break;
@@ -277,6 +296,7 @@ void imprimirTAC(Quad* q) {
             break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
+            exit(-1);
             break;
     }
 }
@@ -553,6 +573,46 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             return temp;
 
+            break;
+        case N_FUNC:
+            r = generateAddr(SUBROUTINE, ast_node->u.sym->string);
+            addDLL(list, def_label(r), 0);
+
+            // Prologo
+            r = generateAddr(CONST_INT, &(ast_node->u.sym->size));
+
+            addDLL(list, def_logue(PROLOGUE, r), 0);
+
+            // Label del final
+            next = genLabel();
+
+            // Bloque de instrucciones
+            astToTac(ast_node->first, list, next, next, next, N);
+
+            // Etiqueta del final
+            temp = def_label(next);
+            addDLL(list, temp, 0);
+
+            // Epilogo
+            addDLL(list, def_logue(EPILOGUE, r), 0);
+
+            break;
+        case N_RETURN:
+            temp = NULL;
+            if(ast_node->first) {
+                first = astToTac(ast_node->first, list, true, false, next, E);
+            }
+
+            temp = newDLLNode(
+                        generateTAC(TAC_RETURN_VALUE, OP_RETURN_VALUE,
+                            ((Quad*)first->data)->result,
+                            NULL,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            return temp;
             break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
@@ -852,7 +912,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return generateNodeVar(list, ast_node, ast_node->u.sym->scope);
             break;
         default:
-            printf("Nodo no existe\n");
+            printf("Nodo no existe: %d\n", ast_node->tag);
             exit(-1);
             break;
     }
