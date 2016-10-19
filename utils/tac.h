@@ -73,7 +73,7 @@ Addr* genereateAddr(AddrType, void*);
 
 Quad* generateTAC(TACType, Operation, Addr* , Addr*, Addr*);
 
-Node* generateNodeVar(struct _dlinkedlist*, AST*, Scope);
+Node* generateNodeVar(struct _dlinkedlist*, AST*, Scope, Addr*);
 
 void addrToString(Addr*, char*);
 
@@ -83,6 +83,6 @@ Addr* genTemp(/*struct _symtable*, struct _typetree**/);
 
 Addr* genLabel();
 
-Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*, Context);
+Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*, Context, Addr*);
 
 #endif

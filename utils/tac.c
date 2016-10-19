@@ -327,7 +327,7 @@ static Operation op;
 static int true_value = 1;
 static int false_value = 0;
 
-Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context) {
+Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context, Addr *epilogue) {
     AST *ast_aux;
     Typetree *type_aux;
     Node *temp, *first, *last;
@@ -343,7 +343,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             ast_node = ast_node->first;
             while(ast_node != NULL) {
-                astToTac(ast_node, list, next, next, next, context);
+                astToTac(ast_node, list, next, next, next, context, epilogue);
                 ast_node = ast_node->next;
             }
 
@@ -360,7 +360,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 if(ast_node->next)
                     next = genLabel();
 
-                temp = astToTac(ast_node, list, NULL, NULL, next, context);
+                temp = astToTac(ast_node, list, NULL, NULL, next, context, epilogue);
 
                 // Pegamos etiqueta
                 if(ast_node = ast_node->next)
@@ -374,7 +374,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 new_true = genLabel();
                 new_false = genLabel();
             }
-            last = astToTac(ast_node->last, list, new_true, new_false, next, context);
+            last = astToTac(ast_node->last, list, new_true, new_false, next, context, epilogue);
 
             if(ast_node->last->type->kind == T_BOOL) {
                 addDLL(list, def_label(new_true), 0);
@@ -404,7 +404,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             }
 
             lrvalue = L_VALUE;
-            first = astToTac(ast_node->first, list, NULL, NULL, NULL, context);
+            first = astToTac(ast_node->first, list, NULL, NULL, NULL, context, epilogue);
 
             lrvalue = NONE;
 
@@ -442,11 +442,11 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 if(ast_node->next->next != NULL)
                     new_false = genLabel();
 
-                astToTac(ast_node, list, new_true, new_false, NULL, B);
+                astToTac(ast_node, list, new_true, new_false, NULL, B, epilogue);
 
                 addDLL(list, def_label(new_true), 0);
 
-                astToTac(ast_node->next, list, NULL, NULL, next, context);
+                astToTac(ast_node->next, list, NULL, NULL, next, context, epilogue);
 
                 if(ast_node->next->next) {
                     addDLL(list, def_goto(next), 0);
@@ -458,7 +458,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             // Tengo else ??
             if(ast_node && ast_node->next == NULL) {
-                astToTac(ast_node, list, NULL, NULL, next, context);
+                astToTac(ast_node, list, NULL, NULL, next, context, epilogue);
             }
 
             break;
@@ -469,11 +469,11 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             addDLL(list, def_label(label_temp), 0);
 
-            astToTac(ast_node->first, list, new_true, next, NULL, context);
+            astToTac(ast_node->first, list, new_true, next, NULL, context, epilogue);
 
             addDLL(list, def_label(new_true), 0);
 
-            astToTac(ast_node->first->next, list, NULL, NULL, label_temp, context);
+            astToTac(ast_node->first->next, list, NULL, NULL, label_temp, context, epilogue);
 
             addDLL(list, def_goto(label_temp), 0);
 
@@ -486,10 +486,10 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
 
             lrvalue = R_VALUE;
-            first = astToTac(ast_node->first, list, NULL, NULL, NULL, context);
+            first = astToTac(ast_node->first, list, NULL, NULL, NULL, context, epilogue);
 
             lrvalue = R_VALUE;
-            last = astToTac(ast_node->first->next, list, NULL, NULL, NULL, context);
+            last = astToTac(ast_node->first->next, list, NULL, NULL, NULL, context, epilogue);
 
             label_temp = genLabel();
             addDLL(list, def_label(label_temp), 0);
@@ -509,7 +509,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             addDLL(list, def_label(new_true), 0);
 
-            astToTac(ast_node->first->next->next, list, NULL, NULL, NULL, context);
+            astToTac(ast_node->first->next->next, list, NULL, NULL, NULL, context, epilogue);
 
             Addr *a2 = (Addr*)malloc(sizeof(Addr));
             a2->addt = CONST_INT;
@@ -532,7 +532,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             while(ast_aux) {
                 // lrvalue = R_VALUE;
                 size += ast_aux->type->size;
-                first = astToTac(ast_aux, list, NULL, NULL, NULL, context);
+                first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
 
                 temp = newDLLNode(
                         generateTAC(COPY, ASSIGN,
@@ -583,14 +583,14 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             addDLL(list, def_logue(PROLOGUE, r), 0);
 
-            // Label del final
-            next = genLabel();
+            // Label del epilogo
+            epilogue = genLabel();
 
             // Bloque de instrucciones
-            astToTac(ast_node->first, list, next, next, next, N);
+            astToTac(ast_node->first, list, epilogue, epilogue, epilogue, N, epilogue);
 
-            // Etiqueta del final
-            temp = def_label(next);
+            // Etiqueta del epilogo
+            temp = def_label(epilogue);
             addDLL(list, temp, 0);
 
             // Epilogo
@@ -600,7 +600,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
         case N_RETURN:
             temp = NULL;
             if(ast_node->first) {
-                first = astToTac(ast_node->first, list, true, false, next, E);
+                first = astToTac(ast_node->first, list, true, false, next, E, epilogue);
             }
 
             temp = newDLLNode(
@@ -612,12 +612,14 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         );
             addDLL(list, temp, 0);
 
+            addDLL(list, def_goto(epilogue), 0);
+
             return temp;
             break;
         case N_UN_OP:
             switch(ast_node->operation[0]) {
                 case '-':
-                    first = astToTac(ast_node->first, list, NULL, NULL, next, context);
+                    first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
                     if(ast_node->first->type->kind == T_INT)
                         temp = def_un_op(INT_UN_MINUS);
                     else
@@ -626,31 +628,31 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     addDLL(list, temp, 0);
                     return temp;
                 case '~':
-                    first = astToTac(ast_node->first, list, false, true, next, B);
+                    first = astToTac(ast_node->first, list, false, true, next, B, epilogue);
                     break;
             }
             break;
         case N_BIN_OP:
             switch(ast_node->operation[0]) {
                 case '+':
-                    first = astToTac(ast_node->first, list, NULL, NULL, next, context);
-                    last = astToTac(ast_node->last, list, NULL, NULL, next, context);
+                    first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
+                    last = astToTac(ast_node->last, list, NULL, NULL, next, context, epilogue);
                     if(ast_node->first->type->kind == T_INT)
                         temp = def_bin_op(INT_PLUS);
                     else
                         temp = def_bin_op(FLOAT_PLUS);
                     break;
                 case '-':
-                    first = astToTac(ast_node->first, list, NULL, NULL, next, context);
-                    last = astToTac(ast_node->last, list, NULL, NULL, next, context);
+                    first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
+                    last = astToTac(ast_node->last, list, NULL, NULL, next, context, epilogue);
                     if(ast_node->first->type->kind == T_INT)
                         temp = def_bin_op(INT_MINUS);
                     else
                         temp = def_bin_op(FLOAT_MINUS);
                     break;
                 case '*':
-                    first = astToTac(ast_node->first, list, NULL, NULL, next, context);
-                    last = astToTac(ast_node->last, list, NULL, NULL, next, context);
+                    first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
+                    last = astToTac(ast_node->last, list, NULL, NULL, next, context, epilogue);
                     if(ast_node->first->type->kind == T_INT)
                         temp = def_bin_op(INT_MULT);
                     else
@@ -659,15 +661,15 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 case '/':
                     if(ast_node->operation[1] == '\\') {
                         new_true = genLabel();
-                        astToTac(ast_node->first, list, new_true, false, next, B);
+                        astToTac(ast_node->first, list, new_true, false, next, B, epilogue);
                         temp = def_label(new_true);
                         addDLL(list, temp, 0);
-                        astToTac(ast_node->last, list, true, false, next, B);
+                        astToTac(ast_node->last, list, true, false, next, B, epilogue);
                         return;
                     }
                     else {
-                        first = astToTac(ast_node->first, list, NULL, NULL, next, context);
-                        last = astToTac(ast_node->last, list, NULL, NULL, next, context);
+                        first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
+                        last = astToTac(ast_node->last, list, NULL, NULL, next, context, epilogue);
                         if(ast_node->first->type->kind == T_INT)
                             temp = def_bin_op(INT_DIV);
                         else
@@ -675,8 +677,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     }
                     break;
                 case '%':
-                    first = astToTac(ast_node->first, list, NULL, NULL, next, context);
-                    last = astToTac(ast_node->last, list, NULL, NULL, next, context);
+                    first = astToTac(ast_node->first, list, NULL, NULL, next, context, epilogue);
+                    last = astToTac(ast_node->last, list, NULL, NULL, next, context, epilogue);
                     if(ast_node->first->type->kind == T_INT)
                         temp = def_bin_op(INT_MOD);
                     else
@@ -685,10 +687,10 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 case '\\':
                     if(ast_node->operation[1] == '/') {
                         new_false = genLabel();
-                        astToTac(ast_node->first, list, true, new_false, next, B);
+                        astToTac(ast_node->first, list, true, new_false, next, B, epilogue);
                         temp = def_label(new_false);
                         addDLL(list, temp, 0);
-                        astToTac(ast_node->last, list, true, false, next, B);
+                        astToTac(ast_node->last, list, true, false, next, B, epilogue);
                         return;
                     }
                     else
@@ -699,8 +701,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         true = genLabel();
                         false = genLabel();
                     }
-                    first = astToTac(ast_node->first, list, true, false, next, E);
-                    last = astToTac(ast_node->last, list, true, false, next, E);
+                    first = astToTac(ast_node->first, list, true, false, next, E, epilogue);
+                    last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     if(ast_node->operation[1] == '=') {
                         temp = newDLLNode(
                             generateTAC(IF_RELOP_JUMP, OP_LTOE,
@@ -759,8 +761,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         true = genLabel();
                         false = genLabel();
                     }
-                    first = astToTac(ast_node->first, list, true, false, next, E);
-                    last = astToTac(ast_node->last, list, true, false, next, E);
+                    first = astToTac(ast_node->first, list, true, false, next, E, epilogue);
+                    last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     if(ast_node->operation[1] == '=') {
                         temp = newDLLNode(
                             generateTAC(IF_RELOP_JUMP, OP_GTOE,
@@ -816,9 +818,10 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     break;
                 case '=':
                     new_true = new_false = genLabel();
-                    first = astToTac(ast_node->first, list, new_true, new_false, next, E);
+                    lrvalue = R_VALUE;
+                    first = astToTac(ast_node->first, list, new_true, new_false, next, E, epilogue);
                     addDLL(list, def_label(new_true), 0);
-                    last = astToTac(ast_node->last, list, true, false, next, E);
+                    last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     temp = newDLLNode(
                         generateTAC(IF_RELOP_JUMP, OP_EQUAL,
                             ((Quad*)first->data)->result,
@@ -838,9 +841,9 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     break;
                 case '!':
                     new_true = new_false = genLabel();
-                    first = astToTac(ast_node->first, list, new_true, new_false, next, E);
+                    first = astToTac(ast_node->first, list, new_true, new_false, next, E, epilogue);
                     addDLL(list, def_label(new_true), 0);
-                    last = astToTac(ast_node->last, list, true, false, next, E);
+                    last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     temp = newDLLNode(
                         generateTAC(IF_RELOP_JUMP, OP_UNEQUAL,
                             ((Quad*)first->data)->result,
@@ -909,7 +912,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             return temp;
             break;
         case N_VAR:
-            return generateNodeVar(list, ast_node, ast_node->u.sym->scope);
+            return generateNodeVar(list, ast_node, ast_node->u.sym->scope, epilogue);
             break;
         default:
             printf("Nodo no existe: %d\n", ast_node->tag);
@@ -918,7 +921,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
     }
 }
 
-Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope) {
+Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilogue) {
     AST *ast_aux;
     Node *first, *last, *temp;
     Typetree *type_aux;
@@ -935,7 +938,7 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope) {
                 temp_aux = temp;
                 ++dimensions;
 
-                first = astToTac(ast_aux, list, NULL, NULL, NULL, context);
+                first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
 
                 r = generateAddr(CONST_INT, &(type_aux->size));
                 last = newDLLNode(

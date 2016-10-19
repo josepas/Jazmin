@@ -125,12 +125,12 @@ int main(int argc, char *argv[]) {
                         continue;
                     }
 
-                    astToTac(aux_entry->ast, list, NULL, NULL, NULL, N);
+                    astToTac(aux_entry->ast, list, NULL, NULL, NULL, N, NULL);
 
                     aux_entry = aux_entry->next;
                 }
             }
-            astToTac(tree, list, NULL, NULL, NULL, N);
+            astToTac(tree, list, NULL, NULL, NULL, N, NULL);
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {
                 // printf("==> %d\n", ((Quad*)aux->data)->op);
