@@ -552,6 +552,16 @@ AST* newFuncNode(Entry *entry, AST* block) {
     return node;
 }
 
+AST* newFunCallNode() {
+    AST* node = newAST();
+    node->tag = N_FCALL;
+
+    return node;
+}
+
+
+
+
 AST* newProgramNode(AST* defb, AST* pblock) {
     AST* node = newAST();
     node->tag = N_PROGRAM;

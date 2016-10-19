@@ -1,18 +1,16 @@
-int a
 
-func fib   (int j) -> int {
-    write "blah"
+func fib  (int j) -> int {
+    if (j == 0) {
+        return 1
+    } elif (j == 1) {
+        return 1
+    } else {
+        return  2 + 3
+    }
+
 }
-
-int n
-
 
 program {
 
-    int j
-    for j to 5 {
-        write "holaaa"
-    }
-
-   fib(j)
+    int n = fib(42)
 }

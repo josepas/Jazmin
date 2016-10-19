@@ -881,32 +881,33 @@ p_formal
 sub_call
     : ID
         {
-        if((temp = check_func($1)))
+        //if((temp = check_func($1)))
             // Por ser mid-rule
-            $<type>$ = temp->type->u.fun.range;
+        //    $<type>$ = temp->type->u.fun.range;
         }
     '(' arguments ')'
         {
-            $<node>$ = set_node_type(
-                lookupTable(current, $1, 0)->ast,
-                check_arguments($1, $<list>4)
-                );
+            
+            $<node>$ = set_node_type( $<node>1, lookupTable(current, $1, 0)->type);
+                //lookupTable(current, $1, 0)->ast,
+                //check_arguments($1, $<list>4)
+                //);
         }
     ;
 
 arguments
-    : /* lambda */  { $<list>$ = newArgList(); }
-    | args_list     { $<list>$ = $<list>1; }
+    : /* lambda */  { $<node>$ = newFunCallNode(); }
+    | args_list     { $<node>$ = $<node>1; }
     ;
 
 args_list
     : expr
         {
-            $<list>$ = add( newArgList(), $<node>1->type );
+            $<node>$ = addASTChild( newFunCallNode(), $<node>1);
         }
     | args_list ',' expr
         {
-            $<list>$ = add($<list>1, $<node>3->type);
+            $<node>$ = addASTChild($<node>1, $<node>3);
         }
     ;
 
@@ -1510,5 +1511,7 @@ Typetree* get_type(AST* node) {
         return get_array_type(node->type);
     else if(node->type->kind == T_STRUCT || node->type->kind == T_CONF)
             return get_record_type(node);
+    if(node->type->kind == T_FUNC)
+        return node->type->u.fun.range;
     return node->type;
 }

@@ -1,8 +1,5 @@
 program {
-	write "Dame un número: "
-	int i
-	read i
-	write "Toma su fibonacci: ", fib(i)
+    int *a = 5
 }
 
 
