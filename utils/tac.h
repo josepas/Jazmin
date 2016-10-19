@@ -17,7 +17,7 @@
 #include "utils.h"
 
 typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP,
-            PARAM, PROC_CALL, FUNC_CALL, TAC_RETURN, RETURN_VALUE,
+            PARAM, PROC_CALL, TAC_FUNC_CALL, TAC_RETURN, RETURN_VALUE,
             COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,
             COPY_TO_POINTED, TAC_READ, PRINT, TAC_COMMENT, TAC_LABEL,
             TAC_REMOVE, TAC_EXIT , TAC_FP, TAC_GP} TACType;
@@ -29,10 +29,11 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             ASSIGN, ASSIGN_FROM_ARRAY, ASSIGN_TO_ARRAY, //21..23
             ASSIGN_FROM_PTR, ASSIGN_TO_PTR, //24..25
             OP_LABEL, OP_COMMENT, OP_REMOVE, OP_EXIT,   //26..29
-            OP_FROM_FP, OP_TO_FP, OP_FROM_GP, OP_TO_GP} Operation;    //30..31
+            OP_FROM_FP, OP_TO_FP, OP_FROM_GP, OP_TO_GP,
+            OP_PARAM, OP_FUNC_CALL } Operation;
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
-            LABEL, VAR, TEMP} AddrType;
+            LABEL, VAR, TEMP, SUBROUTINE} AddrType;
 
 typedef enum {L_VALUE, R_VALUE, NONE} LRValues;
 
@@ -52,6 +53,8 @@ typedef struct _addr {
         unsigned int t;
         // Label
         unsigned int l;
+        // Nombre funcion
+        char *f_name;
     } u;
 } Addr;
 

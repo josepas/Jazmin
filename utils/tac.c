@@ -32,7 +32,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
     switch(tac) {
         case BIN_OP:
         case IF_RELOP_JUMP:
-        case FUNC_CALL:
+        case TAC_FUNC_CALL:
         case COPY_FROM_INDEX:
         case COPY_TO_INDEX:
             q->op = op;
@@ -61,10 +61,10 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case JUMP:
         case TAC_READ:
         case TAC_REMOVE:
+        case PARAM:
             q->op = op;
             q->result = result;
             break;
-        case PARAM:
         case RETURN_VALUE:
         case PRINT:
         case TAC_LABEL:
@@ -110,6 +110,9 @@ void addrToString(Addr *a, char *s) {
             break;
         case LABEL:
             sprintf(s, "L%d", a->u.l);
+            break;
+        case SUBROUTINE:
+            sprintf(s, "%s", a->u.f_name);
             break;
         default:
             printf("Error en \"addrToString\"\n");
@@ -255,6 +258,16 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
             printf("   %s[%s] := %s\n", r, a1, a2);
+            break;
+        case OP_PARAM:
+            addrToString(q->result, r);
+            printf("   param %s\n", r);
+            break;
+        case OP_FUNC_CALL:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            addrToString(q->result, r);
+            printf("   %s := callf %s %s\n", r, a1, a2);
             break;
         case OP_COMMENT:
             printf("\n### Instruccion\n");
@@ -491,6 +504,54 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             addDLL(list, temp, 0);
 
             addDLL(list, def_goto(label_temp), 0);
+
+            break;
+        case N_FCALL:
+            ast_aux = ast_node->first;
+            int size = 0;
+            while(ast_aux) {
+                // lrvalue = R_VALUE;
+                size += ast_aux->type->size;
+                first = astToTac(ast_aux, list, NULL, NULL, NULL, context);
+
+                temp = newDLLNode(
+                        generateTAC(COPY, ASSIGN,
+                            ((Quad*)first->data)->result,
+                            NULL,
+                            genTemp()
+                            )
+                        );
+                addDLL(list, temp, 0);
+
+                temp = newDLLNode(
+                        generateTAC(PARAM, OP_PARAM,
+                            NULL,
+                            NULL,
+                            ((Quad*)temp->data)->result
+                            )
+                        );
+                addDLL(list, temp, 0);
+
+                ast_aux = ast_aux->next;
+            }
+
+            a1 = (Addr*)malloc(sizeof(Addr));
+            a1->addt = SUBROUTINE;
+            a1->u.f_name = ast_node->u.sym->string;
+            a2 = (Addr*)malloc(sizeof(Addr));
+            a2->addt = CONST_INT;
+            a2->u.i = size;
+
+            temp = newDLLNode(
+                        generateTAC(TAC_FUNC_CALL, OP_FUNC_CALL,
+                            a1,
+                            a2,
+                            genTemp()
+                            )
+                        );
+                addDLL(list, temp, 0);
+
+            return temp;
 
             break;
         case N_UN_OP:
@@ -789,6 +850,10 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_VAR:
             return generateNodeVar(list, ast_node, ast_node->u.sym->scope);
+            break;
+        default:
+            printf("Nodo no existe\n");
+            exit(-1);
             break;
     }
 }
