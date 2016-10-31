@@ -218,7 +218,7 @@ AST* newBreakNode() {
 
 
 AST* newPtrNode(Entry* e) {
-   
+
     AST* node = newAST();
     node->tag = N_PTR;
 
@@ -393,6 +393,13 @@ void dumpAST(AST* who, int level) {
                     temp = temp->first;
                 }
                 printf("\n");
+            }
+            if(who->type->kind == T_POINTER) {
+                int i;
+                printf("%*sVAR: ", level*3, " ");
+                for(i=0; i < who->first->u.i; i++)
+                    printf("*");
+                printf("%s\n", who->u.sym->string);
             }
             else {
                 printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);

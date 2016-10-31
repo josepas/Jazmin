@@ -74,6 +74,7 @@ void set_last_dims_expr(AST*, AST*);
 void set_last_field(AST*, AST*);
 
 Typetree* get_record_type(AST*);
+Typetree* get_pointer_type(Typetree*);
 
 Typetree* get_type(AST*);
 
@@ -335,7 +336,11 @@ declaration
                     );
             }
         }
-    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<node>$ = newPtrNode( lookupTable(current, $3, 1) ); }
+    | type point_d ID
+        {
+            declare_ptr($3, $<ival>2, $<type>1);
+            $<node>$ = newPtrNode( lookupTable(current, $3, 1) );
+        }
     /* pointer to array y vice versa */
     | s_c SC_ID
         {
@@ -517,6 +522,15 @@ assignment // refactorizar
                 );
             $<node>$->first->first = $<node>2;
         }
+    | point_d ID '=' expr
+        {
+            temp = lookupTable(current, $2, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "=", $4),
+                check_type_assign(get_pointer_type(temp->type), $4)
+                );
+            addASTChild($<node>$->first, newIntNode($<ival>1));
+        }
     | ID
         {
         if((temp = check_var($1)))
@@ -643,7 +657,13 @@ expr
                 $$->first = $<node>2;
             }
         }
-    /* | point_d ID { check_var($2); } */
+    | point_d ID
+        {
+            if((temp = check_var($2))) {
+                $$ = newVarNode(temp);
+                addASTChild($$, newIntNode($<ival>1));
+            }
+        } %prec UNARY
     | ID
         {
             if((temp = check_var($1)))
@@ -887,7 +907,7 @@ sub_call
         }
     '(' arguments ')'
         {
-            
+
             $<node>$ = set_node_type( $<node>4, lookupTable(current, $1, 0)->type);
                 //check_arguments($1, $<list>4)
                 //);
@@ -1100,7 +1120,7 @@ Typetree* get_array_type(Typetree* t) {
 Typetree* get_pointer_type(Typetree* t) {
 
     if (t == NULL) {
-        fprintf(stderr, "Fallo miserable en el chequeo de arreglos\n");
+        fprintf(stderr, "Fallo miserable en el chequeo de apuntadores\n");
     }
 
     if (t->kind != T_POINTER) {
@@ -1508,6 +1528,8 @@ Typetree* get_record_type(AST* node) {
 Typetree* get_type(AST* node) {
     if(node->type->kind == T_ARRAY)
         return get_array_type(node->type);
+    if(node->type->kind == T_POINTER)
+        return get_pointer_type(node->type);
     else if(node->type->kind == T_STRUCT || node->type->kind == T_CONF)
             return get_record_type(node);
     if(node->type->kind == T_FUNC)
