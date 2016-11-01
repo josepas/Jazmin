@@ -1528,11 +1528,11 @@ Typetree* get_record_type(AST* node) {
 Typetree* get_type(AST* node) {
     if(node->type->kind == T_ARRAY)
         return get_array_type(node->type);
-    if(node->type->kind == T_POINTER)
+    else if(node->type->kind == T_POINTER)
         return get_pointer_type(node->type);
     else if(node->type->kind == T_STRUCT || node->type->kind == T_CONF)
             return get_record_type(node);
-    if(node->type->kind == T_FUNC)
+    else if(node->type->kind == T_FUNC)
         return node->type->u.fun.range;
     return node->type;
 }
