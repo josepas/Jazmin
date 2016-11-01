@@ -385,7 +385,7 @@ void dumpAST(AST* who, int level) {
                 }
                 printf("\n");
             }
-            if(who->type->kind == T_STRUCT || who->type->kind == T_CONF) {
+            else if(who->type->kind == T_STRUCT || who->type->kind == T_CONF) {
                 printf("%*sVAR: %s", level*3, " ", who->u.sym->string);
                 AST *temp = who->first;
                 while(temp != NULL) {
@@ -394,7 +394,7 @@ void dumpAST(AST* who, int level) {
                 }
                 printf("\n");
             }
-            if(who->type->kind == T_POINTER) {
+            else if(who->type->kind == T_POINTER) {
                 int i;
                 printf("%*sVAR: ", level*3, " ");
                 for(i=0; i < who->first->u.i; i++)
