@@ -522,7 +522,8 @@ assignment // refactorizar
                 newAssignNode(newVarNode(temp), "=", $5),
                 check_type_assign(get_array_type(temp->type), $5)
                 );
-            $<node>$->first->first = $<node>2;
+            //$<node>$->first->first = $<node>2;
+            addASTChild($<node>$->first, $<node>2);
         }
     | point_d ID '=' expr
         {
@@ -542,7 +543,7 @@ assignment // refactorizar
     '.' field_id '=' expr
         {
             $<node>$ = $<node>2;
-            $<node>$->first = $<node>4;
+            addASTChild($<node>$, $<node>4);
             $<node>$ = set_node_type(
                 newAssignNode($<node>$, "=", $6),
                 check_type_assign(get_type($<node>$), $6)
@@ -836,10 +837,17 @@ field_id
                 $<node>$ = newVarNode(temp);
             }
         }
+    | ID dims_expr
+        {
+            if((temp = check_field(get_type($<node>-1), $1))) {
+                $<node>$ = newVarNode(temp);
+                addASTChild($<node>$, $<node>2);
+            }
+        }
     | field_id '.' ID
         {
             temp = check_field($<node>1->type, $3);
-            set_last_field($<node>1, newVarNode(temp));
+            set_last_dims_expr($<node>1, newVarNode(temp));
             $<node>$ = $<node>1;
         }
     ;
