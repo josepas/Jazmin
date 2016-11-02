@@ -383,6 +383,8 @@ void dumpAST(AST* who, int level) {
                     printf("[%d]", temp->u.i);
                     temp = temp->next;
                 }
+                // Mejorar esta impresion
+                dumpAST(who->first->first, 0);
                 printf("\n");
             }
             else if(who->type->kind == T_STRUCT || who->type->kind == T_CONF) {
