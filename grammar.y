@@ -565,6 +565,21 @@ assignment // refactorizar
                 );
 
         }
+    | ID
+        {
+            if((temp = check_var($1))) {
+                $<node>$ = newVarNode(temp);
+            }
+        }
+    ARROW field_id '=' expr
+        {
+            $<node>$ = $<node>2;
+            addASTChild($<node>$, $<node>4);
+            $<node>$ = set_node_type(
+                newAssignNode($<node>$, "=", $6),
+                check_type_assign(get_type($<node>$->first), $6)
+                );
+        }
     ;
 
 iteration // permitiremos declaraciones solas en el for?

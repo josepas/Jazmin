@@ -397,11 +397,22 @@ void dumpAST(AST* who, int level) {
                 printf("\n");
             }
             else if(who->type->kind == T_POINTER) {
-                int i;
-                printf("%*sVAR: ", level*3, " ");
-                for(i=0; i < who->first->u.i; i++)
-                    printf("*");
-                printf("%s\n", who->u.sym->string);
+                AST *temp = who->first;
+                if(temp->tag != N_INT) {
+                    printf("%*sVAR: %s", level*3, " ", who->u.sym->string);
+                    while(temp != NULL) {
+                        printf("->%s", temp->u.sym->string);
+                        temp = temp->first;
+                    }
+                    printf("\n");
+                }
+                else {
+                    int i;
+                    printf("%*sVAR: ", level*3, " ");
+                    for(i=0; i < who->first->u.i; i++)
+                        printf("*");
+                    printf("%s\n", who->u.sym->string);
+                }
             }
             else {
                 printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
