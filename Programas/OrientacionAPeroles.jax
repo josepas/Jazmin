@@ -127,12 +127,15 @@ program {
 				tmp.f = maulas[j].Dentro.f
 
 				if ( maulas[k].tipo == 1 ) {
+					maulas[j].tipo = 1
 					maulas[j].Dentro.c = maulas[k].Dentro.c 
 				}
 				if ( maulas[k].tipo == 2 ) {
+					maulas[j].tipo = 2
 					maulas[j].Dentro.i = maulas[k].Dentro.i	
 				}
 				if ( maulas[k].tipo == 3 ) {
+					maulas[j].tipo = 3
 					maulas[j].Dentro.f = maulas[k].Dentro.f
 				}
 
