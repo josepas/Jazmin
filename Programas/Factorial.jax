@@ -1,0 +1,63 @@
+# Descripción
+# 	Programa que calcula el factorial recursiva e iterativamente
+# 	segun especifique el usuario
+# 
+# Autores
+# 	José Pascarella
+# 	Amin Arria	
+
+func factorialR(int n) -> int {
+	
+	if (n == 1) {
+		return 1
+	} else {
+		return n * factorialR(n-1)
+	} 
+}
+
+func factorialI(int n) -> int {
+
+	int fact = 1
+	while (n > 0) {
+		fact = fact * n 
+		n = n - 1
+	}
+	return fact
+}
+
+
+program {
+	
+	int n, resultado
+	char como, opcion
+	while (True) {
+		
+		write "Ingrese factorial a calcular:"
+		read n
+		write "Como desea calcularlo? (i : Iterativo, r : Recursivo)"
+		read como
+
+		if (como == 'r') {
+			resultado = factorialR(n)
+		} elif (como == 'i') {
+			resultado = factorialI(n)
+		} else {
+			write "No entendimos la opción (r/i)"
+			continue
+		}
+
+		write "Factorial("
+		write n
+		write ") = "
+		write resultado
+
+		write "Desea continuar (s/n)"
+		read opcion
+
+		if (opcion != 's') {
+			write "No dijiste que si, soy flojo"
+			break
+		}
+	}
+
+}

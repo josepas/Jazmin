@@ -5,7 +5,7 @@ func fib  (int j) -> int {
     } elif (j == 1) {
         return 1
     } else {
-        return  2 + 3
+        return fib(j-1) + fib(j-2)
     }
 
 }

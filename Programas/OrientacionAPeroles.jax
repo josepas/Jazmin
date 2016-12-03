@@ -1,0 +1,171 @@
+program {
+	
+	struct Perol {
+		int  tipo;
+	  	confederation Dentro {
+	    	bool  b;
+	    	char  c;
+	    	int   i;
+	 		float f;
+		}
+	}
+
+
+	int cantidad
+	int i
+	
+	struct Perol maulas[20]
+	confederation Dentro tmp; # xD
+
+	char tmpc
+	int tmpi
+	float tmpf
+
+	char opcion, tipoP
+
+	while (True) {
+		
+		write "Ingrese el numero de elementos a ordenar: "
+		read cantidad
+
+		###### Lectura
+		j = 0
+		i = 0 # Donde coloco el proximo 0
+		while (i < cantidad) {
+			write "Ingrese el tipo del perol (b/c/i/f): "
+			read tipoP
+
+			if (tipoP == "b") {
+				read maulas[j].tipo = 0
+				read maulas[j].Dentro.b
+				
+				## swap(j,i) para meter todos los 0 donde van
+				
+				tmp.b = maulas[j].Dentro.b
+
+				if ( maulas[i].tipo == 1 ) {
+					maulas[j].Dentro.c = maulas[i].Dentro.c 
+				}
+				if ( maulas[i].tipo == 2 ) {
+					maulas[j].Dentro.i = maulas[i].Dentro.i	
+				}
+				if ( maulas[i].tipo == 3 ) {
+					maulas[j].Dentro.f = maulas[i].Dentro.f
+				}
+
+				maulas[i].Dentro.c = temp.c
+
+				i = i + 1
+
+			} elif (tipoP == "c") {
+				read maulas[j].tipo = 1
+				read maulas[j].Dentro.c
+
+
+			} elif (tipoP == "i") {
+				read maulas[j].tipo = 2
+				read maulas[j].Dentro.i
+
+			} elif (tipoP == "f") {
+				read maulas[j].tipo = 3
+				read maulas[j].Dentro.f
+
+			} else {
+				# Blah Que pasa si meten algun tipo no valido
+			}
+
+			j = j + 1
+		}
+
+		####### Dutch FLAG
+		# los 0 fueron ordenados en la entrada
+		# i para ver donde meto el proximo 1
+		# k para saber donde meto el proximo 3
+
+		j = i 
+		k = cantidad - 1
+		while (j <= k) {
+
+			if ( maulas[j].tipo == 1 ) {
+
+				## swap(j,i)
+				
+				tmp.c = maulas[j].Dentro.c
+
+				if ( maulas[i].tipo == 1 ) {
+					maulas[j].Dentro.c = maulas[i].Dentro.c 
+				}
+				if ( maulas[i].tipo == 2 ) {
+					maulas[j].Dentro.i = maulas[i].Dentro.i	
+				}
+				if ( maulas[i].tipo == 3 ) {
+					maulas[j].Dentro.f = maulas[i].Dentro.f
+				}
+
+				maulas[i].Dentro.c = temp.c
+				
+				i = i + 1
+				j = j + 1
+			}
+			
+			if ( maulas[j].tipo == 2 ) {
+				j = j + 1
+			}
+			
+			if ( maulas[j].tipo == 3 ) {
+				
+				## swap(j,k)
+				
+				tmp.f = maulas[j].Dentro.f
+
+				if ( maulas[k].tipo == 1 ) {
+					maulas[j].Dentro.c = maulas[k].Dentro.c 
+				}
+				if ( maulas[k].tipo == 2 ) {
+					maulas[j].Dentro.i = maulas[k].Dentro.i	
+				}
+				if ( maulas[k].tipo == 3 ) {
+					maulas[j].Dentro.f = maulas[k].Dentro.f
+				}
+
+				maulas[k].Dentro.f = temp.f
+
+				k = k - 1
+			}
+		}
+
+		
+		##### Impresión
+		j = 0
+		while (j < cantidad) {
+			if (maulas[k].tipo == 0) {
+				write maulas[k].Dentro.b
+				write "\n"
+			}
+			if (maulas[k].tipo == 1) {
+				write maulas[k].Dentro.c
+				write "\n"
+			}
+			if (maulas[k].tipo == 2) {
+				write maulas[k].Dentro.i
+				write "\n"
+			}
+			if (maulas[k].tipo == 3) {
+				write maulas[k].Dentro.f
+				write "\n"
+			}
+			
+			j = j + 1
+		}
+
+
+		write "Desea continuar (s/n)"
+		read opcion
+
+		if (opcion != 's') {
+			write "No dijiste que si, soy flojo"
+			break
+		}
+	}
+
+}

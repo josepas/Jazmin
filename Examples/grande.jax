@@ -32,6 +32,7 @@ struct Foo {
     }
     Bar bar
     char cc[5]
+    int b
 }
 
 confederation Union {
@@ -46,34 +47,8 @@ program {
     int i
     Union blaj
     Foo foo
-    Foo *ptrfoo
     Foo arreglo[2][3]
-    write "Dame un número: "
-    read i
-    write "Toma su fibonacci: "
-    write "Toma su factorial: "
 
-    int n
-    while n < 10 {
-        int j
-        for int n to 10 {
-            int j,k,l
-            float io
-            n = 1
-            write "el poder de greyskul"
-
-        }
-        float f
-        if (x) {
-            write "chao"
-        }
-    }
-
-    {
-        write "chao y otros placeres"
-        write "chao"
-    }
-    int j
-
+    arreglo[1][1].b = fact(5)
 
 }

@@ -1,0 +1,93 @@
+proc swap(var int a, var int b) {
+	int tmp = a
+	a = b
+	b = tmp
+}
+
+func Partition(int *A, low, hi) -> int {
+	
+	int i, j
+	pivot = A[hi]
+	i = low
+	j = low
+	while (j < hi-1) {
+		if A[j] <= pivot {
+            swap(A[i], A[j])           
+            i = i + 1
+        }
+    	swap(A[i], A[hi])
+		j = j + 1 
+	}
+}
+
+proc QuickSort(int *A, low, hi) {
+
+	if (low < hi) {
+		p = Partition(A, low, hi)
+		QuickSort(A, low, p-1)
+		QuickSort(A, p+1, hi)
+	}
+} 
+
+program {
+	
+	char option, tipo
+	int n
+
+	char  arrC[100]
+	int   arrI[100]
+	float arrF[100]
+
+	while (True) {
+		
+		write "Cuantos elementos desea ordenar?:"
+		read n
+
+		write "De que tipo son? (i/f/c): "
+		read tipo
+
+		i = 0
+		if ( tipo == 'i') {
+
+			write "Ingrese los enteros:\n"
+			while (i < n) {
+				read arrI[i]
+				i = i + 1
+			}
+			
+			i = 0
+			while (i < n) {
+				write arrI[i]
+				write " "
+				i = i + 1
+			}
+
+		} elif ( tipo == 'f') {
+		
+			write "Ingrese los flotantes:\n"
+			while (i < n) {
+				read arrF[i]
+				i = i + 1
+			}
+			
+		} elif ( tipo == 'c') {
+			
+			write "Ingrese los caracteres:\n"
+			while (i < n) {
+				read arrC[i]
+				i = i + 1
+			}
+		}
+
+
+
+
+		write "Desea continuar (s/n)"
+		read opcion
+
+		if (opcion != 's') {
+			write "No dijiste que si :(\n"
+			break
+		}
+	}	
+}

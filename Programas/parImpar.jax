@@ -1,0 +1,53 @@
+func par(int n) -> bool
+func impar(int n) -> bool
+
+func par(int n) -> bool {
+	if (n == 0) {
+		return True
+	} elif (n == 1) {
+		return False
+	} else {
+		return impar(n-1)
+	}
+}
+
+
+func impar(int n) -> bool {
+	if (n == 1) {
+		return True
+	} elif (n == 0) {
+		return False
+	} else {
+		return par(n-1)
+	}
+}
+
+program {
+
+	int n
+
+	write "Este programa determina la paridad de un entero."
+	while (True) {
+		write "Ingrese un entero"
+		read n
+		if (n < 0) {
+			write "Que no sea negativo"
+			continue
+		}
+		
+		if ( par(n) ) {
+			write "El numero es par!"
+		} else {
+			write "El numero es impar!"
+		}
+
+		write "Desea continuar (s/n)"
+		read opcion
+
+		if (opcion != 's') {
+			write "No dijiste que si, soy flojo"
+			break
+		}
+	}
+
+}

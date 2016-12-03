@@ -1,0 +1,459 @@
+MIPS Code Generation
+
+
+Casteo, Overflow 
+saltos destruyen registros?
+
+
+
+
+
+Registers
+$r0 is hardwired 0. It always has a value of 0.
+$r1 for translating pseudoperations.
+$2 V0 used for systemcalls.
+$4 (a1) used for arguments to systemcalls.
+
+Therefore $2-$5 are used for jumping
+
+$6 to $25 (20 used for general purpouse) 
+
+$26, $27    $k0, $k1    Kernel (reserved for OS)
+$28 $gp Global Pointer
+$29 $sp Stack Pointer
+$30 $fp Frame Pointer
+$31 $ra Return Address
+(Automatically used in some instructions)
+
+
+Call Sequence
+
+However, we'd like to maintain the invariant that all addresses greater than or equal to the stack pointer hold valid data,
+
+we assume that after a pop operation, the data that's popped off is considered garbage.
+
+Subroutine Call (done by the caller):
+
+    Put argument values in the stack
+    Call the subroutine using jal.
+
+Subroutine Prolog (done by the subroutine at its beginning):
+
+    push $ra onto the stack.
+    push $old fp
+    Push onto the stack any registers $s0-$s7 that this subroutine might alter.
+
+Subroutine Body:
+
+    If the subroutine calls another subroutine, then it does so by following these rules.
+
+Subroutine Epilog (done by the subroutine just before it returns to the caller):
+
+    move Return value
+    pop de return address
+    Return to the caller using jr $ra.
+
+Regaining Control from a subroutine (done by the caller):
+
+    Pop from the stack (in reverse order) any registers $t0-$t9 that were previously pushed (step 1).
+
+
+Floats
+
+
+-----------------------------------------------------------------------------
+---------------------------------  INTEGER ---------------------------------- 
+-----------------------------------------------------------------------------
+
+Sum
+
+
+    t0 = t1 + t2  =>    
+
+        lw Rj t1
+        lw Rk t2
+        addu Ri, Rj, Rk # Does not throw on overflow
+
+    t0 = t1 + int =>
+
+        lw Rj t1
+        addiu Ri, Rj, int
+
+addiu translate into different operation depending on the inmmediate int
+
+Substraction
+    
+    t0 = t1 - t2  =>    
+
+        lw Rj t1
+        lw Rk t2
+        subu Ri, Rj, Rk # Does not throw on overflow
+
+    t0 = t1 - int =>
+
+        lw Rj t1
+        addiu Ri, Rj, -int
+
+
+The addiu instruction can be used with negative integers
+U ovelooks overflow
+
+Unary Minus
+
+    t0 = -t1
+
+        lw Ri
+        subu Ri, R0, Rj
+
+Multiplication
+
+    t0 = t1 * t2  =>    
+
+        lw Rj t1
+        lw Rk t2
+        mult Rj, Rk  # Does not throw on overflow
+        mflo Ri
+
+To ensure that a product has no more than 32 significant bits, ensure that the sum of the number of significant bits in each operand is 32 or less. 
+
+Use mul and check hi for overflow
+
+Division
+       
+       t0 = t1 / t2  =>    
+
+            lw Rj t1
+            lw Rk t2
+            divu Rj, Rk  # Does not throw on overflow
+            mflo Ri
+
+Remainder
+
+        t0 = t1 % t2
+
+            lw Rj t1
+            lw Rk t2
+            divu Rj, Rk  # Does not throw on overflow
+            mfhi Ri
+
+The remainder in hi and the quotient in low
+
+
+-----------------------------------------------------------------------------
+---------------------------------  BOOLEAN  --------------------------------- 
+-----------------------------------------------------------------------------
+
+t0 = True
+
+    li Ri 1
+
+t1 = False
+    
+    mv Ri, R0 
+
+
+-----------------------------------------------------------------------------
+---------------------------------  FLOAT  ----------------------------------- 
+-----------------------------------------------------------------------------
+
+F registers should be used (f0, f1...)
+.s after the operations stands for single presi
+For both single precision load and store instructions (as with the general purpose load and store instructions) the memory address must be full-word aligned. It must be a multiple of four. Ordinarily this is not a problem. The assembler takes care of this.
+
+FSum
+    
+    t0 = t1 + t2
+
+        l.s Fj
+        l.s Fk
+        add.s Fi, Fj, Fk
+
+    t0 = t1 + float
+
+        l.s Fj, t1
+        li.s Fk, float
+        add.s Fi, Fj, Fk
+
+FSubstraction
+    
+    t0 = t1 - t2
+
+        l.s Fj
+        l.s Fk
+        sub.s Fi, Fj, Fk
+
+    t0 = t1 - float
+
+        l.s Fj, t1
+        li.s Fk, float
+        sub.s Fi, Fj, Fk
+
+FUnary Minus
+
+    t0 = -t1
+
+        l.s Rj, t1
+        neg.s Fi, Fj
+
+
+FMultiplication
+    
+    t0 = t1 * t2
+
+        l.s Fj
+        l.s Fk
+        mul.s Fi, Fj, Fk
+
+    t0 = t1 * float
+
+        l.s Fj, t1
+        li.s Fk, float
+        mul.s Fi, Fj, Fk
+
+FDivision
+
+    t0 = t1 / t2
+
+        l.s Fj
+        l.s Fk
+        div.s Fi, Fj, Fk
+
+    t0 = t1 / float
+
+        l.s Fj, t1
+        li.s Fk, float
+        div.s Fi, Fj, Fk
+
+
+-----------------------------------------------------------------------------
+---------------------------------  JUMPS  ----------------------------------- 
+-----------------------------------------------------------------------------
+
+beq instruction (branch equal)
+bne instruction (branch not equal)
+bltz
+blez
+bgtz
+bgez
+
+goto l1
+
+    b l1
+
+--------
+-  INT -
+--------
+
+
+if t0 == t1 goto l1
+
+    lw Ri, t0
+    lw Rj, t1 || li Rj, int
+    beq Ri, Rj, l1
+
+
+if t0 != t1 goto l1
+
+    lw Ri, t0
+    lw Rj, t1 || li Rj, int
+    bne Ri, Rj, l1
+
+
+if t0 < t1 goto l1
+
+    lw Ri, t0
+    lw Rj, t1 || li Rj, int
+    subu Ri, Rj, Rk
+    bltz Ri, l1 
+
+if t0 < t1 goto l1
+
+    lw Rj, t0
+    lw Rk, t1
+    subu Ri, Rj, Rk
+    bltz Ri, l1
+
+if t0 <= t1 goto l1
+
+    lw Rj, t0
+    lw Rk, t1
+    subu Ri, Rj, Rk
+    blez Ri, l1
+
+if t0 > t1 goto l1
+
+    lw Rj, t0
+    lw Rk, t1
+    subu Ri, Rj, Rk
+    bgtz Ri, l1
+
+if t0 >= t1 goto l1
+
+    lw Rj, t0
+    lw Rk, t1
+    subu Ri, Rj, Rk
+    bgez Ri, l1
+
+
+----------
+- FLOAT  -
+----------
+
+if t0 == t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.eq.s Fi, Fj
+    bclt l1
+
+if t0 != t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.eq.s Fi, Fj
+    bclf l1
+
+if t0 < t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.lt.s Fi, Fj
+    bclt l1
+
+if t0 > t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.le.s fs, ft
+    bclf l1
+
+if t0 <= t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.le.s Fi, Fj
+    bclt l1
+
+if t0 >= t1 goto l1
+
+    l.s Fi, t0
+    l.s Fj, t1
+    c.lt.s Fi, Fj
+    bclf l1
+
+
+
+-----------------------------------------------------------------------------
+----------------------------     ASSIGNMENTS  ------------------------------- 
+-----------------------------------------------------------------------------
+
+
+a[t0] = t1
+
+    la Rj, a
+    lw Rk, t0
+    addu Ri, Rj, Rk 
+    lw Rk, t1
+    sw Rk, 0(Ri)
+
+    ### Dinamic Array on the Stack
+
+t0 = a[t1] 
+    
+    la Rj, a
+    lw Rk, t1
+    addu Ri, Rj, Rk
+    lw Ri, 0(Ri)
+
+    ## Apuntar t0 al Registro i??? ##
+
+
+t0 = *t1
+    la Rj, t1
+    sw Ri, 0(Rj)
+
+*t0 = t1
+
+    la Rj, t0
+    lw Rk, t1
+    sw Rk, 0(Rj)
+
+
+-----------------------------------------------------------------------------
+----------------------------   FUNCTIONS      ------------------------------- 
+-----------------------------------------------------------------------------
+
+Reserva espacio en la pila con valores negativos
+
+param t0  ### t0 deberia estar en un registro???, lo acabamos de calcular
+
+    add $sp, $sp, -4
+    sw Ri, 0($sp)
+
+t0 := call Func, n      # n = tamaño de los argumentos + Valor de retorno 
+
+    add $sp $sp -4      # Espacio para el valor de retorno
+    
+    jal Func
+    
+    lw $Ri 0($sp)
+    add $sp $sp n
+
+prolog n        # N = tamaño de las locales
+    
+    add $sp, $sp, -8   # Espacio para el link (old FP) y dir de retorno #
+   
+    sw $ra 4($sp)      # push return address
+    
+    sw $fp 0($sp)       # push old FP
+    
+    mv $fp $sp          # Dejo el FP apuntando al old FP
+
+    add $sp, $sp, -n    # Espacio para las locales 
+
+
+return 
+    
+    # Falta Dudas #
+
+
+epilog n
+    
+    add $sp, $sp, n     # Pop locals
+
+    lw $fp, 0($sp)      
+    add $sp, $sp, 4     # Pop old FP
+
+    ## Return value recien calculado debe estar en un regitro? ##
+    
+    sw Ri, 4($sp)       # Return Value
+
+    lw $ra 0($sp)       
+    add $sp, $sp, 4     # pop Return addres
+
+    jr $ra
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

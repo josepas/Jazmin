@@ -1,0 +1,70 @@
+program {
+	
+	int tamano
+	float promedio, min, max, desviacion, varianza
+	float f[50], total
+	char opcion
+	int i 
+	while (True) {
+		
+		write "Ingrese el tamano de la muestra a estudiar:"
+		read tamano
+
+		i = 0
+		total = 0
+		max = -2000000000
+		min =  2000000000
+		while (i < tamano) {
+			read f[i]
+			if ( f[i] < min ) {
+				min = f[i]
+			}
+			if ( f[i] > max ) {
+				max = f[i]
+			}
+			total = total + f[i]
+			i = i + 1
+		}
+
+		promedio = total / tamano
+
+		i = 0
+		total = 0
+		while (i < tamano) {
+			total = total + (promedio - f[i]) * (promedio - f[i])
+			i = i + 1
+		}
+
+		varianza = total / tamano
+
+		desviacion = HeronRC(varianza)
+
+		write "Tamano de la muestra: "
+		write tamano
+
+		write "Promedio: "
+		write promedio
+
+		write "Varianza: "
+		write varianza
+
+		write "Desviacion Estandar: "
+		write desviacion
+
+		write "Maximo: "
+		write max
+
+		write "Minimo: "
+		write min
+
+
+		write "Desea continuar (s/n)"
+		read opcion
+
+		if (opcion != 's') {
+			write "No dijiste que si, soy flojo"
+			break
+		}
+	}
+
+}
