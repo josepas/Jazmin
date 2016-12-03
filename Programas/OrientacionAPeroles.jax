@@ -44,16 +44,20 @@ program {
 				tmp.b = maulas[j].Dentro.b
 
 				if ( maulas[i].tipo == 1 ) {
+					maulas[j].tipo = 1
 					maulas[j].Dentro.c = maulas[i].Dentro.c 
 				}
 				if ( maulas[i].tipo == 2 ) {
+					maulas[j].tipo = 2
 					maulas[j].Dentro.i = maulas[i].Dentro.i	
 				}
 				if ( maulas[i].tipo == 3 ) {
+					maulas[j].tipo = 3
 					maulas[j].Dentro.f = maulas[i].Dentro.f
 				}
 
-				maulas[i].Dentro.c = temp.c
+				maulas[i].Dentro.b = temp.b
+				maulas[i].tipo = 0
 
 				i = i + 1
 
@@ -93,17 +97,21 @@ program {
 				tmp.c = maulas[j].Dentro.c
 
 				if ( maulas[i].tipo == 1 ) {
+					maulas[j].tipo = 1
 					maulas[j].Dentro.c = maulas[i].Dentro.c 
 				}
 				if ( maulas[i].tipo == 2 ) {
+					maulas[j].tipo = 2
 					maulas[j].Dentro.i = maulas[i].Dentro.i	
 				}
 				if ( maulas[i].tipo == 3 ) {
+					maulas[j].tipo = 3
 					maulas[j].Dentro.f = maulas[i].Dentro.f
 				}
 
 				maulas[i].Dentro.c = temp.c
-				
+				maulas[i].tipo = 1
+
 				i = i + 1
 				j = j + 1
 			}
@@ -163,7 +171,7 @@ program {
 		read opcion
 
 		if (opcion != 's') {
-			write "No dijiste que si, soy flojo"
+			write "No dijiste que si"
 			break
 		}
 	}
