@@ -1,6 +1,3 @@
-clase de semana 8
-    permitir apuntadores a estructuras
-
 Parser
     posicion de los jump (break, continue..)
 
@@ -9,7 +6,6 @@ Main
 tipos
     chequeo de arreglos como expresiones
     void cableados en la instruction list
-    caso borde en el chequeo de structs
     Impresion de errores en las ramas
 
 
@@ -28,5 +24,4 @@ procedimientos (?)
 chequeo dimensiones arreglos
 
 DUDAS:
-cambio registro activacion
 funciones puras
