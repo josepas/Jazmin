@@ -218,7 +218,7 @@ AST* newBreakNode() {
 
 
 AST* newPtrNode(Entry* e) {
-   
+
     AST* node = newAST();
     node->tag = N_PTR;
 
@@ -316,6 +316,51 @@ void dumpSeqChildren(AST* who, int level) {
     return dumpSeqChildren(who->next, level);
 }
 
+void dumpVar(AST *who) {
+    if(who->u.sym->type->kind == T_ARRAY && who->first) {
+        printf("%s", who->u.sym->string);
+        AST *temp = who->first;
+        while(temp != NULL) {
+            printf("[%d]", temp->u.i);
+            temp = temp->next;
+        }
+        // Mejorar esta impresion
+        if(who->first->first) {
+            printf(".");
+            dumpVar(who->first->first);
+        }
+    }
+    else if(who->type->kind == T_STRUCT || who->type->kind == T_CONF) {
+        printf("%s", who->u.sym->string);
+        AST *temp = who->first;
+        while(temp != NULL) {
+            printf(".");
+            dumpVar(temp);
+            temp = temp->next;
+        }
+    }
+    else if(who->type->kind == T_POINTER) {
+        AST *temp = who->first;
+        if(temp->tag != N_INT) {
+            printf("%s", who->u.sym->string);
+            while(temp != NULL) {
+                printf("->%s", temp->u.sym->string);
+                temp = temp->first;
+            }
+        }
+        else {
+            int i;
+            for(i=0; i < who->first->u.i; i++)
+                printf("*");
+            printf("%s", who->u.sym->string);
+        }
+    }
+    else {
+        printf("%s ", who->u.sym->string);
+        dumpType(who->u.sym->type);
+    }
+}
+
 void dumpAST(AST* who, int level) {
 
     switch (who->tag) {
@@ -376,29 +421,9 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_VAR) : {
-            if(who->u.sym->type->kind == T_ARRAY && who->first) {
-                printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
-                AST *temp = who->first;
-                while(temp != NULL) {
-                    printf("[%d]", temp->u.i);
-                    temp = temp->next;
-                }
-                printf("\n");
-            }
-            if(who->type->kind == T_STRUCT || who->type->kind == T_CONF) {
-                printf("%*sVAR: %s", level*3, " ", who->u.sym->string);
-                AST *temp = who->first;
-                while(temp != NULL) {
-                    printf(".%s", temp->u.sym->string);
-                    temp = temp->first;
-                }
-                printf("\n");
-            }
-            else {
-                printf("%*sVAR: %s ", level*3, " ", who->u.sym->string);
-                dumpType(who->u.sym->type);
-                printf("\n");
-            }
+            printf("%*sVAR: ", level*3, " ");
+            dumpVar(who);
+            printf("\n");
             break;
         }
         case (N_RETURN) : {

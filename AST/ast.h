@@ -64,6 +64,7 @@ AST* newFloatNode(float);
 AST* newCharNode(char);
 AST* newBoolNode(int);
 
+void dumpVar(AST*);
 void dumpAST(AST*, int);
 AST* newErrorNode(Typetree*);
 

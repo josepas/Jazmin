@@ -25,6 +25,8 @@ apuntadores
 pasaje por referencia
 procedimientos (?)
 
+chequeo dimensiones arreglos
+
 DUDAS:
 cambio registro activacion
 funciones puras

@@ -74,6 +74,7 @@ void set_last_dims_expr(AST*, AST*);
 void set_last_field(AST*, AST*);
 
 Typetree* get_record_type(AST*);
+Typetree* get_pointer_type(Typetree*);
 
 Typetree* get_type(AST*);
 
@@ -335,8 +336,14 @@ declaration
                     );
             }
         }
-    | type point_d ID { declare_ptr($3, $<ival>2, $<type>1); $<node>$ = newPtrNode( lookupTable(current, $3, 1) ); }
-    /* pointer to array y vice versa */
+    | type point_d ID
+        {
+            declare_ptr($3, $<ival>2, $<type>1);
+            $<node>$ = newPtrNode( lookupTable(current, $3, 1) );
+        }
+    /* pointer to array y vice versa
+    | '(' type point_d ID ')' dimension
+    */
     | s_c SC_ID
         {
             push(offstack, offset); offset = 0;
@@ -515,21 +522,63 @@ assignment // refactorizar
                 newAssignNode(newVarNode(temp), "=", $5),
                 check_type_assign(get_array_type(temp->type), $5)
                 );
-            $<node>$->first->first = $<node>2;
+            //$<node>$->first->first = $<node>2;
+            addASTChild($<node>$->first, $<node>2);
+        }
+    | point_d ID '=' expr
+        {
+            temp = lookupTable(current, $2, 0);
+            $<node>$ = set_node_type(
+                newAssignNode(newVarNode(temp), "=", $4),
+                check_type_assign(get_pointer_type(temp->type), $4)
+                );
+            addASTChild($<node>$->first, newIntNode($<ival>1));
         }
     | ID
         {
-        if((temp = check_var($1)))
-            $<type>$ = check_type_record(temp->type);
+            if((temp = check_var($1))) {
+                $<node>$ = newVarNode(temp);
+            }
         }
     '.' field_id '=' expr
         {
-            $<node>$ = newVarNode(check_var($1));
-            $<node>$->first = $<node>4;
+            $<node>$ = $<node>2;
+            addASTChild($<node>$, $<node>4);
             $<node>$ = set_node_type(
                 newAssignNode($<node>$, "=", $6),
-                //check_type_assign(get_record_type($<node>$), $6->type)
-                check_type_assign(get_record_type($<node>$), $6)
+                check_type_assign(get_type($<node>$), $6)
+                );
+        }
+    | ID dims_expr
+        {
+            if((temp = check_var($1))) {
+                $<node>$ = newVarNode(temp);
+            }
+        }
+    '.' field_id '=' expr
+        {
+            $<node>$ = $<node>3;
+            addASTChild($<node>$, $<node>2);
+            addASTChild($<node>2, $<node>5);
+            $<node>$ = set_node_type(
+                newAssignNode($<node>$, "=", $7),
+                check_type_assign(get_type($<node>$->first), $7)
+                );
+
+        }
+    | ID
+        {
+            if((temp = check_var($1))) {
+                $<node>$ = newVarNode(temp);
+            }
+        }
+    ARROW field_id '=' expr
+        {
+            $<node>$ = $<node>2;
+            addASTChild($<node>$, $<node>4);
+            $<node>$ = set_node_type(
+                newAssignNode($<node>$, "=", $6),
+                check_type_assign(get_type($<node>$->first), $6)
                 );
         }
     ;
@@ -643,7 +692,13 @@ expr
                 $$->first = $<node>2;
             }
         }
-    /* | point_d ID { check_var($2); } */
+    | point_d ID
+        {
+            if((temp = check_var($2))) {
+                $$ = newVarNode(temp);
+                addASTChild($$, newIntNode($<ival>1));
+            }
+        } %prec UNARY
     | ID
         {
             if((temp = check_var($1)))
@@ -778,24 +833,21 @@ expr
 field_id
     : ID
         {
-            if((temp = check_field($<type>-1, $1))) {
+            if((temp = check_field(get_type($<node>-1), $1))) {
                 $<node>$ = newVarNode(temp);
+            }
+        }
+    | ID dims_expr
+        {
+            if((temp = check_field(get_type($<node>-1), $1))) {
+                $<node>$ = newVarNode(temp);
+                addASTChild($<node>$, $<node>2);
             }
         }
     | field_id '.' ID
         {
-            /*if((temp = check_field($<node>1->type, $3))) {
-                if(temp->class == C_VAR) {
-                    $<node>$ = $<node>1;
-                    $<node>$->u.sym = temp;
-                    $<node>$->type = temp->type;
-                }
-                else {
-                    $<node>$ = set_node_type($<node>1, check_type_record(temp->type));
-                }
-            }*/
             temp = check_field($<node>1->type, $3);
-            set_last_field($<node>1, newVarNode(temp));
+            set_last_dims_expr($<node>1, newVarNode(temp));
             $<node>$ = $<node>1;
         }
     ;
@@ -887,7 +939,7 @@ sub_call
         }
     '(' arguments ')'
         {
-            
+
             $<node>$ = set_node_type( $<node>4, lookupTable(current, $1, 0)->type);
                 //check_arguments($1, $<list>4)
                 //);
@@ -1100,7 +1152,7 @@ Typetree* get_array_type(Typetree* t) {
 Typetree* get_pointer_type(Typetree* t) {
 
     if (t == NULL) {
-        fprintf(stderr, "Fallo miserable en el chequeo de arreglos\n");
+        fprintf(stderr, "Fallo miserable en el chequeo de apuntadores\n");
     }
 
     if (t->kind != T_POINTER) {
@@ -1497,20 +1549,26 @@ void set_last_field(AST* node, AST* new_node) {
 
 Typetree* get_record_type(AST* node) {
     if (node->type == NULL) {
-        fprintf(stderr, "Fallo miserable en el chequeo de tipos de arreglos\n");
+        fprintf(stderr, "Fallo miserable en el chequeo de tipos de records\n");
     }
-    if (node->type->kind != T_STRUCT && node->type->kind != T_CONF) {
+    else if (node->type->kind != T_STRUCT && node->type->kind != T_CONF) {
+        return get_type(node);
+    }
+    else if (node->first == NULL) {
         return node->type;
     }
+
     return get_record_type(node->first);
 }
 
 Typetree* get_type(AST* node) {
     if(node->type->kind == T_ARRAY)
         return get_array_type(node->type);
+    else if(node->type->kind == T_POINTER)
+        return get_pointer_type(node->type);
     else if(node->type->kind == T_STRUCT || node->type->kind == T_CONF)
             return get_record_type(node);
-    if(node->type->kind == T_FUNC)
+    else if(node->type->kind == T_FUNC)
         return node->type->u.fun.range;
     return node->type;
 }
