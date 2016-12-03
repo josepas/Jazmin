@@ -56,7 +56,7 @@ class Descriptor {
 			cout << "Error en GET_VAR_DESCRIPTOR";
 		}
 
-		void varAvailableAtR(string var, int i, int only) {
+		void addAvailableAtR(string var, int i, int only) {
 			varDescriptor* vd = getVarDescr(var);
   			
   			//  ------------------ Puedo hacer este clear tranquilamente? -----------------------------
@@ -100,7 +100,7 @@ class Descriptor {
   			this->R[i].insert( var );
 
   			// Actualizo las variables
-  			varAvailableAtR(var, i, 0);
+  			addAvailableAtR(var, i, 0);
 
 		}	
 		
@@ -110,18 +110,16 @@ class Descriptor {
 
 			this->R[i].insert(varX);
 
-			varAvailableAtR(varX, i, 0);
+			addAvailableAtR(varX, i, 1);
 		}
 
 		
-
-
 		// ST R, x
 		void store(string var, int i) {
-			varAvailableAtR(var, i, 0);
+			addAvailableAtR(var, i, 0);
 		}
 
-		// ADD Ri, Rj, Rk
+		// OPP Ri, Rj, Rk
 		// En realidad solo importa el R destion y la variable destino
 		void operation(int i, string var) {
 
@@ -134,7 +132,97 @@ class Descriptor {
   			this->R[i].insert( var );
 
   			// variable recien calculada solo puede estar en ese registro
-  			varAvailableAtR(var, i, 1);
+  			addAvailableAtR(var, i, 1);
+
+		}
+
+
+		bool isInSet(string var, set<string> s) {
+			set<string>::iterator it;
+			it = s.find(var);
+			return it != s.end();
+		}
+
+
+		// Me dice si la variable esta en otra ubicación para reciclarla
+		bool IsVarAvailable (int r, string var) {
+			
+			//Busqueda en los registros
+			for (int i = 0; i < 33; ++i) {
+				if ( isInSet(var, this->R[i]) && r != i) {
+					return true;
+				}
+			}
+
+			//Busqueda en las variables
+			vector<varDescriptor*> v = this->vars;
+			for (vector<varDescriptor*>::iterator it = v.begin() ; it != v.end(); ++it) {
+				if ( isInSet(var, (*it)->isIn) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+
+		// Creo que se puede implementar con get reg para operandos y get reg para destinos
+		void getReg (string op1, string op2, string destino) {
+
+			int regs[3];
+			int where1, where2;
+
+			// operando 1
+			// Ya esta en un registro?
+			for (int i = 0; i < 33; ++i) {
+				if ( isInSet(op1, this->R[i]) ) {
+					where1 = i;
+				}
+			}
+
+			// operando 2
+			// Ya esta en un registro?
+			for (int i = 0; i < 33; ++i) {
+				if ( isInSet(op2, this->R[i]) ) {
+					where2 = i;
+				}
+			}
+
+			// Hay registros libre?
+			vector<int> freeRegs = this->emptyRegisters();
+			if ( freeRegs.size() != 0 ) {
+				freeRegs.front();
+			}
+			
+			// Puedo reciclar?
+			// Operando 1
+			for (int i = 0; i < 33; ++i) {
+				if ( IsVarAvailable(i, op1) ) {
+					where1 = i;
+				}
+			}
+
+			// Operando 2
+			for (int i = 0; i < 33; ++i) {
+				if ( IsVarAvailable(i, op2) ) {
+					where2 = i;
+				}
+			}
+
+
+			// ----------------------------------------------------------- Debo chequear que este sola? --------
+			// Si voy a cambiar el valor a algo que esta en un registro
+			// -> variable destino esta en algun resgistro sola? la voy a cambiar
+			//Busqueda en los registros
+			for (int i = 0; i < 33; ++i) {
+				if ( isInSet(destino, this->R[i]) ) {
+					where1 = i;
+				}
+			}
+
+			// Aqui viene el spill!!!!
+
+
 
 		}
 
