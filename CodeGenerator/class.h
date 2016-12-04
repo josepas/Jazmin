@@ -167,70 +167,88 @@ class Descriptor {
 
 
 		// Creo que se puede implementar con get reg para operandos y get reg para destinos
-		void getReg (string op1, string op2, string destino) {
+		int getRegOperand (string op1, string op2, string destino) {
 
-			int regs[3];
-			int where1, where2;
 
-			// operando 1
 			// Ya esta en un registro?
 			for (int i = 0; i < 33; ++i) {
 				if ( isInSet(op1, this->R[i]) ) {
-					where1 = i;
+					return i;
 				}
 			}
 
-			// operando 2
-			// Ya esta en un registro?
-			for (int i = 0; i < 33; ++i) {
-				if ( isInSet(op2, this->R[i]) ) {
-					where2 = i;
-				}
-			}
-
-			// Hay registros libre?
+			// Hay registros libres?
 			vector<int> freeRegs = this->emptyRegisters();
-			if ( freeRegs.size() != 0 ) {
-				freeRegs.front();
+			if ( freeRegs.size() > 0 ) {
+				return freeRegs.front();
 			}
 			
-			// Puedo reciclar?
+			// Puedo reciclar? solo si existe un solo valor en el registro
 			// Operando 1
 			for (int i = 0; i < 33; ++i) {
-				if ( IsVarAvailable(i, op1) ) {
-					where1 = i;
+				if ( IsVarAvailable(i, *(this->R[i].begin()) ) && this->R[i].size() == 1 ) {
+					return i;
 				}
 			}
-
-			// Operando 2
-			for (int i = 0; i < 33; ++i) {
-				if ( IsVarAvailable(i, op2) ) {
-					where2 = i;
-				}
-			}
-
 
 			// ----------------------------------------------------------- Debo chequear que este sola? --------
 			// Si voy a cambiar el valor a algo que esta en un registro
 			// -> variable destino esta en algun resgistro sola? la voy a cambiar
 			//Busqueda en los registros
 			for (int i = 0; i < 33; ++i) {
-				if ( isInSet(destino, this->R[i]) ) {
-					where1 = i;
+				if ( isInSet(destino, this->R[i]) && (destino != op1 && destino != op2 ) ) {
+					return i;
 				}
 			}
 
 			// Aqui viene el spill!!!!
+		}
 
+		int getRegDestino (string destino, string op1, string op2) {
 
+			int where;
+			
+			// Si un registro solo contiene el resultado que voy a cambiar
+			for (int i = 0; i < 33; ++i) {
+				if (	isInSet(destino, this->R[i]) 
+						&& this->R[i].size() == 1 ) {
+					return i;
+				}
+			}
+
+			// Usar uno de los registros de los operandos para el resultado
+			for (int i = 0; i < 33; ++i) {
+				if ( (	isInSet(op1, this->R[i]) 
+						|| isInSet(op2, this->R[i]) 
+					 )
+						&& this->R[i].size() == 1 ) {
+					return i;
+				}
+			}
+
+			// Hay registros libres?
+			vector<int> freeRegs = this->emptyRegisters();
+			if ( freeRegs.size() > 0 ) {
+				where = freeRegs.front();
+			}
+			
+			// Puedo reciclar?
+			for (int i = 0; i < 33; ++i) {
+				if ( IsVarAvailable(i, *(this->R[i].begin()) ) && this->R[i].size() == 1 ) {
+					return i;
+				}
+			}
 
 		}
 
+		// No se si aqui va el 
+		void getRegCopy(string op, string destino) {
+
+			getRegOperand(op, "", destino);
+		}
 
 
-
-
-};
+}; // Class
 
 
 
