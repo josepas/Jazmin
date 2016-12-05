@@ -285,7 +285,6 @@ io_inst
             );
             $<node>$->type = HOLLOW_T;
         }
-
 	| READ ID
         {
             $<node>$ = newReadNode(
@@ -294,6 +293,17 @@ io_inst
             );
             $<node>$->type = HOLLOW_T;
         }
+    | READ ID dims_expr
+        {
+            $<node>$ = newReadNode(
+                NULL,
+                newVarNode( check_var($2) )
+            );
+            $<node>$->type = HOLLOW_T;
+        }
+    | READ ID '.' field_id
+    | READ ID dims_expr '.' field_id
+
 
     | WRITE STRING { temp = constant_string($2); }
         {
@@ -1413,7 +1423,7 @@ Typetree* check_for(AST *start, AST *end, AST *block) {
 Typetree* check_type_assign(Typetree *t1, AST *node2) {
 
     if (node2->type->kind == T_TYPE_ERROR) {
-        fprintf(stderr, "Error: asignación invalida\n");
+        fprintf(stderr, "Error: asignación invalida  %d\n", yylineno);
         return node2->type;
     } else {
         Typetree *temp = get_type(node2);
