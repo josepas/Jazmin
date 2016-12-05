@@ -131,6 +131,9 @@ int main(int argc, char *argv[]) {
                 }
             }
             astToTac(tree, list, NULL, NULL, NULL, N, NULL);
+
+            cleanTAC(list);
+
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {
                 // printf("==> %d\n", ((Quad*)aux->data)->op);

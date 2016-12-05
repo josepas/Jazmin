@@ -1039,3 +1039,34 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
     }
     return temp;
 }
+
+void cleanTAC(DLinkedList *list) {
+    int jumps[l_num];
+    memset(jumps, 0, sizeof(jumps));
+
+    Node *ins;
+    for(ins = list->first; ins != NULL; ins=ins->next) {
+        switch(((Quad*)ins->data)->op) {
+            case GOTO:
+            case IF_GOTO:
+            case IFN_GOTO:
+            case OP_EQUAL:
+            case OP_UNEQUAL:
+            case OP_LT:
+            case OP_LTOE:
+            case OP_GT:
+            case OP_GTOE:
+                jumps[((Quad*)ins->data)->result->u.l] = 1;
+                break;
+        }
+    }
+
+    for(ins = list->first; ins != NULL; ins=ins->next) {
+        Quad *q = (Quad*)ins->data;
+        if(q->op == OP_LABEL && q->arg1->u.l != 0 && q->arg1->u.l != l_num-1 && !jumps[q->arg1->u.l]) {
+            ins->next->prev = ins->prev;
+            ins->prev->next = ins->next;
+            // falta free de ese quad
+        }
+    }
+}

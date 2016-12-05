@@ -85,4 +85,6 @@ Addr* genLabel();
 
 Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*, Context, Addr*);
 
+void cleanTAC(struct _dlinkedlist*);
+
 #endif
