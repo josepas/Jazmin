@@ -193,7 +193,7 @@ void dumpType(Typetree *type) {
             // dumpType(type->u.fun.range); se le pondra hollow?
             break;
         case T_CONF :
-            printf("confederation %s", type->u.r.name);
+            printf("Confederation %s", type->u.r.name);
             break;
         case T_STRUCT :
             printf("Struct %s", type->u.r.name);
