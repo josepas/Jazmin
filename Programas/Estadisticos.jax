@@ -2,7 +2,8 @@ program {
 	
 	int tamano
 	float promedio, min, max, desviacion, varianza
-	float f[50], total
+	float f[50]
+	float total
 	char opcion
 	int i 
 	while (True) {
@@ -12,8 +13,8 @@ program {
 
 		i = 0
 		total = 0
-		max = -2000000000
-		min =  2000000000
+		max = -2000000000.0
+		min =  2000000000.0
 		while (i < tamano) {
 			read f[i]
 			if ( f[i] < min ) {

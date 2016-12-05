@@ -1,11 +1,3 @@
-# Descripción
-# 	Programa que calcula el factorial recursiva e iterativamente
-# 	segun especifique el usuario
-# 
-# Autores
-# 	José Pascarella
-# 	Amin Arria	
-
 func factorialR(int n) -> int {
 	
 	if (n == 1) {
@@ -43,7 +35,7 @@ program {
 			resultado = factorialI(n)
 		} else {
 			write "No entendimos la opción (r/i)"
-			continue
+			#continue
 		}
 
 		write "Factorial("
@@ -55,7 +47,7 @@ program {
 		read opcion
 
 		if (opcion != 's') {
-			write "No dijiste que si, soy flojo"
+			write "No dijiste que si"
 			break
 		}
 	}
