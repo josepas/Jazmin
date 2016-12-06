@@ -305,8 +305,9 @@ io_inst
     | READ ID dims_expr '.' field_id
 
 
-    | WRITE STRING { temp = constant_string($2); }
+    | WRITE STRING
         {
+            temp = constant_string($2);
             $<node>$ = newWriteNode(
                 temp,
                 NULL
@@ -325,8 +326,8 @@ io_inst
 	;
 
 jump
-	: NEXT             { $<node>$ = newNextNode(); }
-	| BREAK            { $<node>$ = newBreakNode(); }
+	: NEXT             { $<node>$ = newNextNode(); $<node>$->type = HOLLOW_T; }
+	| BREAK            { $<node>$ = newBreakNode(); $<node>$->type = HOLLOW_T; }
 	| RETURN           { $<node>$ = newReturnNode(NULL); $<node>$->type = HOLLOW_T; }
 	| RETURN expr      { $<node>$ = newReturnNode($2); $<node>$->type = $2->type; }
 	;
