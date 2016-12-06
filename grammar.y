@@ -905,20 +905,20 @@ f_formals
     : /* lambda */
         {
             current = enterScope(current);
-            push(offstack, offset); offset = 0;
+            push(offstack, offset); offset = 8;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 0; } f_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 8; } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
     : /* lambda */
         {
             current = enterScope(current);
-            push(offstack, offset); offset = 0;
+            push(offstack, offset); offset = 8;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 0; } p_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 8; } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
