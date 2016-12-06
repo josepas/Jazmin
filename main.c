@@ -117,9 +117,34 @@ int main(int argc, char *argv[]) {
         if (has_error == 0) {
             arreglarTabla(current);
             DLinkedList *list = newDoublyLinkList();
-            // Subrutinas
+
             Entry *aux_entry;
             int i;
+
+            // Strings
+            int s_num = 0;
+            for(i=0; i<HASH_SIZE; i++) {
+                aux_entry = strings->table[i];
+                while(aux_entry!=NULL) {
+                    aux_entry->offset = s_num++;
+                    addDLL(list,
+                        newDLLNode(
+                            generateTAC(
+                                TAC_LABEL_STR,
+                                OP_STR,
+                                generateAddr(LABEL_STR, &(aux_entry->offset)),
+                                generateAddr(CONST_STR, aux_entry->string),
+                                NULL
+                                )
+                            ),
+                        0
+                    );
+
+                    aux_entry = aux_entry->next;
+                }
+            }
+
+            // Subrutinas
             for(i=0; i<HASH_SIZE; i++) {
                 aux_entry = current->fchild->table[i];
                 while(aux_entry!=NULL) {
@@ -133,6 +158,7 @@ int main(int argc, char *argv[]) {
                     aux_entry = aux_entry->next;
                 }
             }
+
             astToTac(tree, list, NULL, NULL, NULL, N, NULL);
 
             cleanTAC(list);

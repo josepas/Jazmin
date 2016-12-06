@@ -11,6 +11,7 @@
 #define def_comment() newDLLNode(generateTAC(TAC_COMMENT, OP_COMMENT, NULL, NULL, NULL))
 #define def_logue(X, Y) newDLLNode(generateTAC(PRO_EPI_LOGUE, X, Y, NULL, NULL))
 #define def_write(X) newDLLNode(generateTAC(TAC_WRITE,  X, ((Quad*)temp->data)->result, NULL, NULL))
+#define def_read(X) newDLLNode(generateTAC(TAC_READ,  X, NULL, NULL, ((Quad*)temp->data)->result))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -23,7 +24,7 @@ typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP, //
             COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,   //12..
             COPY_TO_POINTED, TAC_READ, TAC_WRITE, TAC_COMMENT, TAC_LABEL,
             TAC_REMOVE, TAC_EXIT , TAC_FP, TAC_GP,
-            PRO_EPI_LOGUE} TACType;
+            PRO_EPI_LOGUE, TAC_LABEL_STR } TACType;
 
 typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    //0..5
             FLOAT_PLUS, FLOAT_MINUS, FLOAT_MULT, FLOAT_DIV, FLOAT_MOD, FLOAT_UN_MINUS, //6..11
@@ -36,11 +37,12 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             OP_PARAM, OP_FUNC_CALL, OP_FUNC_DEF,
             OP_RETURN, OP_RETURN_VALUE,
             PROLOGUE, EPILOGUE,
-            OP_WRITE_INT, OP_WRITE_FLOAT, OP_WRITE_CHAR, OP_WRITE_BOOL,
-            OP_WRITE_STR } Operation;
+            OP_WRITE_INT, OP_WRITE_FLOAT, OP_WRITE_CHAR, OP_WRITE_BOOL, OP_WRITE_STR,
+            OP_READ_INT, OP_READ_FLOAT, OP_READ_CHAR, OP_READ_BOOL,
+            OP_STR } Operation;
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL, CONST_STR,
-            LABEL, VAR, TEMP, SUBROUTINE} AddrType;
+            LABEL, LABEL_STR, VAR, TEMP, SUBROUTINE} AddrType;
 
 typedef enum {L_VALUE, R_VALUE, NONE} LRValues;
 
@@ -64,6 +66,7 @@ typedef struct _addr {
         char *f_name;
         // string
         char *str;
+        int l_str;
     } u;
 } Addr;
 
@@ -74,7 +77,7 @@ typedef struct _quad {
     Addr *result;
 } Quad;
 
-Addr* genereateAddr(AddrType, void*);
+Addr* generateAddr(AddrType, void*);
 
 Quad* generateTAC(TACType, Operation, Addr* , Addr*, Addr*);
 

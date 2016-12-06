@@ -16,14 +16,17 @@ Addr* generateAddr(AddrType addt, void *value) {
         case CONST_BOOL:
             address->u.b = *(int*)value;
             break;
+        case CONST_STR:
+            address->u.str = (char*)value;
+            break;
         case VAR:
             address->u.e = (Entry*)value;
             break;
         case SUBROUTINE:
             address->u.f_name = (char*)value;
             break;
-        case CONST_STR:
-            address->u.str = (char*)value;
+        case LABEL_STR:
+            address->u.l_str = *(int*)value;
             break;
         default:
             printf("Error en \"generateAddr\"\n");
@@ -47,6 +50,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->result = result;
             break;
         case PROC_CALL:
+        case TAC_LABEL_STR:
             q->op = op;
             q->arg1 = arg1;
             q->arg2 = arg2;
@@ -109,6 +113,9 @@ void addrToString(Addr *a, char *s) {
             else
                 sprintf(s, "False");
             break;
+        case CONST_STR:
+            sprintf(s, "%s", a->u.str);
+            break;
         case VAR:
             sprintf(s, "%s", a->u.e->string);
             break;
@@ -120,6 +127,9 @@ void addrToString(Addr *a, char *s) {
             break;
         case SUBROUTINE:
             sprintf(s, "%s", a->u.f_name);
+            break;
+        case LABEL_STR:
+            sprintf(s, "_str%d", a->u.l_str);
             break;
         default:
             printf("Error en \"addrToString\"\n");
@@ -297,6 +307,47 @@ void imprimirTAC(Quad* q) {
         case OP_REMOVE:
             printf("OP_REMOVE addt:%d\n", q->result->addt);
             break;
+        case OP_WRITE_INT:
+            addrToString(q->arg1, a1);
+            printf("   _write_int %s\n", a1);
+            break;
+        case OP_WRITE_FLOAT:
+            addrToString(q->arg1, a1);
+            printf("   _write_float %s\n", a1);
+            break;
+        case OP_WRITE_CHAR:
+            addrToString(q->arg1, a1);
+            printf("   _write_char %s\n", a1);
+            break;
+        case OP_WRITE_BOOL:
+            addrToString(q->arg1, a1);
+            printf("   _write_bool %s\n", a1);
+            break;
+        case OP_WRITE_STR:
+            addrToString(q->arg1, a1);
+            printf("   _write_str %s\n", a1);
+            break;
+        case OP_READ_INT:
+            addrToString(q->result, a1);
+            printf("   _read_int %s\n", a1);
+            break;
+        case OP_READ_FLOAT:
+            addrToString(q->result, a1);
+            printf("   _read_float %s\n", a1);
+            break;
+        case OP_READ_CHAR:
+            addrToString(q->result, a1);
+            printf("   _read_char %s\n", a1);
+            break;
+        case OP_READ_BOOL:
+            addrToString(q->result, a1);
+            printf("   _read_bool %s\n", a1);
+            break;
+        case OP_STR:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            printf("   %s: \"%s\"\n", a1, a2);
+            break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
             exit(-1);
@@ -342,6 +393,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             addDLL(list, temp, 0);
 
             // Label del final
+
             next = genLabel();
 
             ast_node = ast_node->first;
@@ -894,11 +946,12 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_WRITE:
                 if(ast_node->first != NULL) {
+                    lrvalue = R_VALUE;
                     temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
                     type_aux = *(ast_node->first->type);
                 }
                 else {
-                    r = generateAddr(CONST_STR, ast_node->u.sym->string);
+                    r = generateAddr(LABEL_STR, &(ast_node->u.sym->offset));
                     temp = newDLLNode(
                     generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
                         );
@@ -921,7 +974,27 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         temp = def_write(OP_WRITE_STR);
                         break;
                 }
+                addDLL(list, temp, 0);
+            break;
+        case N_READ:
+                lrvalue = L_VALUE;
+                temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
 
+                switch(ast_node->first->type->kind) {
+                    case T_INT:
+                        temp = def_read(OP_READ_INT);
+                        break;
+                    case T_FLOAT:
+                        temp = def_read(OP_READ_FLOAT);
+                        break;
+                    case T_BOOL:
+                        temp = def_read(OP_READ_BOOL);
+                        break;
+                    case T_CHAR:
+                        temp = def_read(OP_READ_CHAR);
+                        break;
+                }
+                addDLL(list, temp, 0);
             break;
         default:
             printf("Nodo no existe: %d\n", ast_node->tag);
@@ -1051,11 +1124,13 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
 
 void cleanTAC(DLinkedList *list) {
     int jumps[l_num];
+    int last_label;
     memset(jumps, 0, sizeof(jumps));
 
     Node *ins;
     for(ins = list->first; ins != NULL; ins=ins->next) {
-        switch(((Quad*)ins->data)->op) {
+        Quad *q = (Quad*)ins->data;
+        switch(q->op) {
             case GOTO:
             case IF_GOTO:
             case IFN_GOTO:
@@ -1065,14 +1140,17 @@ void cleanTAC(DLinkedList *list) {
             case OP_LTOE:
             case OP_GT:
             case OP_GTOE:
-                jumps[((Quad*)ins->data)->result->u.l] = 1;
+                jumps[q->result->u.l] = 1;
+                break;
+            case OP_LABEL:
+                last_label = q->arg1->u.l;
                 break;
         }
     }
 
     for(ins = list->first; ins != NULL; ins=ins->next) {
         Quad *q = (Quad*)ins->data;
-        if(q->op == OP_LABEL && q->arg1->addt != SUBROUTINE && q->arg1->u.l != 0 && q->arg1->u.l != l_num-1 && !jumps[q->arg1->u.l]) {
+        if(q->op == OP_LABEL && q->arg1->addt != SUBROUTINE && q->arg1->u.l != 0 && q->arg1->u.l != last_label && !jumps[q->arg1->u.l]) {
             ins->next->prev = ins->prev;
             ins->prev->next = ins->next;
             // falta free de ese quad
