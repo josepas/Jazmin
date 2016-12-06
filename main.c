@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
             printf("Strings ");
             dumpTable(strings);
             printf("\n>>>>>>>>>>>>>>>>>>>>>>>><\n\n");
+            arreglarTabla(current);
             dumpTable(current);
         }
     }
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
             has_error = 1;
         }
         if (has_error == 0) {
+            arreglarTabla(current);
             dumpAST(tree, 0);
         }
     }
@@ -113,6 +115,7 @@ int main(int argc, char *argv[]) {
             has_error = 1;
         }
         if (has_error == 0) {
+            arreglarTabla(current);
             DLinkedList *list = newDoublyLinkList();
             // Subrutinas
             Entry *aux_entry;
