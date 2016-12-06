@@ -905,10 +905,10 @@ f_formals
     : /* lambda */
         {
             current = enterScope(current);
-            push(offstack, offset); offset = 8;
+            push(offstack, offset); offset = 16;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 8; } f_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 16; } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
@@ -1091,7 +1091,7 @@ void declare_proc(char *id, ArgList *list) {
     Typetree *t = createProc(list);
     if((aux = lookupTable(current, id, 0)) == NULL) {
         int size = 0; //cambiar
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t, size, offset);
+        insertTable(current->father, id, yylloc.first_line, yylloc.first_column, C_SUB, t, size, offset);
     }
     else {
         if(aux->line) {
