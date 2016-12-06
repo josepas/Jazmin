@@ -528,32 +528,32 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_FCALL:
             ast_aux = ast_node->first;
-            int size = 0;
-            while(ast_aux) {
-                // lrvalue = R_VALUE;
-                size += ast_aux->type->size;
-                first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
+            int size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
+            // while(ast_aux) {
+            //     // lrvalue = R_VALUE;
+            //     size += ast_aux->type->size;
+            //     first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
 
-                temp = newDLLNode(
-                        generateTAC(COPY, ASSIGN,
-                            ((Quad*)first->data)->result,
-                            NULL,
-                            genTemp()
-                            )
-                        );
-                addDLL(list, temp, 0);
+            //     temp = newDLLNode(
+            //             generateTAC(COPY, ASSIGN,
+            //                 ((Quad*)first->data)->result,
+            //                 NULL,
+            //                 genTemp()
+            //                 )
+            //             );
+            //     addDLL(list, temp, 0);
 
-                temp = newDLLNode(
-                        generateTAC(PARAM, OP_PARAM,
-                            NULL,
-                            NULL,
-                            ((Quad*)temp->data)->result
-                            )
-                        );
-                addDLL(list, temp, 0);
+            //     temp = newDLLNode(
+            //             generateTAC(PARAM, OP_PARAM,
+            //                 NULL,
+            //                 NULL,
+            //                 ((Quad*)temp->data)->result
+            //                 )
+            //             );
+            //     addDLL(list, temp, 0);
 
-                ast_aux = ast_aux->next;
-            }
+            //     ast_aux = ast_aux->next;
+            // }
 
             a1 = (Addr*)malloc(sizeof(Addr));
             a1->addt = SUBROUTINE;
@@ -1063,10 +1063,42 @@ void cleanTAC(DLinkedList *list) {
 
     for(ins = list->first; ins != NULL; ins=ins->next) {
         Quad *q = (Quad*)ins->data;
-        if(q->op == OP_LABEL && q->arg1->u.l != 0 && q->arg1->u.l != l_num-1 && !jumps[q->arg1->u.l]) {
+        if(q->op == OP_LABEL && q->arg1->addt != SUBROUTINE && q->arg1->u.l != 0 && q->arg1->u.l != l_num-1 && !jumps[q->arg1->u.l]) {
             ins->next->prev = ins->prev;
             ins->prev->next = ins->next;
             // falta free de ese quad
         }
     }
+}
+
+int funcParamsTAC(AST *ast, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context, Addr *epilogue) {
+    if(ast == NULL)
+        return 0;
+
+    Node *temp, *first, *last;
+    int size = funcParamsTAC(ast->next, list, true, false, next, context, epilogue);
+
+    // lrvalue = R_VALUE;
+    size += ast->type->size;
+    first = astToTac(ast, list, NULL, NULL, NULL, context, epilogue);
+
+    temp = newDLLNode(
+            generateTAC(COPY, ASSIGN,
+                ((Quad*)first->data)->result,
+                NULL,
+                genTemp()
+                )
+            );
+    addDLL(list, temp, 0);
+
+    temp = newDLLNode(
+            generateTAC(PARAM, OP_PARAM,
+                NULL,
+                NULL,
+                ((Quad*)temp->data)->result
+                )
+            );
+    addDLL(list, temp, 0);
+
+    return size;
 }

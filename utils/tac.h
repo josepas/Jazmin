@@ -87,4 +87,6 @@ Node* astToTac(AST*, struct _dlinkedlist*, Addr*, Addr*, Addr*, Context, Addr*);
 
 void cleanTAC(struct _dlinkedlist*);
 
+int funcParamsTAC(AST*, DLinkedList*, Addr*, Addr*, Addr*, Context, Addr*);
+
 #endif
