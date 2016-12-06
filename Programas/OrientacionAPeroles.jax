@@ -1,12 +1,12 @@
 program {
 	
 	struct Perol {
-		int  tipo;
+		int  tipo
 	  	confederation Dentro {
-	    	bool  b;
-	    	char  c;
-	    	int   i;
-	 		float f;
+	    	bool  b
+	    	char  c
+	    	int   i
+	 		float f
 		}
 	}
 
@@ -14,8 +14,8 @@ program {
 	int cantidad
 	int i
 	
-	struct Perol maulas[20]
-	confederation Dentro tmp; # xD
+	Perol maulas[20]
+	#confederation Dentro tmp; # xD
 
 	char tmpc
 	int tmpi
@@ -29,14 +29,14 @@ program {
 		read cantidad
 
 		###### Lectura
-		j = 0
+		int j = 0
 		i = 0 # Donde coloco el proximo 0
 		while (i < cantidad) {
 			write "Ingrese el tipo del perol (b/c/i/f): "
 			read tipoP
 
-			if (tipoP == "b") {
-				read maulas[j].tipo = 0
+			if (tipoP == 'b') {
+				read maulas[j].tipo
 				read maulas[j].Dentro.b
 				
 				## swap(j,i) para meter todos los 0 donde van
@@ -62,16 +62,16 @@ program {
 				i = i + 1
 
 			} elif (tipoP == "c") {
-				read maulas[j].tipo = 1
+				read maulas[j].tipo
 				read maulas[j].Dentro.c
 
 
 			} elif (tipoP == "i") {
-				read maulas[j].tipo = 2
+				read maulas[j].tipo
 				read maulas[j].Dentro.i
 
 			} elif (tipoP == "f") {
-				read maulas[j].tipo = 3
+				read maulas[j].tipo
 				read maulas[j].Dentro.f
 
 			} else {
