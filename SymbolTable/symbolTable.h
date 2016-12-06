@@ -47,4 +47,7 @@ Entry* lookupTable(Symtable*, char*, int);
 
 int getMaxSize(Symtable*);
 
+void arreglarAux(Symtable*, int);
+void arreglarTabla(Symtable*);
+
 #endif

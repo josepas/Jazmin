@@ -210,3 +210,37 @@ int getMaxSize(Symtable* current) {
     }
     return max;
 }
+
+void arreglarAux(Symtable* tabla, int inc) {
+    int i;
+    Entry *aux;
+    for(i=0; i<HASH_SIZE && inc > 0; i++) {
+        aux = tabla->table[i];
+        while(aux!=NULL) {
+            // if(aux->type->kind != T_CONF && aux->type->kind != T_STRUCT) {
+                aux->offset += inc;
+            // }
+            aux = aux->next;
+        }
+    }
+
+    if (tabla->fchild != NULL) {
+        arreglarAux(tabla->fchild, inc + tabla->size);
+    }
+    if (tabla->next != NULL) {
+        arreglarAux(tabla->next, inc);
+    }
+}
+
+void arreglarTabla(Symtable* tabla) {
+    // Arreglar tablas de subrutinas
+    tabla = tabla->fchild;  // 1
+    Symtable *aux = tabla->fchild;     // 2
+    while(aux != tabla->lchild) {
+        arreglarAux(aux->fchild, 0);
+        aux = aux->next;
+    }
+
+    // Arreglar tablas del program
+    arreglarAux(tabla->lchild, 0);
+}
