@@ -8,6 +8,8 @@
 extern int yylineno;
 extern char* yytext;
 
+int in_loop = 0;
+
 int has_error = 0;
 int offset = 0;
 Offsetstack *offstack = NULL;
@@ -77,6 +79,8 @@ Typetree* get_record_type(AST*);
 Typetree* get_pointer_type(Typetree*);
 
 Typetree* get_type(AST*);
+
+void check_loop();
 
 %}
 %locations
@@ -257,7 +261,7 @@ instruction
     : init_dcl        { $<node>$ = $<node>1; }
     | block           { $<node>$ = $<node>1; }
     | selection       { $<node>$ = $<node>1; }
-    | iteration       { $<node>$ = $<node>1; }
+    | { in_loop++; } iteration  { $<node>$ = $<node>2; in_loop--;}
     | assignment      { $<node>$ = $<node>1; }
     | jump            { $<node>$ = $<node>1; }
     | io_inst         { $<node>$ = $<node>1; }
@@ -326,8 +330,8 @@ io_inst
 	;
 
 jump
-	: NEXT             { $<node>$ = newNextNode(); $<node>$->type = HOLLOW_T; }
-	| BREAK            { $<node>$ = newBreakNode(); $<node>$->type = HOLLOW_T; }
+	: NEXT             { check_loop(); $<node>$ = newNextNode(); $<node>$->type = HOLLOW_T; }
+	| BREAK            { check_loop(); $<node>$ = newBreakNode(); $<node>$->type = HOLLOW_T; }
 	| RETURN           { $<node>$ = newReturnNode(NULL); $<node>$->type = HOLLOW_T; }
 	| RETURN expr      { $<node>$ = newReturnNode($2); $<node>$->type = $2->type; }
 	;
@@ -1582,4 +1586,12 @@ Typetree* get_type(AST* node) {
     else if(node->type->kind == T_FUNC)
         return node->type->u.fun.range;
     return node->type;
+}
+
+void check_loop() {
+    if(!in_loop) {
+        has_error = 1;
+        fprintf(stderr, "%d:%d No puede existir un break o continue fuera de un ciclo\n",
+                yylloc.first_line, yylloc.first_column );
+    }
 }
