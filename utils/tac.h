@@ -10,6 +10,7 @@
 #define def_goto(X) newDLLNode(generateTAC(JUMP, GOTO, NULL, NULL, X))
 #define def_comment() newDLLNode(generateTAC(TAC_COMMENT, OP_COMMENT, NULL, NULL, NULL))
 #define def_logue(X, Y) newDLLNode(generateTAC(PRO_EPI_LOGUE, X, Y, NULL, NULL))
+#define def_write(X) newDLLNode(generateTAC(TAC_WRITE,  X, ((Quad*)temp->data)->result, NULL, NULL))
 #include <stdio.h>
 #include "../TypeTree/typeTree.h"
 #include "../SymbolTable/symbolTable.h"
@@ -17,10 +18,10 @@
 #include "../List/DoublyLinkedList.h"
 #include "utils.h"
 
-typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP,
-            PARAM, PROC_CALL, TAC_FUNC_CALL, TAC_RETURN, TAC_RETURN_VALUE,
-            COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,
-            COPY_TO_POINTED, TAC_READ, PRINT, TAC_COMMENT, TAC_LABEL,
+typedef enum {BIN_OP, UNARY_OP, COPY, JUMP, IF_JUMP, IFN_JUMP, IF_RELOP_JUMP, //0..6
+            PARAM, PROC_CALL, TAC_FUNC_CALL, TAC_RETURN, TAC_RETURN_VALUE,  //7..11
+            COPY_FROM_INDEX, COPY_TO_INDEX, COPY_ADDRESS, COPY_VALUE_POINTED,   //12..
+            COPY_TO_POINTED, TAC_READ, TAC_WRITE, TAC_COMMENT, TAC_LABEL,
             TAC_REMOVE, TAC_EXIT , TAC_FP, TAC_GP,
             PRO_EPI_LOGUE} TACType;
 
@@ -34,9 +35,11 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             OP_FROM_FP, OP_TO_FP, OP_FROM_GP, OP_TO_GP,
             OP_PARAM, OP_FUNC_CALL, OP_FUNC_DEF,
             OP_RETURN, OP_RETURN_VALUE,
-            PROLOGUE, EPILOGUE} Operation;
+            PROLOGUE, EPILOGUE,
+            OP_WRITE_INT, OP_WRITE_FLOAT, OP_WRITE_CHAR, OP_WRITE_BOOL,
+            OP_WRITE_STR } Operation;
 
-typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL,
+typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL, CONST_STR,
             LABEL, VAR, TEMP, SUBROUTINE} AddrType;
 
 typedef enum {L_VALUE, R_VALUE, NONE} LRValues;
@@ -59,6 +62,8 @@ typedef struct _addr {
         unsigned int l;
         // Nombre funcion
         char *f_name;
+        // string
+        char *str;
     } u;
 } Addr;
 

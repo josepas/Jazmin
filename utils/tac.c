@@ -22,6 +22,9 @@ Addr* generateAddr(AddrType addt, void *value) {
         case SUBROUTINE:
             address->u.f_name = (char*)value;
             break;
+        case CONST_STR:
+            address->u.str = (char*)value;
+            break;
         default:
             printf("Error en \"generateAddr\"\n");
             exit(-1);
@@ -69,7 +72,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->result = result;
             break;
         case TAC_RETURN_VALUE:
-        case PRINT:
+        case TAC_WRITE:
         case TAC_LABEL:
         case PRO_EPI_LOGUE:
             q->op = op;
@@ -329,7 +332,7 @@ static int false_value = 0;
 
 Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context, Addr *epilogue) {
     AST *ast_aux;
-    Typetree *type_aux;
+    Typetree type_aux;
     Node *temp, *first, *last;
     Addr *a1, *a2, *r, *label_temp, *new_true, *new_false;
     switch(ast_node->tag) {
@@ -529,31 +532,6 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
         case N_FCALL:
             ast_aux = ast_node->first;
             int size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
-            // while(ast_aux) {
-            //     // lrvalue = R_VALUE;
-            //     size += ast_aux->type->size;
-            //     first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
-
-            //     temp = newDLLNode(
-            //             generateTAC(COPY, ASSIGN,
-            //                 ((Quad*)first->data)->result,
-            //                 NULL,
-            //                 genTemp()
-            //                 )
-            //             );
-            //     addDLL(list, temp, 0);
-
-            //     temp = newDLLNode(
-            //             generateTAC(PARAM, OP_PARAM,
-            //                 NULL,
-            //                 NULL,
-            //                 ((Quad*)temp->data)->result
-            //                 )
-            //             );
-            //     addDLL(list, temp, 0);
-
-            //     ast_aux = ast_aux->next;
-            // }
 
             a1 = (Addr*)malloc(sizeof(Addr));
             a1->addt = SUBROUTINE;
@@ -913,6 +891,37 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_VAR:
             return generateNodeVar(list, ast_node, ast_node->u.sym->scope, epilogue);
+            break;
+        case N_WRITE:
+                if(ast_node->first != NULL) {
+                    temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
+                    type_aux = *(ast_node->first->type);
+                }
+                else {
+                    r = generateAddr(CONST_STR, ast_node->u.sym->string);
+                    temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                        );
+                    type_aux.kind = T_HOLLOW;
+                }
+                switch(type_aux.kind) {
+                    case T_INT:
+                        temp = def_write(OP_WRITE_INT);
+                        break;
+                    case T_FLOAT:
+                        temp = def_write(OP_WRITE_FLOAT);
+                        break;
+                    case T_BOOL:
+                        temp = def_write(OP_WRITE_BOOL);
+                        break;
+                    case T_CHAR:
+                        temp = def_write(OP_WRITE_CHAR);
+                        break;
+                    default:
+                        temp = def_write(OP_WRITE_STR);
+                        break;
+                }
+
             break;
         default:
             printf("Nodo no existe: %d\n", ast_node->tag);
