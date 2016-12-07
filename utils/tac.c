@@ -164,7 +164,7 @@ void addrToString(Addr *a, char *s) {
             sprintf(s, "L%d", a->u.l);
             break;
         case SUBROUTINE:
-            sprintf(s, "\n%s", a->u.f_name);
+            sprintf(s, "%s", a->u.f_name);
             break;
         case LABEL_STR:
             sprintf(s, "_str%d", a->u.l_str);
@@ -277,7 +277,10 @@ void imprimirTAC(Quad* q) {
             break;
         case OP_LABEL:
             addrToString(q->arg1, a1);
-            printf("%s:\n", a1);
+            if(q->arg1->addt == SUBROUTINE)
+                printf("\n%s:\n", a1);
+            else
+                printf("%s:\n", a1);
             break;
         case OP_EXIT:
             printf("   exit\n");
