@@ -102,6 +102,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case COPY_TO_POINTED:
         case TAC_FP:
         case TAC_GP:
+        case TAC_ITOF_FTOI:
             q->op = op;
             q->arg1 = arg1;
             q->result = result;
@@ -398,6 +399,16 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             printf("   cleanup %s\n", a1);
             break;
+        case OP_ITOF:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := _itof %s\n", r, a1);
+            break;
+        case OP_FTOI:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := _ftoi %s\n", r, a1);
+            break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
             exit(-1);
@@ -653,6 +664,19 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             break;
         case N_FCALL:
+            if(strcmp(ast_node->u.sym->string, "itof") == 0 || strcmp(ast_node->u.sym->string, "ftoi") == 0) {
+                lrvalue = R_VALUE;
+                temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
+
+                if(strcmp(ast_node->u.sym->string, "itof") == 0)
+                    temp = def_itof_ftoi(OP_ITOF);
+                else if(strcmp(ast_node->u.sym->string, "ftoi") == 0)
+                    temp = def_itof_ftoi(OP_FTOI);
+
+                addDLL(list, temp, 0);
+                return temp;
+            }
+
             ast_aux = ast_node->first;
             int size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
 

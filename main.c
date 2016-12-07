@@ -74,10 +74,15 @@ int main(int argc, char *argv[]) {
     insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 4, 0);
     insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 4, 0);
     HOLLOW_T = lookupTable(current, "hollow", 0)->type;
-    // insertTable(current, "itof", 0, 0);
     // insertTable(current, "ftoi", 0, 0);
-    // insertTable(current, "born", 0, 0);
-    // insertTable(current, "puff", 0, 0);
+    ArgList* args = newArgList();
+    add(args, lookupTable(current, "int", 0)->type);
+    insertTable(current, "itof", 0, 0, C_SUB, createFunc(args, lookupTable(current, "float", 0)->type), 0, 0);
+    args = newArgList();
+    add(args, lookupTable(current, "float", 0)->type);
+    insertTable(current, "ftoi", 0, 0, C_SUB, createFunc(args, lookupTable(current, "int", 0)->type), 0, 0);
+
+
 
     /* Fin scope 0 */
 
