@@ -696,14 +696,14 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         );
             addDLL(list, temp, 0);
 
-            temp = newDLLNode(
+            addDLL(list, newDLLNode(
                         generateTAC(PRO_EPI_LOGUE, CLEANUP,
                             a2,
                             NULL,
                             NULL
                             )
-                        );
-            addDLL(list, temp, 0);
+                        ),
+             0);
 
             return temp;
 
