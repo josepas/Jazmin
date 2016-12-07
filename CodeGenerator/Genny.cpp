@@ -25,7 +25,6 @@ typedef struct _regDescriptor {
 } regDescriptor;
 
 
-} spillDescriptor;
 
 
 class Descriptor {
@@ -45,6 +44,10 @@ class Descriptor {
 		}
 
 		
+		set<string> getRDset(int i) {
+			this->R[i]->has;
+		}
+
 
 		varDescriptor* getVarDescr(string var) {
 
@@ -82,7 +85,9 @@ class Descriptor {
 			getVarDescr(var)->isIn.insert(var);
 		}
 
-
+		void VarSetOffset(string var, int offset) {
+			getVarDescr(var)->offset = offset;
+		}
 
 
 		int getVarWeight(string var) {
@@ -101,7 +106,7 @@ class Descriptor {
 			getRegDescr(i)->score += score;
 		}
 
-		regDescriptor* getLowestRegister() {
+		int getLowestRegister() {
 
 			int min = 2000000;
 			int r = 0;
@@ -112,7 +117,7 @@ class Descriptor {
 					min = getRegScore(i);
 				}
 			}
-			return getRegDescr(r);
+			return r;
 		}
 
 
@@ -330,20 +335,43 @@ class Descriptor {
 
 			// Spill ---------------
 			// consigo el candidato
-			regDescriptor* lowest = getLowestRegister();
+			int lowest = getLowestRegister();
 
 			set<string> s = lowest->has;
 			for (set<string>::iterator it = s.begin() ; it != s.end(); ++it) {
 				// si es temporal
 				if ( isTemp( *(it) ) ) {
-					// ST R offset($fp) 		
+					// ST R offset($fp)
 				} else {
 					// Genera ST x, R
-					return i;
 				}
 			}
 
+			return lowest;
+
 		}
+
+
+		void gen_ld(char type, int ri, char *s) {
+			printf("l%c $R%d %s\n", type, ri, s);
+		}
+
+
+
+
+		// x := a[i]
+		void GenArrayR(string varX, string i) {
+
+			int ri = getRegOperand(i, varX, "");
+
+			if ( !isInSet( getRDset(ri), i) ) {
+				gen_ld('d', ri, i);
+			}
+
+			int rj = getRegDestino(varX, i, "");
+
+		}
+
 
 
 
