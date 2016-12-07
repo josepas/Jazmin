@@ -8,6 +8,8 @@
 extern int yylineno;
 extern char* yytext;
 
+int in_loop = 0;
+
 int has_error = 0;
 int offset = 0;
 Offsetstack *offstack = NULL;
@@ -77,6 +79,8 @@ Typetree* get_record_type(AST*);
 Typetree* get_pointer_type(Typetree*);
 
 Typetree* get_type(AST*);
+
+void check_loop();
 
 %}
 %locations
@@ -257,7 +261,7 @@ instruction
     : init_dcl        { $<node>$ = $<node>1; }
     | block           { $<node>$ = $<node>1; }
     | selection       { $<node>$ = $<node>1; }
-    | iteration       { $<node>$ = $<node>1; }
+    | { in_loop++; } iteration  { $<node>$ = $<node>2; in_loop--;}
     | assignment      { $<node>$ = $<node>1; }
     | jump            { $<node>$ = $<node>1; }
     | io_inst         { $<node>$ = $<node>1; }
@@ -285,7 +289,6 @@ io_inst
             );
             $<node>$->type = HOLLOW_T;
         }
-
 	| READ ID
         {
             $<node>$ = newReadNode(
@@ -294,9 +297,21 @@ io_inst
             );
             $<node>$->type = HOLLOW_T;
         }
-
-    | WRITE STRING { temp = constant_string($2); }
+    | READ ID dims_expr
         {
+            $<node>$ = newReadNode(
+                NULL,
+                newVarNode( check_var($2) )
+            );
+            $<node>$->type = HOLLOW_T;
+        }
+    | READ ID '.' field_id
+    | READ ID dims_expr '.' field_id
+
+
+    | WRITE STRING
+        {
+            temp = constant_string($2);
             $<node>$ = newWriteNode(
                 temp,
                 NULL
@@ -315,8 +330,8 @@ io_inst
 	;
 
 jump
-	: NEXT             { $<node>$ = newNextNode(); }
-	| BREAK            { $<node>$ = newBreakNode(); }
+	: NEXT             { check_loop(); $<node>$ = newNextNode(); $<node>$->type = HOLLOW_T; }
+	| BREAK            { check_loop(); $<node>$ = newBreakNode(); $<node>$->type = HOLLOW_T; }
 	| RETURN           { $<node>$ = newReturnNode(NULL); $<node>$->type = HOLLOW_T; }
 	| RETURN expr      { $<node>$ = newReturnNode($2); $<node>$->type = $2->type; }
 	;
@@ -895,20 +910,20 @@ f_formals
     : /* lambda */
         {
             current = enterScope(current);
-            push(offstack, offset); offset = 0;
+            push(offstack, offset); offset = 16;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 0; } f_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 16; } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
     : /* lambda */
         {
             current = enterScope(current);
-            push(offstack, offset); offset = 0;
+            push(offstack, offset); offset = 8;
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 0; } p_formal_list { $<list>$ = $<list>2;}
+    | { current = enterScope(current); push(offstack, offset); offset = 8; } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
@@ -947,14 +962,14 @@ sub_call
     ;
 
 arguments
-    : /* lambda */  { $<node>$ = newFunCallNode(lookupTable(current, $<str>-1, 0)); }
+    : /* lambda */  { $<node>$ = newSubCallNode(lookupTable(current, $<str>-2, 0)); }
     | args_list     { $<node>$ = $<node>1; }
     ;
 
 args_list
     : expr
         {
-            $<node>$ = addASTChild( newFunCallNode(lookupTable(current, $<str>-2, 0)), $<node>1);
+            $<node>$ = addASTChild( newSubCallNode(lookupTable(current, $<str>-2, 0)), $<node>1);
         }
     | args_list ',' expr
         {
@@ -1081,7 +1096,7 @@ void declare_proc(char *id, ArgList *list) {
     Typetree *t = createProc(list);
     if((aux = lookupTable(current, id, 0)) == NULL) {
         int size = 0; //cambiar
-        insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, t, size, offset);
+        insertTable(current->father, id, yylloc.first_line, yylloc.first_column, C_SUB, t, size, offset);
     }
     else {
         if(aux->line) {
@@ -1413,7 +1428,7 @@ Typetree* check_for(AST *start, AST *end, AST *block) {
 Typetree* check_type_assign(Typetree *t1, AST *node2) {
 
     if (node2->type->kind == T_TYPE_ERROR) {
-        fprintf(stderr, "Error: asignación invalida\n");
+        fprintf(stderr, "Error: asignación invalida  %d\n", yylineno);
         return node2->type;
     } else {
         Typetree *temp = get_type(node2);
@@ -1571,4 +1586,12 @@ Typetree* get_type(AST* node) {
     else if(node->type->kind == T_FUNC)
         return node->type->u.fun.range;
     return node->type;
+}
+
+void check_loop() {
+    if(!in_loop) {
+        has_error = 1;
+        fprintf(stderr, "%d:%d No puede existir un break o continue fuera de un ciclo\n",
+                yylloc.first_line, yylloc.first_column );
+    }
 }

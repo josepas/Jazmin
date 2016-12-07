@@ -15,13 +15,13 @@ Typetree *createType(Kind kind) {
             type->size = 4;
             break;
         case T_CHAR :
-            type->size = 1;
+            type->size = 4;
             break;
         case T_FLOAT :
-            type->size = 8;
+            type->size = 4;
             break;
         case T_BOOL :
-            type->size = 1;
+            type->size = 4;
             break;
         case T_POINTER :
             type->size = 4;
@@ -193,7 +193,7 @@ void dumpType(Typetree *type) {
             // dumpType(type->u.fun.range); se le pondra hollow?
             break;
         case T_CONF :
-            printf("confederation %s", type->u.r.name);
+            printf("Confederation %s", type->u.r.name);
             break;
         case T_STRUCT :
             printf("Struct %s", type->u.r.name);

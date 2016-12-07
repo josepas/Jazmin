@@ -5,7 +5,7 @@
 
 typedef struct _graph {
 
-    DLinkedList *code;
+    Node *code;
 
     struct _graph next;
     struct _graph jump;
@@ -13,16 +13,8 @@ typedef struct _graph {
 
 } Graph;
 
-void newGraph(DLinkedList*);
+void newGraph(Node*);
 
-void newGraph(DLinkedList* code) {
-    Graph* g = (Graph*)malloc(sizeof(Graph));
-
-    g->code = code;
-    g->next = NULL;
-    g->jump = NULL;
-
-}
-
+void makeBlocks(Graph*);
 
 #endif

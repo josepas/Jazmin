@@ -1,5 +1,43 @@
 #include "tac.h"
 
+Labelstack* createLStack() {
+    Labelstack *new = (Labelstack*) memory(sizeof(Labelstack));
+    new->label = NULL;
+    new->prev = NULL;
+    return new;
+}
+
+void pushLabel(Labelstack *lstack, Addr *label) {
+    if(lstack->label == NULL) {
+        lstack->label = label;
+        return;
+    }
+
+    Labelstack *new = (Labelstack*) memory(sizeof(Labelstack));
+    new->label = lstack->label;
+    new->prev = lstack->prev;
+    lstack->label = label;
+    lstack->prev = new;
+}
+
+Addr* popLabel(Labelstack *lstack) {
+    Addr* label = lstack->label;
+    if(lstack->prev != NULL) {
+        Labelstack *temp = lstack->prev;
+        lstack->label = lstack->prev->label;
+        lstack->prev = lstack->prev->prev;
+        free(temp);
+    }
+    else {
+        lstack->label = NULL;
+    }
+    return label;
+}
+
+Addr* topLabel(Labelstack *lstack) {
+    return lstack->label;
+}
+
 Addr* generateAddr(AddrType addt, void *value) {
     Addr *address = (Addr*)malloc(sizeof(Addr));
     address->addt = addt;
@@ -16,11 +54,17 @@ Addr* generateAddr(AddrType addt, void *value) {
         case CONST_BOOL:
             address->u.b = *(int*)value;
             break;
+        case CONST_STR:
+            address->u.str = (char*)value;
+            break;
         case VAR:
             address->u.e = (Entry*)value;
             break;
         case SUBROUTINE:
             address->u.f_name = (char*)value;
+            break;
+        case LABEL_STR:
+            address->u.l_str = *(int*)value;
             break;
         default:
             printf("Error en \"generateAddr\"\n");
@@ -43,7 +87,8 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->arg2 = arg2;
             q->result = result;
             break;
-        case PROC_CALL:
+        case TAC_PROC_CALL:
+        case TAC_LABEL_STR:
             q->op = op;
             q->arg1 = arg1;
             q->arg2 = arg2;
@@ -57,6 +102,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
         case COPY_TO_POINTED:
         case TAC_FP:
         case TAC_GP:
+        case TAC_ITOF_FTOI:
             q->op = op;
             q->arg1 = arg1;
             q->result = result;
@@ -69,7 +115,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->result = result;
             break;
         case TAC_RETURN_VALUE:
-        case PRINT:
+        case TAC_WRITE:
         case TAC_LABEL:
         case PRO_EPI_LOGUE:
             q->op = op;
@@ -98,13 +144,16 @@ void addrToString(Addr *a, char *s) {
             sprintf(s, "%f", a->u.f);
             break;
         case CONST_CHAR:
-            sprintf(s, "%c", a->u.c);
+            sprintf(s, "\'%c\'", a->u.c);
             break;
         case CONST_BOOL:
             if(a->u.b)
                 sprintf(s, "True");
             else
                 sprintf(s, "False");
+            break;
+        case CONST_STR:
+            sprintf(s, "%s", a->u.str);
             break;
         case VAR:
             sprintf(s, "%s", a->u.e->string);
@@ -117,6 +166,9 @@ void addrToString(Addr *a, char *s) {
             break;
         case SUBROUTINE:
             sprintf(s, "%s", a->u.f_name);
+            break;
+        case LABEL_STR:
+            sprintf(s, "_str%d", a->u.l_str);
             break;
         default:
             printf("Error en \"addrToString\"\n");
@@ -226,7 +278,10 @@ void imprimirTAC(Quad* q) {
             break;
         case OP_LABEL:
             addrToString(q->arg1, a1);
-            printf("%s:\n", a1);
+            if(q->arg1->addt == SUBROUTINE)
+                printf("\n%s:\n", a1);
+            else
+                printf("%s:\n", a1);
             break;
         case OP_EXIT:
             printf("   exit\n");
@@ -234,7 +289,7 @@ void imprimirTAC(Quad* q) {
         case OP_FROM_FP:
             addrToString(q->arg1, a1);
             addrToString(q->result, r);
-            printf("   %s := FP(%s)\n", r, a1);
+            printf("   %s := *FP(%s)\n", r, a1);
             break;
         case OP_TO_FP:
             addrToString(q->arg1, a1);
@@ -271,7 +326,12 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("   %s := callf %s %s\n", r, a1, a2);
+            printf("   %s := call_func %s %s\n", r, a1, a2);
+            break;
+        case OP_PROC_CALL:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            printf("   call_proc %s %s\n", a1, a2);
             break;
         case OP_RETURN_VALUE:
             addrToString(q->arg1, a1);
@@ -293,6 +353,61 @@ void imprimirTAC(Quad* q) {
             break;
         case OP_REMOVE:
             printf("OP_REMOVE addt:%d\n", q->result->addt);
+            break;
+        case OP_WRITE_INT:
+            addrToString(q->arg1, a1);
+            printf("   _write_int %s\n", a1);
+            break;
+        case OP_WRITE_FLOAT:
+            addrToString(q->arg1, a1);
+            printf("   _write_float %s\n", a1);
+            break;
+        case OP_WRITE_CHAR:
+            addrToString(q->arg1, a1);
+            printf("   _write_char %s\n", a1);
+            break;
+        case OP_WRITE_BOOL:
+            addrToString(q->arg1, a1);
+            printf("   _write_bool %s\n", a1);
+            break;
+        case OP_WRITE_STR:
+            addrToString(q->arg1, a1);
+            printf("   _write_str %s\n", a1);
+            break;
+        case OP_READ_INT:
+            addrToString(q->result, a1);
+            printf("   _read_int %s\n", a1);
+            break;
+        case OP_READ_FLOAT:
+            addrToString(q->result, a1);
+            printf("   _read_float %s\n", a1);
+            break;
+        case OP_READ_CHAR:
+            addrToString(q->result, a1);
+            printf("   _read_char %s\n", a1);
+            break;
+        case OP_READ_BOOL:
+            addrToString(q->result, a1);
+            printf("   _read_bool %s\n", a1);
+            break;
+        case OP_STR:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            printf("   %s: \"%s\"\n", a1, a2);
+            break;
+        case CLEANUP:
+            addrToString(q->arg1, a1);
+            printf("   cleanup %s\n", a1);
+            break;
+        case OP_ITOF:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := _itof %s\n", r, a1);
+            break;
+        case OP_FTOI:
+            addrToString(q->arg1, a1);
+            addrToString(q->result, r);
+            printf("   %s := _ftoi %s\n", r, a1);
             break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
@@ -328,17 +443,24 @@ static int true_value = 1;
 static int false_value = 0;
 
 Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context, Addr *epilogue) {
+    static Labelstack *nexts = NULL;
+    if(nexts == NULL)
+        nexts = createLStack();
+    static Labelstack *breaks = NULL;
+    if(breaks == NULL)
+        breaks = createLStack();
+
     AST *ast_aux;
-    Typetree *type_aux;
+    Typetree type_aux;
     Node *temp, *first, *last;
     Addr *a1, *a2, *r, *label_temp, *new_true, *new_false;
     switch(ast_node->tag) {
         case N_PROGRAM:
             // Label de inicio
-            temp = def_label(genLabel());
-            addDLL(list, temp, 0);
-
+            r = generateAddr(SUBROUTINE, "program");
+            addDLL(list, def_label(r), 0);
             // Label del final
+
             next = genLabel();
 
             ast_node = ast_node->first;
@@ -354,11 +476,14 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_SEQ:
             ast_node = ast_node->first;
+            label_temp = next;
             while(ast_node != NULL) {
                 // addDLL(list, def_comment(), 0);
                 // Etiqueta proxima instruccion
                 if(ast_node->next)
                     next = genLabel();
+                else
+                    next = label_temp;
 
                 temp = astToTac(ast_node, list, NULL, NULL, next, context, epilogue);
 
@@ -464,8 +589,11 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
 
         case N_WHILE:
-            label_temp = genLabel();
-            new_true = genLabel();
+            label_temp = genLabel();    //18
+            new_true = genLabel();  // 19
+
+            pushLabel(nexts, label_temp);
+            pushLabel(breaks, next);
 
             addDLL(list, def_label(label_temp), 0);
 
@@ -476,6 +604,9 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             astToTac(ast_node->first->next, list, NULL, NULL, label_temp, context, epilogue);
 
             addDLL(list, def_goto(label_temp), 0);
+
+            popLabel(nexts);
+            popLabel(breaks);
 
             break;
         case N_FOR:
@@ -493,6 +624,9 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             label_temp = genLabel();
             addDLL(list, def_label(label_temp), 0);
+
+            pushLabel(nexts, label_temp);
+            pushLabel(breaks, next);
 
             new_true = genLabel();
 
@@ -525,35 +659,26 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
 
             addDLL(list, def_goto(label_temp), 0);
 
+            popLabel(nexts);
+            popLabel(breaks);
+
             break;
         case N_FCALL:
-            ast_aux = ast_node->first;
-            int size = 0;
-            while(ast_aux) {
-                // lrvalue = R_VALUE;
-                size += ast_aux->type->size;
-                first = astToTac(ast_aux, list, NULL, NULL, NULL, context, epilogue);
+            if(strcmp(ast_node->u.sym->string, "itof") == 0 || strcmp(ast_node->u.sym->string, "ftoi") == 0) {
+                lrvalue = R_VALUE;
+                temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
 
-                temp = newDLLNode(
-                        generateTAC(COPY, ASSIGN,
-                            ((Quad*)first->data)->result,
-                            NULL,
-                            genTemp()
-                            )
-                        );
+                if(strcmp(ast_node->u.sym->string, "itof") == 0)
+                    temp = def_itof_ftoi(OP_ITOF);
+                else if(strcmp(ast_node->u.sym->string, "ftoi") == 0)
+                    temp = def_itof_ftoi(OP_FTOI);
+
                 addDLL(list, temp, 0);
-
-                temp = newDLLNode(
-                        generateTAC(PARAM, OP_PARAM,
-                            NULL,
-                            NULL,
-                            ((Quad*)temp->data)->result
-                            )
-                        );
-                addDLL(list, temp, 0);
-
-                ast_aux = ast_aux->next;
+                return temp;
             }
+
+            ast_aux = ast_node->first;
+            int size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
 
             a1 = (Addr*)malloc(sizeof(Addr));
             a1->addt = SUBROUTINE;
@@ -569,7 +694,48 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                             genTemp()
                             )
                         );
-                addDLL(list, temp, 0);
+            addDLL(list, temp, 0);
+
+            temp = newDLLNode(
+                        generateTAC(PRO_EPI_LOGUE, CLEANUP,
+                            a2,
+                            NULL,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            return temp;
+
+            break;
+        case N_PCALL:
+            ast_aux = ast_node->first;
+            size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
+
+            a1 = (Addr*)malloc(sizeof(Addr));
+            a1->addt = SUBROUTINE;
+            a1->u.f_name = ast_node->u.sym->string;
+            a2 = (Addr*)malloc(sizeof(Addr));
+            a2->addt = CONST_INT;
+            a2->u.i = size;
+
+            temp = newDLLNode(
+                        generateTAC(TAC_PROC_CALL, OP_PROC_CALL,
+                            a1,
+                            a2,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            temp = newDLLNode(
+                        generateTAC(PRO_EPI_LOGUE, CLEANUP,
+                            a2,
+                            NULL,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
 
             return temp;
 
@@ -841,6 +1007,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     break;
                 case '!':
                     new_true = new_false = genLabel();
+                    lrvalue = R_VALUE;
                     first = astToTac(ast_node->first, list, new_true, new_false, next, E, epilogue);
                     addDLL(list, def_label(new_true), 0);
                     last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
@@ -913,6 +1080,64 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             break;
         case N_VAR:
             return generateNodeVar(list, ast_node, ast_node->u.sym->scope, epilogue);
+            break;
+        case N_WRITE:
+                if(ast_node->first != NULL) {
+                    lrvalue = R_VALUE;
+                    temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
+                    type_aux = *(ast_node->first->type);
+                }
+                else {
+                    r = generateAddr(LABEL_STR, &(ast_node->u.sym->offset));
+                    temp = newDLLNode(
+                    generateTAC(TAC_REMOVE, OP_REMOVE, NULL, NULL, r)
+                        );
+                    type_aux.kind = T_HOLLOW;
+                }
+                switch(type_aux.kind) {
+                    case T_INT:
+                        temp = def_write(OP_WRITE_INT);
+                        break;
+                    case T_FLOAT:
+                        temp = def_write(OP_WRITE_FLOAT);
+                        break;
+                    case T_BOOL:
+                        temp = def_write(OP_WRITE_BOOL);
+                        break;
+                    case T_CHAR:
+                        temp = def_write(OP_WRITE_CHAR);
+                        break;
+                    default:
+                        temp = def_write(OP_WRITE_STR);
+                        break;
+                }
+                addDLL(list, temp, 0);
+            break;
+        case N_READ:
+                lrvalue = L_VALUE;
+                temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
+
+                switch(ast_node->first->type->kind) {
+                    case T_INT:
+                        temp = def_read(OP_READ_INT);
+                        break;
+                    case T_FLOAT:
+                        temp = def_read(OP_READ_FLOAT);
+                        break;
+                    case T_BOOL:
+                        temp = def_read(OP_READ_BOOL);
+                        break;
+                    case T_CHAR:
+                        temp = def_read(OP_READ_CHAR);
+                        break;
+                }
+                addDLL(list, temp, 0);
+            break;
+        case N_NEXT:
+            addDLL(list, def_goto(topLabel(nexts)), 0);
+            break;
+        case N_BREAK:
+            addDLL(list, def_goto(topLabel(breaks)), 0);
             break;
         default:
             printf("Nodo no existe: %d\n", ast_node->tag);
@@ -1038,4 +1263,72 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
             break;
     }
     return temp;
+}
+
+void cleanTAC(DLinkedList *list) {
+    int jumps[l_num];
+    int last_label;
+    memset(jumps, 0, sizeof(jumps));
+
+    Node *ins;
+    for(ins = list->first; ins != NULL; ins=ins->next) {
+        Quad *q = (Quad*)ins->data;
+        switch(q->op) {
+            case GOTO:
+            case IF_GOTO:
+            case IFN_GOTO:
+            case OP_EQUAL:
+            case OP_UNEQUAL:
+            case OP_LT:
+            case OP_LTOE:
+            case OP_GT:
+            case OP_GTOE:
+                jumps[q->result->u.l] = 1;
+                break;
+            case OP_LABEL:
+                last_label = q->arg1->u.l;
+                break;
+        }
+    }
+
+    for(ins = list->first; ins != NULL; ins=ins->next) {
+        Quad *q = (Quad*)ins->data;
+        if(q->op == OP_LABEL && q->arg1->addt != SUBROUTINE && q->arg1->u.l != 0 && q->arg1->u.l != last_label && !jumps[q->arg1->u.l]) {
+            ins->next->prev = ins->prev;
+            ins->prev->next = ins->next;
+            // falta free de ese quad
+        }
+    }
+}
+
+int funcParamsTAC(AST *ast, DLinkedList *list, Addr *true, Addr *false, Addr *next, Context context, Addr *epilogue) {
+    if(ast == NULL)
+        return 0;
+
+    Node *temp, *first, *last;
+    int size = funcParamsTAC(ast->next, list, true, false, next, context, epilogue);
+
+    // lrvalue = R_VALUE;
+    size += ast->type->size;
+    first = astToTac(ast, list, NULL, NULL, NULL, context, epilogue);
+
+    temp = newDLLNode(
+            generateTAC(COPY, ASSIGN,
+                ((Quad*)first->data)->result,
+                NULL,
+                genTemp()
+                )
+            );
+    addDLL(list, temp, 0);
+
+    temp = newDLLNode(
+            generateTAC(PARAM, OP_PARAM,
+                NULL,
+                NULL,
+                ((Quad*)temp->data)->result
+                )
+            );
+    addDLL(list, temp, 0);
+
+    return size;
 }

@@ -6,7 +6,7 @@
 typedef enum {N_ERROR, N_IF, N_WHILE, N_BIN_OP, N_UN_OP,
      N_INT, N_FLOAT, N_CHAR, N_BOOL, N_VAR, N_ASGN, N_FOR, N_SEQ,
      N_WRITE, N_READ, N_BORN, N_PUFF, N_PTR,
-    N_RETURN, N_NEXT, N_BREAK, N_FUNC, N_FCALL, N_PROGRAM} NodeTag;
+    N_RETURN, N_NEXT, N_BREAK, N_FUNC, N_FCALL, N_PCALL, N_PROGRAM} NodeTag;
 
 
 typedef struct _ast {
@@ -73,6 +73,8 @@ void destroyAST(AST*);
 AST* newBaseTypeNode(Kind);
 AST* newFuncNode(Entry*, AST*);
 AST* newFunCallNode(Entry*);
+AST* newProcCallNode(Entry*);
+AST* newSubCallNode(Entry*);
 AST* newProgramNode(AST*, AST*);
 
 #endif

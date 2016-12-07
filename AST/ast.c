@@ -518,11 +518,25 @@ void dumpAST(AST* who, int level) {
             break;
         }
         case (N_FCALL) : {
-            printf("%*sFUN-CALL:\n", level*3, " ");
-            printf("%*s", level*3, " ");
+            printf("%*sFUN-CALL: %s  ", level*3, " ", who->u.sym->string);
             dumpType(who->u.sym->type);
             printf("\n");
-            dumpAST(who->first, level);
+            who = who->first;
+            while(who) {
+                dumpAST(who, level+1);
+                who = who->next;
+            }
+            break;
+        }
+        case (N_PCALL) : {
+            printf("%*sPROC-CALL: %s  ", level*3, " ", who->u.sym->string);
+            dumpType(who->u.sym->type);
+            printf("\n");
+            who = who->first;
+            while(who) {
+                dumpAST(who, level+1);
+                who = who->next;
+            }
             break;
         }
     }
@@ -592,6 +606,27 @@ AST* newFunCallNode(Entry *entry) {
 
     return node;
 }
+
+AST* newProcCallNode(Entry *entry) {
+    AST* node = newAST();
+    node->tag = N_PCALL;
+    node->u.sym = entry;
+
+    return node;
+}
+
+AST* newSubCallNode(Entry *entry) {
+    if(entry->type->kind == T_FUNC)
+        return newFunCallNode(entry);
+    else if(entry->type->kind == T_PROC)
+        return newProcCallNode(entry);
+    else {
+        printf("Error en la creacion de nodos de llamadas a subrutinas\n");
+        return NULL;
+    }
+}
+
+
 
 
 

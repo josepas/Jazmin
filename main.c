@@ -76,14 +76,19 @@ int main(int argc, char *argv[]) {
 
     insertTable(current, "hollow", 0, 0, C_TYPE, createType(T_HOLLOW), 0, 0);
     insertTable(current, "int", 0, 0, C_TYPE, createType(T_INT), 4, 0);
-    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR), 1, 0);
-    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 8, 0);
-    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 1, 0);
+    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR), 4, 0);
+    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 4, 0);
+    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 4, 0);
     HOLLOW_T = lookupTable(current, "hollow", 0)->type;
-    // insertTable(current, "itof", 0, 0);
     // insertTable(current, "ftoi", 0, 0);
-    // insertTable(current, "born", 0, 0);
-    // insertTable(current, "puff", 0, 0);
+    ArgList* args = newArgList();
+    add(args, lookupTable(current, "int", 0)->type);
+    insertTable(current, "itof", 0, 0, C_SUB, createFunc(args, lookupTable(current, "float", 0)->type), 0, 0);
+    args = newArgList();
+    add(args, lookupTable(current, "float", 0)->type);
+    insertTable(current, "ftoi", 0, 0, C_SUB, createFunc(args, lookupTable(current, "int", 0)->type), 0, 0);
+
+
 
     /* Fin scope 0 */
 
@@ -101,6 +106,7 @@ int main(int argc, char *argv[]) {
             printf("Strings ");
             dumpTable(strings);
             printf("\n>>>>>>>>>>>>>>>>>>>>>>>><\n\n");
+            arreglarTabla(current);
             dumpTable(current);
         }
     }
@@ -110,6 +116,7 @@ int main(int argc, char *argv[]) {
             has_error = 1;
         }
         if (has_error == 0) {
+            arreglarTabla(current);
             dumpAST(tree, 0);
         }
     }
@@ -119,10 +126,36 @@ int main(int argc, char *argv[]) {
             has_error = 1;
         }
         if (has_error == 0) {
+            arreglarTabla(current);
             DLinkedList *list = newDoublyLinkList();
-            // Subrutinas
+
             Entry *aux_entry;
             int i;
+
+            // Strings
+            int s_num = 0;
+            for(i=0; i<HASH_SIZE; i++) {
+                aux_entry = strings->table[i];
+                while(aux_entry!=NULL) {
+                    aux_entry->offset = s_num++;
+                    addDLL(list,
+                        newDLLNode(
+                            generateTAC(
+                                TAC_LABEL_STR,
+                                OP_STR,
+                                generateAddr(LABEL_STR, &(aux_entry->offset)),
+                                generateAddr(CONST_STR, aux_entry->string),
+                                NULL
+                                )
+                            ),
+                        0
+                    );
+
+                    aux_entry = aux_entry->next;
+                }
+            }
+
+            // Subrutinas
             for(i=0; i<HASH_SIZE; i++) {
                 aux_entry = current->fchild->table[i];
                 while(aux_entry!=NULL) {
@@ -136,7 +169,11 @@ int main(int argc, char *argv[]) {
                     aux_entry = aux_entry->next;
                 }
             }
+
             astToTac(tree, list, NULL, NULL, NULL, N, NULL);
+
+            cleanTAC(list);
+
             Node* aux;
             for (aux = list->first; aux != NULL; aux = aux->next) {
                 // printf("==> %d\n", ((Quad*)aux->data)->op);
