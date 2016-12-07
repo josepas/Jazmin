@@ -164,7 +164,7 @@ void addrToString(Addr *a, char *s) {
             sprintf(s, "L%d", a->u.l);
             break;
         case SUBROUTINE:
-            sprintf(s, "%s", a->u.f_name);
+            sprintf(s, "\n%s", a->u.f_name);
             break;
         case LABEL_STR:
             sprintf(s, "_str%d", a->u.l_str);
