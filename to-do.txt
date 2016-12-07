@@ -1,5 +1,5 @@
 Parser
-    posicion de los jump (break, continue..)
+    posicion de los jump (break, continue..) 6.7.4
 
 Main
 
@@ -23,5 +23,20 @@ procedimientos (?)
 
 chequeo dimensiones arreglos
 
-DUDAS:
-funciones puras
+
+malloc, free
+
+imprimir los strings para el data
+
+spills
+
+funciones de write y read
+
+
+
+
+
+
+
+
+

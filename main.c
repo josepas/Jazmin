@@ -16,6 +16,11 @@ extern Typetree* HOLLOW_T;
 
 extern AST* tree;
 
+
+
+
+
+
 int main(int argc, char *argv[]) {
 
 	enum Stages {LEXER, PARSER, SYMBOLS, TREE, TAC} stage = PARSER;
@@ -153,7 +158,7 @@ int main(int argc, char *argv[]) {
             for(i=0; i<HASH_SIZE; i++) {
                 aux_entry = current->fchild->table[i];
                 while(aux_entry!=NULL) {
-                    if(aux_entry->class != C_SUB) {
+                    if(aux_entry->clase != C_SUB) {
                         aux_entry = aux_entry->next;
                         continue;
                     }
