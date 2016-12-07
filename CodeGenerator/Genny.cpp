@@ -219,6 +219,13 @@ class Descriptor {
 		}
 
 
+		bool isVarInReg(string var, int i) {
+			return isInSet(var, getRDset(i));
+
+		}
+
+
+
 		// Me dice si la variable esta en otra ubicación para reciclarla
 		bool IsVarAvailable (int r, string var) {
 			
@@ -284,19 +291,18 @@ class Descriptor {
 
 			// Spill ---------------
 			// consigo el candidato
-			regDescriptor* lowest = getLowestRegister();
+			int lowest = getLowestRegister();
 
-			set<string> s = lowest->has;
+			set<string> s = getRegDescr(lowest)->has;
 			for (set<string>::iterator it = s.begin() ; it != s.end(); ++it) {
 				// si es temporal
 				if ( isTemp( *(it) ) ) {
-					// ST R offset($fp) 		
+					// ST R offset($fp)
 				} else {
 					// Genera ST x, R
-					return i;
 				}
 			}
-
+			return lowest;
 		}
 
 		int getRegDestino (string destino, string op1, string op2) {
@@ -323,7 +329,7 @@ class Descriptor {
 			// Hay registros libres?
 			vector<int> freeRegs = this->emptyRegisters();
 			if ( freeRegs.size() > 0 ) {
-				where = freeRegs.front();
+				 return freeRegs.front();
 			}
 			
 			// Puedo reciclar?
@@ -337,7 +343,7 @@ class Descriptor {
 			// consigo el candidato
 			int lowest = getLowestRegister();
 
-			set<string> s = lowest->has;
+			set<string> s = getRegDescr(lowest)->has;
 			for (set<string>::iterator it = s.begin() ; it != s.end(); ++it) {
 				// si es temporal
 				if ( isTemp( *(it) ) ) {
@@ -351,26 +357,201 @@ class Descriptor {
 
 		}
 
+		typedef enum {ADD, SUB, MUL} Operation;
+		
 
-		void gen_ld(char type, int ri, char *s) {
+		void pr(int i) {
+			printf("$R%d ", i);
+		}
+
+		void print_op(Operation o) {
+
+			switch (o) {
+				case ADD:
+					printf("add ");
+				break;
+				
+				case SUB:
+					printf("add ");
+				break;
+
+				case MUL:
+					printf("mul ");
+				break;
+
+				default:
+					printf("no hay caso %d\n", o);
+				break;
+			}
+
+		}
+
+
+		void gen_ld(char type, int ri,  const char *s) {
 			printf("l%c $R%d %s\n", type, ri, s);
 		}
 
+		void gen_ldoff(char type, int ri, int offset, int rj) {
+			printf("l%c $R%d %d($R%d)\n", type, ri, offset, rj);
+		}
 
 
-
-		// x := a[i]
-		void GenArrayR(string varX, string i) {
-
-			int ri = getRegOperand(i, varX, "");
-
-			if ( !isInSet( getRDset(ri), i) ) {
-				gen_ld('d', ri, i);
-			}
-
-			int rj = getRegDestino(varX, i, "");
+		// OPP RT Ri Rj
+		void gen_bin_op(Operation op, int rt, int ri, int rj) {
+		
+			print_op(op); pr(rt); pr(ri); pr(rj);
 
 		}
+
+
+
+		// // x := a[i]
+		// void GenArrayR(string varX, string i) {
+
+		// 	int ri = getRegOperand(i, varX, "");
+
+		// 	if ( !isInSet( i, getRDset(ri)) ) {
+		// 		gen_ld('d', ri, i.c_str());
+		// 	}
+
+		// 	int rx = getRegDestino(varX, i, "");
+		// 	if ( !isInSet( i, getRDset(rx)) ) {
+		// 		gen_ld('d', rx, varX.c_str());
+		// 	}
+
+		// 	gen_ldoff('d', ri, offset, rj) {
+
+		// 	}
+
+
+		// }
+
+		// x = y + z
+		void Gen_int_sum(string target, string op1, string op2) {
+
+			int ri = getRegOperand(op1, op2, target);
+
+			if ( !isVarInReg(op1, ri) ) {
+				gen_ld('d', ri, op1.c_str());
+			}			
+
+			int rj = getRegOperand(op2, op1, target);
+
+			if ( !isVarInReg(op1, rj) ) {
+				gen_ld('d', ri, op2.c_str());
+			}
+
+			int rd = getRegDestino(target, op1, op2);
+
+			gen_bin_op(ADD, rd, ri, rj);
+
+		}
+
+		void Gen_int_mult(string target, string op1, string op2) {
+
+			int ri = getRegOperand(op1, op2, target);
+
+			if ( !isVarInReg(op1, ri) ) {
+				gen_ld('d', ri, op1.c_str());
+			}			
+
+			int rj = getRegOperand(op2, op1, target);
+
+			if ( !isVarInReg(op1, rj) ) {
+				gen_ld('d', ri, op2.c_str());
+			}
+
+			int rd = getRegDestino(target, op1, op2);
+
+			gen_bin_op(MUL, rd, ri, rj);
+
+		}
+
+
+
+
+
+		void Gen_int_sub(string target, string op1, string op2) {
+
+			int ri = getRegOperand(op1, op2, target);
+
+			if ( !isVarInReg(op1, ri) ) {
+				gen_ld('d', ri, op1.c_str());
+			}			
+
+			int rj = getRegOperand(op2, op1, target);
+
+			if ( !isVarInReg(op1, rj) ) {
+				gen_ld('d', ri, op2.c_str());
+			}
+
+			int rd = getRegDestino(target, op1, op2);
+
+			gen_bin_op(SUB, rd, ri, rj);
+
+		}
+
+		void Gen_prologF(int locals) {
+
+			printf("add $sp $sp -12\n");	
+			printf("sw $ra 4($sp)\n");
+			printf("sw $fp 0($sp)\n"); 
+        	printf("move $fp $sp \n");
+        	printf("add $sp $sp -%d", locals);
+
+        }
+
+        void Gen_epilogF(int locals) {
+
+        	printf("add $sp $sp %d ", locals);
+        	
+        	printf("lw $fp 0($sp)\n");
+			printf("add $sp $sp 4\n");
+			
+			printf("lw $ra 0($sp)\n");
+			printf("add $sp $sp 4\n");
+
+			printf("jr $ra\n");
+
+        }
+
+
+        void Gen_return(char* ret) {
+
+        	int r = getRegDestino(ret, "", "");
+        	if ( !isVarInReg(ret, r) ) {
+        		printf("ld $R%d %s\n", r, ret);
+        	}
+        	
+        	printf("lw 8($fp) $R%d", r);
+        }
+
+        void Gen_goto(char* label) {
+
+        	printf("b %s\n", label);
+
+        }
+
+
+        void Gen_label(char* label) {
+
+        	printf("%s:\n", label);
+        }
+
+
+        void condition()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -380,7 +561,11 @@ class Descriptor {
 }; // Class
 
 
-
+int main(int argc, char const *argv[])
+{
+	/* code */
+	return 0;
+}
 
 
 
