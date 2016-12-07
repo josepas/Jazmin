@@ -143,7 +143,7 @@ void addrToString(Addr *a, char *s) {
             sprintf(s, "%f", a->u.f);
             break;
         case CONST_CHAR:
-            sprintf(s, "%c", a->u.c);
+            sprintf(s, "\'%c\'", a->u.c);
             break;
         case CONST_BOOL:
             if(a->u.b)
@@ -388,6 +388,10 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             printf("   %s: \"%s\"\n", a1, a2);
+            break;
+        case CLEANUP:
+            addrToString(q->arg1, a1);
+            printf("   cleanup %s\n", a1);
             break;
         default:
             printf("Operacion inexistente \"%d\"\n", q->op);
@@ -661,7 +665,16 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                             genTemp()
                             )
                         );
-                addDLL(list, temp, 0);
+            addDLL(list, temp, 0);
+
+            temp = newDLLNode(
+                        generateTAC(PRO_EPI_LOGUE, CLEANUP,
+                            a2,
+                            NULL,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
 
             return temp;
 
@@ -933,6 +946,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                     break;
                 case '!':
                     new_true = new_false = genLabel();
+                    lrvalue = R_VALUE;
                     first = astToTac(ast_node->first, list, new_true, new_false, next, E, epilogue);
                     addDLL(list, def_label(new_true), 0);
                     last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
@@ -1041,17 +1055,6 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
         case N_READ:
                 lrvalue = L_VALUE;
                 temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
-
-                // if(ast_node->first->u.sym->scope == GLOBAL) {
-                //     temp = newDLLNode(
-                //             generateTAC(TAC_GP, OP_FROM_GP, ((Quad*)temp->data)->result, NULL, genTemp())
-                //         );
-                // }
-                // else {
-                //     temp = newDLLNode(
-                //             generateTAC(TAC_FP, OP_FROM_FP, ((Quad*)temp->data)->result, NULL, genTemp())
-                //         );
-                // }
 
                 switch(ast_node->first->type->kind) {
                     case T_INT:
