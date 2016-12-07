@@ -77,6 +77,17 @@ typedef struct _quad {
     Addr *result;
 } Quad;
 
+typedef struct _labelStack {
+    Addr *label;
+    struct _labelStack *prev;
+} Labelstack;
+
+Labelstack* createLStack();
+
+void pushLabel(Labelstack*, Addr*);
+Addr* popLabel(Labelstack*);
+Addr* topLabel(Labelstack*);
+
 Addr* generateAddr(AddrType, void*);
 
 Quad* generateTAC(TACType, Operation, Addr* , Addr*, Addr*);
