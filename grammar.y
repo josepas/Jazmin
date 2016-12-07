@@ -194,7 +194,7 @@ nls
 definitions
 	: outer_def
         {
-            $<node>$ = newSeqNode();
+            $<node>$ = newSeqNode(current);
             if($<node>1 != NULL) {
                 addASTChild($<node>$, $<node>1);
                 $<node>$->type = $<node>1->type;
@@ -237,14 +237,14 @@ block
 ins_list
     : instruction
         {
-            $<node>$ = newSeqNode();
+            $<node>$ = newSeqNode(current);
             if($<node>1 != NULL) {
                 addASTChild($<node>$, $<node>1);
                 $<node>$->type = $<node>1->type;
             } else {
                 $<node>$->type = HOLLOW_T;
             }
-            //$<node>$ = set_node_type(addASTChild(newSeqNode(), $<node>1), $<node>1->type);
+            //$<node>$ = set_node_type(addASTChild(newSeqNode(current), $<node>1), $<node>1->type);
         }
     | ins_list nls instruction
         {
@@ -414,7 +414,7 @@ id_list
             else {
                 $<node>$ = set_node_type(
                 addASTChild(
-                    newSeqNode(),
+                    newSeqNode(current),
                     newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>0->kind))
                     ),
                 $<type>0

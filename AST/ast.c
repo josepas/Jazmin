@@ -33,10 +33,11 @@ AST* addASTChild (AST *who, AST *nChild) {
     return who;
 }
 
-AST* newSeqNode() {
+AST* newSeqNode(Symtable* tabla) {
 
     AST* node = newAST();
     node->tag = N_SEQ;
+    node->u.tabla = tabla;
 
     return node;
 }

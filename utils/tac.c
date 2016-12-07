@@ -745,7 +745,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             addDLL(list, def_label(r), 0);
 
             // Prologo
-            r = generateAddr(CONST_INT, &(ast_node->u.sym->size));
+            r = generateAddr(CONST_INT, &(ast_node->first->u.tabla->size));
 
             addDLL(list, def_logue(PROLOGUE, r), 0);
 
