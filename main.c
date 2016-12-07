@@ -70,9 +70,9 @@ int main(int argc, char *argv[]) {
 
     insertTable(current, "hollow", 0, 0, C_TYPE, createType(T_HOLLOW), 0, 0);
     insertTable(current, "int", 0, 0, C_TYPE, createType(T_INT), 4, 0);
-    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR), 1, 0);
-    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 8, 0);
-    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 1, 0);
+    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR), 4, 0);
+    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 4, 0);
+    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 4, 0);
     HOLLOW_T = lookupTable(current, "hollow", 0)->type;
     // insertTable(current, "itof", 0, 0);
     // insertTable(current, "ftoi", 0, 0);

@@ -15,13 +15,13 @@ Typetree *createType(Kind kind) {
             type->size = 4;
             break;
         case T_CHAR :
-            type->size = 1;
+            type->size = 4;
             break;
         case T_FLOAT :
-            type->size = 8;
+            type->size = 4;
             break;
         case T_BOOL :
-            type->size = 1;
+            type->size = 4;
             break;
         case T_POINTER :
             type->size = 4;
