@@ -99,7 +99,7 @@ void dumpTable(Symtable *printer) {
             dumpType(aux->type);
             printf(" size:%d  offset:%d\n", aux->size, aux->offset);
 
-            // if(aux->class == C_RECORD) {
+            // if(aux->clase == C_RECORD) {
             //     printf("STRUCTURA!!\n");
             //     dumpTable(aux->type->u.r.fields);
             //     printf("FIN --- STRUCTURA!!\n");
@@ -148,7 +148,7 @@ void destroyTable(Symtable *who) {
 }
 
 
-void insertTable(Symtable *current, char *str, int line, int column, Class class, Typetree *type, int size, int offset) {
+void insertTable(Symtable *current, char *str, int line, int column, Class clase, Typetree *type, int size, int offset) {
 
 	if(lookupTable(current, str, 1) == NULL) {
 	    Entry *newEntry;
@@ -159,7 +159,7 @@ void insertTable(Symtable *current, char *str, int line, int column, Class class
 	    newEntry->string = strdup(str);
 	    newEntry->line = line;
 	    newEntry->column = column;
-        newEntry->class = class;
+        newEntry->clase = clase;
         newEntry->type = type;
         newEntry->size = size;
         newEntry->offset = offset;

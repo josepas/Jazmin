@@ -16,7 +16,7 @@ typedef struct _entry {
     char *string;
     int line;
     int column;
-    Class class;
+    Class clase;
     Scope scope;
     struct _typetree *type;
     int size;

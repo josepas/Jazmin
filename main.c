@@ -16,6 +16,12 @@ extern Typetree* HOLLOW_T;
 
 extern AST* tree;
 
+
+#include "testC/wrapper.h"
+
+
+
+
 int main(int argc, char *argv[]) {
 
 	enum Stages {LEXER, PARSER, SYMBOLS, TREE, TAC} stage = PARSER;
