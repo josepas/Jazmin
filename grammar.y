@@ -9,6 +9,7 @@ extern int yylineno;
 extern char* yytext;
 
 int in_loop = 0;
+int pre = 0;
 
 int has_error = 0;
 int offset = 0;
@@ -889,13 +890,15 @@ subrout_def
     ;
 
 fwd_dec
-    : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type
+    : PREDEC FUNC ID { declare_func($3); pre=1;} '(' f_formals ')' ARROW type
         {
+            set_type_func($3, $<list>6, $<type>9);
             //declare_func($3);
-            current->size = offset;
-            offset = pop(offstack);
-            current = exitScope(current);
+            //current->size = offset;
+            //offset = pop(offstack);
+            //current = exitScope(current);
             $<node>$ = NULL;
+            pre=0;
         }
     | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')'
         {
@@ -909,11 +912,14 @@ fwd_dec
 f_formals
     : /* lambda */
         {
-            current = enterScope(current);
-            push(offstack, offset); offset = 16;
+            if(pre == 0) {
+                current = enterScope(current);
+                push(offstack, offset);
+                offset = 16;
+            }
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 16; } f_formal_list { $<list>$ = $<list>2;}
+    | { if(pre == 0) {current = enterScope(current); push(offstack, offset); offset = 16;} } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
@@ -937,7 +943,7 @@ p_formal_list
     ;
 
 f_formal
-    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1; }
+    : type ID { if(pre==0) {declare_var($2, $<type>1);} $<type>$ = $<type>1; }
     ;
 
 p_formal
@@ -1117,7 +1123,7 @@ void declare_func(char *id) {
         int size = 0; //cambiar
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, NULL, size, offset);
     }
-    else {
+    else if(aux->ast != NULL){
         if(aux->line) {
             fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
                 yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
