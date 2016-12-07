@@ -87,7 +87,7 @@ Quad* generateTAC(TACType tac, Operation op, Addr *arg1, Addr *arg2, Addr *resul
             q->arg2 = arg2;
             q->result = result;
             break;
-        case PROC_CALL:
+        case TAC_PROC_CALL:
         case TAC_LABEL_STR:
             q->op = op;
             q->arg1 = arg1;
@@ -325,7 +325,12 @@ void imprimirTAC(Quad* q) {
             addrToString(q->arg1, a1);
             addrToString(q->arg2, a2);
             addrToString(q->result, r);
-            printf("   %s := callf %s %s\n", r, a1, a2);
+            printf("   %s := call_func %s %s\n", r, a1, a2);
+            break;
+        case OP_PROC_CALL:
+            addrToString(q->arg1, a1);
+            addrToString(q->arg2, a2);
+            printf("   call_proc %s %s\n", a1, a2);
             break;
         case OP_RETURN_VALUE:
             addrToString(q->arg1, a1);
@@ -663,6 +668,38 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                             a1,
                             a2,
                             genTemp()
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            temp = newDLLNode(
+                        generateTAC(PRO_EPI_LOGUE, CLEANUP,
+                            a2,
+                            NULL,
+                            NULL
+                            )
+                        );
+            addDLL(list, temp, 0);
+
+            return temp;
+
+            break;
+        case N_PCALL:
+            ast_aux = ast_node->first;
+            size = funcParamsTAC(ast_aux, list, NULL, NULL, NULL, context, epilogue);
+
+            a1 = (Addr*)malloc(sizeof(Addr));
+            a1->addt = SUBROUTINE;
+            a1->u.f_name = ast_node->u.sym->string;
+            a2 = (Addr*)malloc(sizeof(Addr));
+            a2->addt = CONST_INT;
+            a2->u.i = size;
+
+            temp = newDLLNode(
+                        generateTAC(TAC_PROC_CALL, OP_PROC_CALL,
+                            a1,
+                            a2,
+                            NULL
                             )
                         );
             addDLL(list, temp, 0);
