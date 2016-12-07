@@ -900,11 +900,11 @@ fwd_dec
             $<node>$ = NULL;
             pre=0;
         }
-    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')'
+    | PREDEC PROC ID {pre=1;} '(' p_formals { declare_proc($3, $<list>6); } ')'
         {
-            current->size = offset;
-            offset = pop(offstack);
-            current = exitScope(current);
+            //current->size = offset;
+            //offset = pop(offstack);
+            //current = exitScope(current);
             $<node>$ = NULL;
         }
     ;
@@ -925,11 +925,13 @@ f_formals
 p_formals
     : /* lambda */
         {
-            current = enterScope(current);
-            push(offstack, offset); offset = 8;
+            if(pre==0) {
+                current = enterScope(current);
+                push(offstack, offset); offset = 8;
+            }
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 8; } p_formal_list { $<list>$ = $<list>2;}
+    | { if(pre==0) {current = enterScope(current); push(offstack, offset); offset = 8;} } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
@@ -947,8 +949,8 @@ f_formal
     ;
 
 p_formal
-    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1;  }
-    | REF type ID { declare_var($3, $<type>2); $<type>$ = $<type>2; }
+    : type ID { if(pre==0) {declare_var($2, $<type>1);} $<type>$ = $<type>1;  }
+    | REF type ID { if(pre==0) {declare_var($3, $<type>2);} $<type>$ = $<type>2; }
     ;
 
 sub_call
