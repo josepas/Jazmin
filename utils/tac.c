@@ -434,9 +434,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
     switch(ast_node->tag) {
         case N_PROGRAM:
             // Label de inicio
-            temp = def_label(genLabel());
-            addDLL(list, temp, 0);
-
+            r = generateAddr(SUBROUTINE, "program");
+            addDLL(list, def_label(r), 0);
             // Label del final
 
             next = genLabel();
