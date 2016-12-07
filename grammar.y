@@ -1435,7 +1435,7 @@ Typetree* check_type_assign(Typetree *t1, AST *node2) {
 
         if (t1->kind != temp->kind) {
             // falta arreglar aqui
-            printf("Error: asignación: se espera un \"");
+            printf("Error %d:%d: asignación: se espera un \"", yylloc.first_line, yylloc.first_column);
             dumpType(t1);
             printf("\" y se recibió un \"");
             dumpType(temp);
