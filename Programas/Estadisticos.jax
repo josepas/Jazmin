@@ -1,18 +1,31 @@
+func heronRC(float n) -> float {
+
+	float tmp
+	float estimado = n / itof(2)
+
+	while ( n - estimado*estimado > 0.0001) {
+		tmp = n / estimado
+		estimado = (tmp + estimado) / itof(2)
+	}
+
+	return estimado
+}
+
 program {
-	
+
 	int tamano
 	float promedio, min, max, desviacion, varianza
 	float f[50]
 	float total
 	char opcion
-	int i 
+	int i
 	while (True) {
-		
+
 		write "Ingrese el tamano de la muestra a estudiar:"
 		read tamano
 
 		i = 0
-		total = 0
+		total = 0.0
 		max = -2000000000.0
 		min =  2000000000.0
 		while (i < tamano) {
@@ -27,18 +40,18 @@ program {
 			i = i + 1
 		}
 
-		promedio = total / tamano
+		promedio = total / itof(tamano)
 
 		i = 0
-		total = 0
+		total = 0.0
 		while (i < tamano) {
 			total = total + (promedio - f[i]) * (promedio - f[i])
 			i = i + 1
 		}
 
-		varianza = total / tamano
+		varianza = total / itof(tamano)
 
-		desviacion = HeronRC(varianza)
+		desviacion = heronRC(varianza)
 
 		write "Tamano de la muestra: "
 		write tamano

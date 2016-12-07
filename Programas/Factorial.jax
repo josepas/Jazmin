@@ -1,17 +1,17 @@
 func factorialR(int n) -> int {
-	
+
 	if (n == 1) {
 		return 1
 	} else {
 		return n * factorialR(n-1)
-	} 
+	}
 }
 
 func factorialI(int n) -> int {
 
 	int fact = 1
 	while (n > 0) {
-		fact = fact * n 
+		fact = fact * n
 		n = n - 1
 	}
 	return fact
@@ -19,11 +19,11 @@ func factorialI(int n) -> int {
 
 
 program {
-	
+
 	int n, resultado
 	char como, opcion
 	while (True) {
-		
+
 		write "Ingrese factorial a calcular:"
 		read n
 		write "Como desea calcularlo? (i : Iterativo, r : Recursivo)"
@@ -35,7 +35,7 @@ program {
 			resultado = factorialI(n)
 		} else {
 			write "No entendimos la opción (r/i)"
-			#continue
+			next
 		}
 
 		write "Factorial("
