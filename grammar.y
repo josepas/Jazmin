@@ -9,6 +9,7 @@ extern int yylineno;
 extern char* yytext;
 
 int in_loop = 0;
+int pre = 0;
 
 int has_error = 0;
 int offset = 0;
@@ -193,7 +194,7 @@ nls
 definitions
 	: outer_def
         {
-            $<node>$ = newSeqNode();
+            $<node>$ = newSeqNode(current);
             if($<node>1 != NULL) {
                 addASTChild($<node>$, $<node>1);
                 $<node>$->type = $<node>1->type;
@@ -236,14 +237,14 @@ block
 ins_list
     : instruction
         {
-            $<node>$ = newSeqNode();
+            $<node>$ = newSeqNode(current);
             if($<node>1 != NULL) {
                 addASTChild($<node>$, $<node>1);
                 $<node>$->type = $<node>1->type;
             } else {
                 $<node>$->type = HOLLOW_T;
             }
-            //$<node>$ = set_node_type(addASTChild(newSeqNode(), $<node>1), $<node>1->type);
+            //$<node>$ = set_node_type(addASTChild(newSeqNode(current), $<node>1), $<node>1->type);
         }
     | ins_list nls instruction
         {
@@ -413,7 +414,7 @@ id_list
             else {
                 $<node>$ = set_node_type(
                 addASTChild(
-                    newSeqNode(),
+                    newSeqNode(current),
                     newAssignNode(newVarNode(temp), "=", newBaseTypeNode($<type>0->kind))
                     ),
                 $<type>0
@@ -889,19 +890,21 @@ subrout_def
     ;
 
 fwd_dec
-    : PREDEC FUNC ID { declare_func($3); } '(' f_formals ')' ARROW type
+    : PREDEC FUNC ID { declare_func($3); pre=1;} '(' f_formals ')' ARROW type
         {
+            set_type_func($3, $<list>6, $<type>9);
             //declare_func($3);
-            current->size = offset;
-            offset = pop(offstack);
-            current = exitScope(current);
+            //current->size = offset;
+            //offset = pop(offstack);
+            //current = exitScope(current);
             $<node>$ = NULL;
+            pre=0;
         }
-    | PREDEC PROC ID '(' p_formals { declare_proc($3, $<list>5); } ')'
+    | PREDEC PROC ID {pre=1;} '(' p_formals { declare_proc($3, $<list>6); } ')'
         {
-            current->size = offset;
-            offset = pop(offstack);
-            current = exitScope(current);
+            //current->size = offset;
+            //offset = pop(offstack);
+            //current = exitScope(current);
             $<node>$ = NULL;
         }
     ;
@@ -909,21 +912,26 @@ fwd_dec
 f_formals
     : /* lambda */
         {
-            current = enterScope(current);
-            push(offstack, offset); offset = 16;
+            if(pre == 0) {
+                current = enterScope(current);
+                push(offstack, offset);
+                offset = 16;
+            }
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 16; } f_formal_list { $<list>$ = $<list>2;}
+    | { if(pre == 0) {current = enterScope(current); push(offstack, offset); offset = 16;} } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals
     : /* lambda */
         {
-            current = enterScope(current);
-            push(offstack, offset); offset = 8;
+            if(pre==0) {
+                current = enterScope(current);
+                push(offstack, offset); offset = 8;
+            }
             $<list>$ = newArgList();
         }
-    | { current = enterScope(current); push(offstack, offset); offset = 8; } p_formal_list { $<list>$ = $<list>2;}
+    | { if(pre==0) {current = enterScope(current); push(offstack, offset); offset = 8;} } p_formal_list { $<list>$ = $<list>2;}
     ;
 
 f_formal_list
@@ -937,12 +945,12 @@ p_formal_list
     ;
 
 f_formal
-    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1; }
+    : type ID { if(pre==0) {declare_var($2, $<type>1);} $<type>$ = $<type>1; }
     ;
 
 p_formal
-    : type ID { declare_var($2, $<type>1); $<type>$ = $<type>1;  }
-    | REF type ID { declare_var($3, $<type>2); $<type>$ = $<type>2; }
+    : type ID { if(pre==0) {declare_var($2, $<type>1);} $<type>$ = $<type>1;  }
+    | REF type ID { if(pre==0) {declare_var($3, $<type>2);} $<type>$ = $<type>2; }
     ;
 
 sub_call
@@ -1117,7 +1125,7 @@ void declare_func(char *id) {
         int size = 0; //cambiar
         insertTable(current, id, yylloc.first_line, yylloc.first_column, C_SUB, NULL, size, offset);
     }
-    else {
+    else if(aux->ast != NULL){
         if(aux->line) {
             fprintf(stderr, "Error:%d:%d: \"%s\" ya fue declarada en linea %d columna %d.\n",
                 yylloc.first_line, yylloc.first_column, id, aux->line, aux->column);
@@ -1435,7 +1443,7 @@ Typetree* check_type_assign(Typetree *t1, AST *node2) {
 
         if (t1->kind != temp->kind) {
             // falta arreglar aqui
-            printf("Error: asignación: se espera un \"");
+            printf("Error %d:%d: asignación: se espera un \"", yylloc.first_line, yylloc.first_column);
             dumpType(t1);
             printf("\" y se recibió un \"");
             dumpType(temp);

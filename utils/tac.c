@@ -418,7 +418,7 @@ void imprimirTAC(Quad* q) {
 
 static unsigned int t_num = 0;
 
-Addr* genTemp(/*struct _symtable* current, struct _typetree* type*/) {
+Addr* genTemp(/*struct _symtable* current, struct _type2tree* type*/) {
 
     Addr *t = (Addr*) malloc(sizeof(Addr));
     t->addt = TEMP;
@@ -696,14 +696,14 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         );
             addDLL(list, temp, 0);
 
-            temp = newDLLNode(
+            addDLL(list, newDLLNode(
                         generateTAC(PRO_EPI_LOGUE, CLEANUP,
                             a2,
                             NULL,
                             NULL
                             )
-                        );
-            addDLL(list, temp, 0);
+                        ),
+             0);
 
             return temp;
 
@@ -745,7 +745,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
             addDLL(list, def_label(r), 0);
 
             // Prologo
-            r = generateAddr(CONST_INT, &(ast_node->u.sym->size));
+            r = generateAddr(CONST_INT, &(ast_node->first->u.tabla->size));
 
             addDLL(list, def_logue(PROLOGUE, r), 0);
 
@@ -1117,7 +1117,8 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                 lrvalue = L_VALUE;
                 temp = astToTac(ast_node->first, list, true, false, next, context, epilogue);
 
-                switch(ast_node->first->type->kind) {
+                type_aux = *(get_type2(ast_node->first));
+                switch(type_aux.kind) {
                     case T_INT:
                         temp = def_read(OP_READ_INT);
                         break;
@@ -1129,6 +1130,10 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         break;
                     case T_CHAR:
                         temp = def_read(OP_READ_CHAR);
+                        break;
+                    default:
+                        printf("Error en el read\n");
+                        exit(-1);
                         break;
                 }
                 addDLL(list, temp, 0);
@@ -1194,7 +1199,6 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
                 addDLL(list, temp, 0);
             }
             else if(lrvalue == L_VALUE) {
-
             }
             break;
         case T_STRUCT:
@@ -1331,4 +1335,49 @@ int funcParamsTAC(AST *ast, DLinkedList *list, Addr *true, Addr *false, Addr *ne
     addDLL(list, temp, 0);
 
     return size;
+}
+Typetree* get_array_type2(Typetree* t) {
+    if (t == NULL) {
+        fprintf(stderr, "Fallo miserable en el chequeo de tipos de arreglos\n");
+    }
+    if (t->kind != T_ARRAY) {
+        return t;
+    }
+    return get_array_type2(t->u.a.t);
+}
+
+Typetree* get_pointer_type2(Typetree* t) {
+    if (t == NULL) {
+        fprintf(stderr, "Fallo miserable en el chequeo de apuntadores\n");
+    }
+
+    if (t->kind != T_POINTER) {
+        return t;
+    }
+    return get_pointer_type2(t->u.p.t);
+}
+
+Typetree* get_record_type2(AST* node) {
+    if (node->type == NULL) {
+        fprintf(stderr, "Fallo miserable en el chequeo de tipos de records\n");
+    }
+    else if (node->type->kind != T_STRUCT && node->type->kind != T_CONF) {
+        return get_type2(node);
+    }
+    else if (node->first == NULL) {
+        return node->type;
+    }
+    return get_record_type2(node->first);
+}
+
+Typetree* get_type2(AST* node) {
+    if(node->type->kind == T_ARRAY)
+        return get_array_type2(node->type);
+    else if(node->type->kind == T_POINTER)
+        return get_pointer_type2(node->type);
+    else if(node->type->kind == T_STRUCT || node->type->kind == T_CONF)
+            return get_record_type2(node);
+    else if(node->type->kind == T_FUNC)
+        return node->type->u.fun.range;
+    return node->type;
 }

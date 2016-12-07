@@ -165,6 +165,7 @@ void insertTable(Symtable *current, char *str, int line, int column, Class clase
         newEntry->offset = offset;
 	    newEntry->next = current->table[h];
         newEntry->scope = current->level > 1 ? LOCAL : GLOBAL;
+        newEntry->ast = NULL;
 
         current->table[h] = newEntry;
         current->size = offset+size;

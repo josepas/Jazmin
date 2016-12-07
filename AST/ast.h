@@ -22,6 +22,7 @@ typedef struct _ast {
 
     union {
         struct _entry *sym;
+        struct _symtable *tabla;
         int i;
         int b;
         float f;
@@ -33,7 +34,7 @@ typedef struct _ast {
 
 AST* newAST();
 AST* addASTChild (AST*, AST*);
-AST* newSeqNode();
+AST* newSeqNode(Symtable*);
 AST* newIfNode(AST*, AST*, AST*, AST*);
 
 AST* newUnaryOp(char*, AST*);

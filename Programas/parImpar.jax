@@ -1,5 +1,5 @@
-func par(int n) -> bool
-func impar(int n) -> bool
+predec func par(int f) -> bool
+predec func impar(int n) -> bool
 
 func par(int n) -> bool {
 	if (n == 0) {
@@ -25,6 +25,7 @@ func impar(int n) -> bool {
 program {
 
 	int n
+	char opcion
 
 	write "Este programa determina la paridad de un entero."
 	while (True) {
@@ -32,9 +33,9 @@ program {
 		read n
 		if (n < 0) {
 			write "Que no sea negativo"
-			continue
+			next
 		}
-		
+
 		if ( par(n) ) {
 			write "El numero es par!"
 		} else {

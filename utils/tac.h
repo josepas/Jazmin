@@ -110,4 +110,6 @@ void cleanTAC(struct _dlinkedlist*);
 
 int funcParamsTAC(AST*, DLinkedList*, Addr*, Addr*, Addr*, Context, Addr*);
 
+Typetree* get_type2(AST*);
+
 #endif

@@ -1,5 +1,5 @@
 program {
-	
+
 	struct Perol {
 		int  tipo
 	  	confederation Dentro {
@@ -8,14 +8,15 @@ program {
 	    	int   i
 	 		float f
 		}
+		Dentro tmp
 	}
 
 
 	int cantidad
 	int i
-	
+
 	Perol maulas[20]
-	#confederation Dentro tmp; # xD
+	#confederation Dentro tmp
 
 	char tmpc
 	int tmpi
@@ -24,7 +25,7 @@ program {
 	char opcion, tipoP
 
 	while (True) {
-		
+
 		write "Ingrese el numero de elementos a ordenar: "
 		read cantidad
 
@@ -36,20 +37,20 @@ program {
 			read tipoP
 
 			if (tipoP == 'b') {
-				read maulas[j].tipo
-				read maulas[j].Dentro.b
-				
+				#read maulas[j].tipo
+				#read maulas[j].Dentro.b
+
 				## swap(j,i) para meter todos los 0 donde van
-				
+
 				tmp.b = maulas[j].Dentro.b
 
 				if ( maulas[i].tipo == 1 ) {
 					maulas[j].tipo = 1
-					maulas[j].Dentro.c = maulas[i].Dentro.c 
+					maulas[j].Dentro.c = maulas[i].Dentro.c
 				}
 				if ( maulas[i].tipo == 2 ) {
 					maulas[j].tipo = 2
-					maulas[j].Dentro.i = maulas[i].Dentro.i	
+					maulas[j].Dentro.i = maulas[i].Dentro.i
 				}
 				if ( maulas[i].tipo == 3 ) {
 					maulas[j].tipo = 3
@@ -86,23 +87,23 @@ program {
 		# i para ver donde meto el proximo 1
 		# k para saber donde meto el proximo 3
 
-		j = i 
+		j = i
 		k = cantidad - 1
 		while (j <= k) {
 
 			if ( maulas[j].tipo == 1 ) {
 
 				## swap(j,i)
-				
+
 				tmp.c = maulas[j].Dentro.c
 
 				if ( maulas[i].tipo == 1 ) {
 					maulas[j].tipo = 1
-					maulas[j].Dentro.c = maulas[i].Dentro.c 
+					maulas[j].Dentro.c = maulas[i].Dentro.c
 				}
 				if ( maulas[i].tipo == 2 ) {
 					maulas[j].tipo = 2
-					maulas[j].Dentro.i = maulas[i].Dentro.i	
+					maulas[j].Dentro.i = maulas[i].Dentro.i
 				}
 				if ( maulas[i].tipo == 3 ) {
 					maulas[j].tipo = 3
@@ -115,24 +116,24 @@ program {
 				i = i + 1
 				j = j + 1
 			}
-			
+
 			if ( maulas[j].tipo == 2 ) {
 				j = j + 1
 			}
-			
+
 			if ( maulas[j].tipo == 3 ) {
-				
+
 				## swap(j,k)
-				
+
 				tmp.f = maulas[j].Dentro.f
 
 				if ( maulas[k].tipo == 1 ) {
 					maulas[j].tipo = 1
-					maulas[j].Dentro.c = maulas[k].Dentro.c 
+					maulas[j].Dentro.c = maulas[k].Dentro.c
 				}
 				if ( maulas[k].tipo == 2 ) {
 					maulas[j].tipo = 2
-					maulas[j].Dentro.i = maulas[k].Dentro.i	
+					maulas[j].Dentro.i = maulas[k].Dentro.i
 				}
 				if ( maulas[k].tipo == 3 ) {
 					maulas[j].tipo = 3
@@ -145,7 +146,7 @@ program {
 			}
 		}
 
-		
+
 		##### Impresión
 		j = 0
 		while (j < cantidad) {
@@ -165,7 +166,7 @@ program {
 				write maulas[k].Dentro.f
 				write "\n"
 			}
-			
+
 			j = j + 1
 		}
 
