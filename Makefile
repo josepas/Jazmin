@@ -32,7 +32,7 @@ tac.o: utils/tac.h utils/tac.c
 	gcc -g -c utils/tac.c -o tac.o
 
 generator.o: CodeGenerator/generator.c CodeGenerator/generator.h
-	gcc -g -c CodeGenerator/generator.c -o generator.o
+	g++ -g -c CodeGenerator/generator.c -o generator.o
 
 
 
