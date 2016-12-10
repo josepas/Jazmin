@@ -1,14 +1,17 @@
 LEX=flex
 CCFLAGS=-g -Wall
 
-jaxmin: main.c grammar.tab.c lex.yy.c symbolTable.o typeTree.o utils.o ast.o list.o tac.o 
-	gcc $(CCFLAGS) main.c grammar.tab.c symbolTable.o typeTree.o utils.o ast.o list.o tac.o -lstdc++ -lbsd -lfl -o $@
+jaxmin: new_main.cpp grammar.tab.c lex.yy.c symbolTable.o typeTree.o utils.o ast.o list.o tac.o generator.o
+	g++ new_main.cpp grammar.o lex.yy.o symbolTable.o typeTree.o utils.o ast.o list.o tac.o generator.o -lbsd -lfl -o $@
+
 
 grammar.tab.c grammar.tab.h: grammar.y
 	bison -d -v $^
+	gcc -c grammar.tab.c -o grammar.o
 
 lex.yy.c: lexer.l
 	flex $^
+	gcc -c lex.yy.c -o lex.yy.o
 
 symbolTable.o: SymbolTable/symbolTable.h SymbolTable/symbolTable.c
 	gcc -g -c SymbolTable/symbolTable.c -o symbolTable.o
@@ -27,6 +30,11 @@ ast.o: AST/ast.h AST/ast.c
 
 tac.o: utils/tac.h utils/tac.c
 	gcc -g -c utils/tac.c -o tac.o
+
+generator.o: CodeGenerator/generator.c CodeGenerator/generator.h
+	gcc -g -c CodeGenerator/generator.c -o generator.o
+
+
 
 
 

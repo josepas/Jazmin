@@ -1,24 +1,28 @@
+extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <ctype.h>
-#include "lex.yy.c"
 #include "SymbolTable/symbolTable.h"
 #include "AST/ast.h"
 #include "utils/tac.h"
 #include "List/DoublyLinkedList.h"
 #include "CodeGenerator/generator.h"
 
+}
+
+extern "C" int yyparse (void);
+extern "C" int yylex(void);
+extern "C" void print_token(int);
+extern "C" FILE* yyin;
+
+
 extern Symtable* current;
 extern Symtable* strings;
 extern Typetree* HOLLOW_T;
 
 extern AST* tree;
-
-
-
-
 
 
 int main(int argc, char *argv[]) {
@@ -73,19 +77,19 @@ int main(int argc, char *argv[]) {
     strings = enterScope(strings);
     current = enterScope(current);
 
-    insertTable(current, "hollow", 0, 0, C_TYPE, createType(T_HOLLOW), 0, 0);
-    insertTable(current, "int", 0, 0, C_TYPE, createType(T_INT), 4, 0);
-    insertTable(current, "char", 0, 0, C_TYPE, createType(T_CHAR), 4, 0);
-    insertTable(current, "float", 0, 0, C_TYPE, createType(T_FLOAT), 4, 0);
-    insertTable(current, "bool", 0, 0, C_TYPE, createType(T_BOOL), 4, 0);
-    HOLLOW_T = lookupTable(current, "hollow", 0)->type;
+    insertTable(current, (char*)"hollow", 0, 0, C_TYPE, createType(T_HOLLOW), 0, 0);
+    insertTable(current, (char*)"int", 0, 0, C_TYPE, createType(T_INT), 4, 0);
+    insertTable(current, (char*)"char", 0, 0, C_TYPE, createType(T_CHAR), 4, 0);
+    insertTable(current, (char*)"float", 0, 0, C_TYPE, createType(T_FLOAT), 4, 0);
+    insertTable(current, (char*)"bool", 0, 0, C_TYPE, createType(T_BOOL), 4, 0);
+    HOLLOW_T = lookupTable(current, (char*)"hollow", 0)->type;
     // insertTable(current, "ftoi", 0, 0);
     ArgList* args = newArgList();
-    add(args, lookupTable(current, "int", 0)->type);
-    insertTable(current, "itof", 0, 0, C_SUB, createFunc(args, lookupTable(current, "float", 0)->type), 0, 0);
+    add(args, lookupTable(current, (char*)"int", 0)->type);
+    insertTable(current, (char*)"itof", 0, 0, C_SUB, createFunc(args, lookupTable(current, (char*)"float", 0)->type), 0, 0);
     args = newArgList();
-    add(args, lookupTable(current, "float", 0)->type);
-    insertTable(current, "ftoi", 0, 0, C_SUB, createFunc(args, lookupTable(current, "int", 0)->type), 0, 0);
+    add(args, lookupTable(current, (char*)"float", 0)->type);
+    insertTable(current, (char*)"ftoi", 0, 0, C_SUB, createFunc(args, lookupTable(current, (char*)"int", 0)->type), 0, 0);
 
 
 

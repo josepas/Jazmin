@@ -7,6 +7,9 @@
 
 extern int yylineno;
 extern char* yytext;
+int yylex(void);
+extern void yyerror(const char *);
+
 
 int in_loop = 0;
 int pre = 0;
