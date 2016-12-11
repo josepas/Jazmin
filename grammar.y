@@ -308,6 +308,7 @@ io_inst
                 newVarNode( check_var($2) )
             );
             $<node>$->type = HOLLOW_T;
+            $<node>$->first = $<node>3;
         }
     | READ ID '.' field_id
     | READ ID dims_expr '.' field_id
