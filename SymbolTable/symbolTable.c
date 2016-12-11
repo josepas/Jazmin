@@ -215,11 +215,12 @@ int getMaxSize(Symtable* current) {
 void arreglarAux(Symtable* tabla, int inc) {
     int i;
     Entry *aux;
-    for(i=0; i<HASH_SIZE && inc > 0; i++) {
+    for(i=0; i<HASH_SIZE; i++) {
         aux = tabla->table[i];
         while(aux!=NULL) {
             // if(aux->type->kind != T_CONF && aux->type->kind != T_STRUCT) {
                 aux->offset += inc;
+                aux->offset *= -1;
             // }
             aux = aux->next;
         }
