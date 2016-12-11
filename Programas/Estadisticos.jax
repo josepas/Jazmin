@@ -1,11 +1,11 @@
 func heronRC(float n) -> float {
 
 	float tmp
-	float estimado = n / itof(2)
+	float estimado = n / 2.0
 
 	while ( n - estimado*estimado > 0.0001) {
 		tmp = n / estimado
-		estimado = (tmp + estimado) / itof(2)
+		estimado = (tmp + estimado) / 2.0
 	}
 
 	return estimado
@@ -26,8 +26,8 @@ program {
 
 		i = 0
 		total = 0.0
-		max = -2000000000.0
-		min =  2000000000.0
+		min = - 2000000000.0
+		max = 2000000000.0
 		while (i < tamano) {
 			read f[i]
 			if ( f[i] < min ) {
