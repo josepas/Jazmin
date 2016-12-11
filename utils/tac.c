@@ -867,6 +867,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         true = genLabel();
                         false = genLabel();
                     }
+                    lrvalue = R_VALUE;
                     first = astToTac(ast_node->first, list, true, false, next, E, epilogue);
                     last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     if(ast_node->operation[1] == '=') {
@@ -927,6 +928,7 @@ Node* astToTac(AST *ast_node, DLinkedList *list, Addr *true, Addr *false, Addr *
                         true = genLabel();
                         false = genLabel();
                     }
+                    lrvalue = R_VALUE;
                     first = astToTac(ast_node->first, list, true, false, next, E, epilogue);
                     last = astToTac(ast_node->last, list, true, false, next, E, epilogue);
                     if(ast_node->operation[1] == '=') {
