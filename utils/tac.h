@@ -44,7 +44,7 @@ typedef enum {INT_PLUS, INT_MINUS, INT_MULT, INT_DIV, INT_MOD, INT_UN_MINUS,    
             OP_STR, OP_ITOF, OP_FTOI } Operation;
 
 typedef enum {CONST_INT, CONST_FLOAT, CONST_CHAR, CONST_BOOL, CONST_STR,
-            LABEL, LABEL_STR, VAR, TEMP, SUBROUTINE} AddrType;
+            LABEL, LABEL_STR, VAR, TEMP, REG, GLOB, SUBROUTINE} AddrType;
 
 typedef enum {L_VALUE, R_VALUE, NONE} LRValues;
 
@@ -58,6 +58,10 @@ typedef struct _addr {
         float f;
         char c;
         int b;
+        //Registro, global o temporal
+        int r;
+        int gaddr;
+        int offset;
         // Variables
         Entry *e;
         // Temporales

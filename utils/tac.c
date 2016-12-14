@@ -38,6 +38,47 @@ Addr* topLabel(Labelstack *lstack) {
     return lstack->label;
 }
 
+Addr* genTempAdd(int i) {
+
+    Addr *address = (Addr*)malloc(sizeof(Addr));
+    address->addt = TEMP;
+    address->u.t = i;
+
+    return address; 
+}
+
+Addr* genRegAdd (int i) {
+
+    Addr *address = (Addr*)malloc(sizeof(Addr));
+    address->addt = REG;
+    address->u.r = i;
+
+    return address;
+}
+
+Addr* genLocalAdd (int offset) {
+
+    Addr *address = (Addr*)malloc(sizeof(Addr));
+    address->addt = VAR;
+    address->u.offset = offset;
+
+    return address;
+}
+
+
+Addr* genGlobalAdd (int offset) {
+
+    Addr *address = (Addr*)malloc(sizeof(Addr));
+    address->addt = GLOB;
+    address->u.offset = offset;
+
+    return address;
+}
+
+
+
+
+
 Addr* generateAddr(AddrType addt, void *value) {
     Addr *address = (Addr*)malloc(sizeof(Addr));
     address->addt = addt;
