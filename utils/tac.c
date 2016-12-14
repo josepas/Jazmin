@@ -376,19 +376,19 @@ void imprimirTAC(Quad* q) {
             break;
         case OP_READ_INT:
             addrToString(q->result, a1);
-            printf("   _read_int %s\n", a1);
+            printf("   _read_int %s(%s)\n", (q->result->scope == GLOBAL ? "GP" : "FP"), a1);
             break;
         case OP_READ_FLOAT:
             addrToString(q->result, a1);
-            printf("   _read_float %s\n", a1);
+            printf("   _read_float %s(%s)\n", (q->result->scope == GLOBAL ? "GP" : "FP"), a1);
             break;
         case OP_READ_CHAR:
             addrToString(q->result, a1);
-            printf("   _read_char %s\n", a1);
+            printf("   _read_char %s(%s)\n", (q->result->scope == GLOBAL ? "GP" : "FP"), a1);
             break;
         case OP_READ_BOOL:
             addrToString(q->result, a1);
-            printf("   _read_bool %s\n", a1);
+            printf("   _read_bool %s(%s)\n", (q->result->scope == GLOBAL ? "GP" : "FP"), a1);
             break;
         case OP_STR:
             addrToString(q->arg1, a1);
@@ -1195,6 +1195,7 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
 
             if(lrvalue == R_VALUE) {
                 a1 = generateAddr(VAR, ast_node->u.sym);
+                a1->scope = a1->u.e->scope == GLOBAL ? GLOBAL : LOCAL;
                 temp = newDLLNode(
                         generateTAC(COPY_FROM_INDEX, ASSIGN_FROM_ARRAY, a1, ((Quad*)temp->data)->result, genTemp())
                     );
@@ -1240,6 +1241,7 @@ Node* generateNodeVar(DLinkedList *list, AST *ast_node, Scope scope, Addr *epilo
             break;
         default:    // Es variable normal
             a1 = generateAddr(CONST_INT, &(ast_node->u.sym->offset));
+            a1->scope = scope == GLOBAL ? GLOBAL : LOCAL;
             if(scope == GLOBAL) {
                 if(lrvalue == R_VALUE) {
                     temp = newDLLNode(
