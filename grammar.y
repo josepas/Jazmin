@@ -308,6 +308,7 @@ io_inst
                 newVarNode( check_var($2) )
             );
             $<node>$->type = HOLLOW_T;
+            $<node>$->first = $<node>3;
         }
     | READ ID '.' field_id
     | READ ID dims_expr '.' field_id
@@ -909,6 +910,7 @@ fwd_dec
             //offset = pop(offstack);
             //current = exitScope(current);
             $<node>$ = NULL;
+            pre=0;
         }
     ;
 
@@ -918,11 +920,11 @@ f_formals
             if(pre == 0) {
                 current = enterScope(current);
                 push(offstack, offset);
-                offset = 16;
+                offset = 12;
             }
             $<list>$ = newArgList();
         }
-    | { if(pre == 0) {current = enterScope(current); push(offstack, offset); offset = 16;} } f_formal_list { $<list>$ = $<list>2;}
+    | { if(pre == 0) {current = enterScope(current); push(offstack, offset); offset = 12;} } f_formal_list { $<list>$ = $<list>2;}
     ;
 
 p_formals

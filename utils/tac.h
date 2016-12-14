@@ -52,6 +52,7 @@ typedef enum {E, B, N} Context;
 
 typedef struct _addr {
     AddrType addt;
+    Scope scope;
     union {
         // Literales
         int i;
